@@ -1,0 +1,233 @@
+/*
+ * Copyright (C) 2021 Secure Dimensions GmbH, D-81377
+ * Munich, Germany.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package de.securedimensions.frostserver.plugin.plus;
+
+import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
+import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.IdManager;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
+
+import org.jooq.DataType;
+import org.jooq.Name;
+import org.jooq.Record;
+import org.jooq.TableField;
+import org.jooq.TableLike;
+import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDataType;
+import org.jooq.impl.SQLDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ *
+ * @author am
+ * @author scf
+ */
+public class TableImpLicense<J extends Comparable> extends StaTableAbstract<J, TableImpLicense<J>> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TableImpLicense.class.getName());
+
+    private static final long serialVersionUID = 1626971294;
+
+    /**
+     * The column <code>public.LICENSES.EP_DESCRIPTION</code>.
+     */
+    public final TableField<Record, String> colDescription = createField(DSL.name("DESCRIPTION"), SQLDataType.CLOB, this);
+
+    /**
+     * The column <code>public.LICENSES.EP_NAME</code>.
+     */
+    public final TableField<Record, String> colName = createField(DSL.name("NAME"), SQLDataType.CLOB.defaultValue(DSL.field("'no name'::text", SQLDataType.CLOB)), this);
+
+    /**
+     * The column <code>public.LICENSES.EP_PROPERTIES</code>.
+     */
+    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
+
+    /**
+     * The column <code>public.LICENSES.EP_DEFINITION</code>.
+     */
+    public final TableField<Record, String> colDefinition = createField(DSL.name("DEFINITION"), SQLDataType.CLOB, this);
+
+    /**
+     * The column <code>public.LICENSES.EP_LOGO</code>.
+     */
+    public final TableField<Record, String> colLogo = createField(DSL.name("LOGO"), SQLDataType.CLOB, this);
+
+    /**
+     * The column <code>public.LICENSES.EP_ID</code>.
+     */
+    public final TableField<Record, J> colId = createField(DSL.name("ID"), getIdType(), this);
+
+    private final PluginPLUS pluginPLUS;
+    private final PluginCoreModel pluginCoreModel;
+
+    /**
+     * Create a <code>public.LICENSES</code> table reference.
+     *
+     * @param idType The (SQL)DataType of the Id columns used in the actual
+     * database.
+     * @param pluginParty the license plugin this table belongs to.
+     * @param pluginCoreModel the coreModel plugin that this data model links
+     * to.
+     */
+    public TableImpLicense(DataType<J> idType, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel) {
+        super(idType, DSL.name("LICENSES"), null);
+        this.pluginPLUS = pluginParty;
+        this.pluginCoreModel = pluginCoreModel;
+    }
+
+    private TableImpLicense(Name alias, TableImpLicense<J> aliased, PluginPLUS pluginLicense, PluginCoreModel pluginCoreModel) {
+        super(aliased.getIdType(), alias, aliased);
+        this.pluginPLUS = pluginLicense;
+        this.pluginCoreModel = pluginCoreModel;
+    }
+
+    @Override
+    public void initRelations() {
+        final TableCollection<J> tables = getTables();
+        
+        initDatastreams(tables);
+        initMultiDatastreams(tables);
+        initGroups(tables);
+    }
+    
+    private void initDatastreams(TableCollection<J> tables)
+    {
+        TableImpDatastreams<J> tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
+        final int licenseIdIdx = tableDatastreams.indexOf("LICENSE_ID");
+
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npDatastreamsLicense, this, tableDatastreams)
+                .setSourceFieldAccessor(TableImpLicense::getId)
+                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+        );
+
+        // We add the relation to us to the Datastreams table.
+        tableDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseDatastream, tableDatastreams, this)
+                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+                .setTargetFieldAccessor(TableImpLicense::getId)
+        );
+
+    }
+
+    private void initMultiDatastreams(TableCollection<J> tables)
+    {
+        TableImpMultiDatastreams<J> tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
+        if (tableMultiDatastreams != null)
+        {
+	        final int licenseIdIdx = tableMultiDatastreams.indexOf("LICENSE_ID");
+	        registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsLicense, this, tableMultiDatastreams)
+	                .setSourceFieldAccessor(TableImpLicense::getId)
+	                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+	        );
+
+	        // We add the relation to us to the MultiDatastreams table.
+	        tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseMultiDatastream, tableMultiDatastreams, this)
+	                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+	                .setTargetFieldAccessor(TableImpLicense::getId)
+	        );
+        }
+
+    }
+
+    private void initGroups(TableCollection<J> tables)
+    {
+    	TableImpGroups<J> tableGroups = tables.getTableForClass(TableImpGroups.class);
+        final int licenseIdIdx = tableGroups.indexOf("LICENSE_ID");
+
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npGroupsLicense, this, tableGroups)
+                .setSourceFieldAccessor(TableImpLicense::getId)
+                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+        );
+
+        // We add the relation to us to the Groups table.
+        tableGroups.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseGroup, tableGroups, this)
+                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+                .setTargetFieldAccessor(TableImpLicense::getId)
+        );
+
+    }
+    
+    @Override
+    public void initProperties(final EntityFactories<J> entityFactories) {
+        final TableCollection<J> tables = getTables();
+        final IdManager idManager = entityFactories.getIdManager();
+        pfReg.addEntryId(idManager, TableImpLicense::getId);
+        pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
+        pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
+        pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
+        pfReg.addEntryString(pluginPLUS.epLicenseDefinition, table -> table.colDefinition);
+        pfReg.addEntryString(pluginPLUS.epLicenseLogo, table -> table.colLogo);
+
+        // We register a navigationProperty on the Datastreams table.
+        pfReg.addEntry(pluginPLUS.npDatastreamsLicense, TableImpLicense::getId, idManager);
+
+        // We register a navigationProperty on the Groups table.
+        pfReg.addEntry(pluginPLUS.npGroupsLicense, TableImpLicense::getId, idManager);
+
+        TableImpDatastreams<J> datastreamsTable = tables.getTableForClass(TableImpDatastreams.class);
+        final int licenseDatastreamsIdIdx = datastreamsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
+        datastreamsTable.getPropertyFieldRegistry()
+                .addEntry(pluginPLUS.npLicenseDatastream, table -> (TableField<Record, J>) table.field(licenseDatastreamsIdIdx), idManager);
+
+        TableImpMultiDatastreams<J> tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
+        if (tableMultiDatastreams != null)
+        {
+        	final int licenseMDIdIdx = tableMultiDatastreams.registerField(DSL.name("LICENSE_ID"), getIdType());
+	        tableMultiDatastreams.getPropertyFieldRegistry()
+        		.addEntry(pluginPLUS.npLicenseMultiDatastream, table -> (TableField<Record, J>) ((TableLike<Record>) table).field(licenseMDIdIdx), idManager);
+        }
+
+        TableImpGroups<J> groupsTable = tables.getTableForClass(TableImpGroups.class);
+        if (groupsTable != null)
+        {
+	        final int licenseGroupsIdIdx = groupsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
+	        groupsTable.getPropertyFieldRegistry()
+                .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, J>) table.field(licenseGroupsIdIdx), idManager);
+        }
+}
+    
+    @Override
+    public EntityType getEntityType() {
+        return pluginPLUS.etLicense;
+    }
+
+    @Override
+    public TableField<Record, J> getId() {
+        return colId;
+    }
+
+    @Override
+    public TableImpLicense<J> as(Name alias) {
+        return new TableImpLicense<>(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    }
+
+    @Override
+    public TableImpLicense<J> getThis() {
+        return this;
+    }
+
+}
