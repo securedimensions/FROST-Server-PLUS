@@ -68,6 +68,26 @@
 
     </changeSet>
 
+    <changeSet author="am" id="2021-05-19-LICENSES" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="LICENSES" />
+            </not>
+        </preConditions>
+
+        <createTable tableName="LICENSES">
+            <column autoIncrement="true" name="ID" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="LICENSES_PKEY"/>
+            </column>
+            <column name="NAME" type="TEXT"/>
+            <column name="DESCRIPTION" type="TEXT"/>
+            <column name="PROPERTIES" type="JSONB"/>
+            <column name="DEFINITION" type="TEXT"/>
+            <column name="LOGO" type="TEXT"/>
+        </createTable>
+
+    </changeSet>
+
 	<changeSet author="am" id="2021-05-19-DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="DATASTREAMS" />
@@ -144,26 +164,6 @@
             referencedTableName="PROJECTS" referencedColumnNames="ID"
             deferrable="false" initiallyDeferred="false"
             onDelete="CASCADE" onUpdate="CASCADE"/>
-    </changeSet>
-
-    <changeSet author="am" id="2021-05-19-LICENSES" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="LICENSES" />
-            </not>
-        </preConditions>
-
-        <createTable tableName="LICENSES">
-            <column autoIncrement="true" name="ID" type="BIGSERIAL">
-                <constraints primaryKey="true" primaryKeyName="LICENSES_PKEY"/>
-            </column>
-            <column name="NAME" type="TEXT"/>
-            <column name="DESCRIPTION" type="TEXT"/>
-            <column name="PROPERTIES" type="JSONB"/>
-            <column name="DEFINITION" type="TEXT"/>
-            <column name="LOGO" type="TEXT"/>
-        </createTable>
-
     </changeSet>
 
     <changeSet author="am" id="2021-07-23-GROUPS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
@@ -344,5 +344,7 @@
             onDelete="CASCADE" onUpdate="CASCADE"/>
         
     </changeSet>
+
+
 
 </databaseChangeLog>

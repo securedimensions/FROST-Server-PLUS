@@ -50,31 +50,37 @@
             <groupId>${parent.groupId}</groupId>
             <artifactId>FROST-Server.Core</artifactId>
             <version>${parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>FROST-Server.Plugin.CoreModel</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>FROST-Server.Plugin.MultiDatastream</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${parent.groupId}</groupId>
             <artifactId>FROST-Server.SQLjooq</artifactId>
             <version>${parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${parent.groupId}</groupId>
             <artifactId>FROST-Server.Util</artifactId>
             <version>${parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${parent.groupId}</groupId>
             <artifactId>FROST-Server.HTTP.Common</artifactId>
             <version>${parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
