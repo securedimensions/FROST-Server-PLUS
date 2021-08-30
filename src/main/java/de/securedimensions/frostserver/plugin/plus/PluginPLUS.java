@@ -149,10 +149,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
     public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeReferencesHelper.TYPE_REFERENCE_STRING);
 
     public final NavigationPropertyEntity npProjectDatastream = new NavigationPropertyEntity("Project");
-    public final NavigationPropertyEntity npDatastreamsProject = new NavigationPropertyEntity("Datastreams", npProjectDatastream);
+    public final NavigationPropertyEntitySet npDatastreamsProject = new NavigationPropertyEntitySet("Datastreams", npProjectDatastream);
 
     public final NavigationPropertyEntity npProjectMultiDatastream = new NavigationPropertyEntity("Project");
-    public final NavigationPropertyEntity npMultiDatastreamsProject = new NavigationPropertyEntity("MultiDatastreams", npProjectMultiDatastream);
+    public final NavigationPropertyEntitySet npMultiDatastreamsProject = new NavigationPropertyEntitySet("MultiDatastreams", npProjectMultiDatastream);
 
     public final EntityType etProject = new EntityType("Project", "Projects");
 
