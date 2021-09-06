@@ -199,7 +199,7 @@
             onDelete="CASCADE" onUpdate="CASCADE"/>
     </changeSet>
 	
-    <changeSet author="am" id="2021-06-23-RELATIONS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2021-09-06-RELATIONS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
                 <or>
@@ -224,7 +224,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="GROUP_ID" type="BIGINT">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
         </createTable>
 
