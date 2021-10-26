@@ -1,0 +1,17 @@
+*.autosave
+/nbproject/
+*~
+.idea/
+*.iml
+
+pom.xml.versionsBackup
+pom.xml.releaseBackup
+release.properties
+
+/target
+/*/target/
+/*/*/target/
+
+FROST-Server.HTTP/keycloak.json
+FROST-Server.MQTT/FrostMqtt.properties
+logs
