@@ -50,10 +50,16 @@ import static de.fraunhofer.iosb.ilt.frostserver.model.ext.TypeReferencesHelper.
 
 import java.io.IOException;
 import java.io.Writer;
+import java.net.NetworkInterface;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.jooq.DataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -214,7 +220,28 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
         .registerProperty(epNickName, false)
         .registerProperty(epPartyRole, true)
         .registerProperty(npDatastreamsParty, false)
-        .registerProperty(npMultiDatastreamsParty, false);
+        .registerProperty(npMultiDatastreamsParty, false)
+        .addValidator((entity, entityPropertiesOnly) -> {
+        	
+        	if (entity.isSetProperty(epAuthId))
+        		throw new IllegalArgumentException("property authId cannot be submitted with the request");
+        	
+        	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+        	String userId = (String)request.getAttributeMap().get("sub");
+        	if (userId != null)
+        	{
+        		try{
+        		    // This throws exception if userId is not in UUID format
+        			UUID.fromString(userId);
+        		    entity.setProperty(epAuthId, userId);
+        		} catch (IllegalArgumentException exception){
+        			entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
+        		}        			
+        	}
+        	else
+        		entity.setProperty(epAuthId, "00000000-0000-0000-0000-000000000000");
+        	
+        });
 
         npPartyDatastream.setEntityType(etParty);
         npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
