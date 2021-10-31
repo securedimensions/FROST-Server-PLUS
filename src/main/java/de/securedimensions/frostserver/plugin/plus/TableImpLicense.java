@@ -19,7 +19,6 @@ package de.securedimensions.frostserver.plugin.plus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.IdManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
@@ -29,7 +28,6 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollect
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
-
 import org.jooq.DataType;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -46,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @author am
  * @author scf
  */
-public class TableImpLicense<J extends Comparable> extends StaTableAbstract<J, TableImpLicense<J>> {
+public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TableImpLicense.class.getName());
 
@@ -80,7 +78,7 @@ public class TableImpLicense<J extends Comparable> extends StaTableAbstract<J, T
     /**
      * The column <code>public.LICENSES.EP_ID</code>.
      */
-    public final TableField<Record, J> colId = createField(DSL.name("ID"), getIdType(), this);
+    public final TableField<Record, ?> colId = createField(DSL.name("ID"), getIdType(), this);
 
     private final PluginPLUS pluginPLUS;
     private final PluginCoreModel pluginCoreModel;
@@ -94,13 +92,13 @@ public class TableImpLicense<J extends Comparable> extends StaTableAbstract<J, T
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpLicense(DataType<J> idType, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel) {
+    public TableImpLicense(DataType<?> idType, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel) {
         super(idType, DSL.name("LICENSES"), null);
         this.pluginPLUS = pluginParty;
         this.pluginCoreModel = pluginCoreModel;
     }
 
-    private TableImpLicense(Name alias, TableImpLicense<J> aliased, PluginPLUS pluginLicense, PluginCoreModel pluginCoreModel) {
+    private TableImpLicense(Name alias, TableImpLicense aliased, PluginPLUS pluginLicense, PluginCoreModel pluginCoreModel) {
         super(aliased.getIdType(), alias, aliased);
         this.pluginPLUS = pluginLicense;
         this.pluginCoreModel = pluginCoreModel;
@@ -108,74 +106,69 @@ public class TableImpLicense<J extends Comparable> extends StaTableAbstract<J, T
 
     @Override
     public void initRelations() {
-        final TableCollection<J> tables = getTables();
-        
+        final TableCollection tables = getTables();
+
         initDatastreams(tables);
         initMultiDatastreams(tables);
         initGroups(tables);
     }
-    
-    private void initDatastreams(TableCollection<J> tables)
-    {
-        TableImpDatastreams<J> tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
+
+    private void initDatastreams(TableCollection tables) {
+        TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int licenseIdIdx = tableDatastreams.indexOf("LICENSE_ID");
 
         registerRelation(new RelationOneToMany<>(pluginPLUS.npDatastreamsLicense, this, tableDatastreams)
                 .setSourceFieldAccessor(TableImpLicense::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
         );
 
         // We add the relation to us to the Datastreams table.
         tableDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseDatastream, tableDatastreams, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
                 .setTargetFieldAccessor(TableImpLicense::getId)
         );
 
     }
 
-    private void initMultiDatastreams(TableCollection<J> tables)
-    {
-        TableImpMultiDatastreams<J> tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-        if (tableMultiDatastreams != null)
-        {
-	        final int licenseIdIdx = tableMultiDatastreams.indexOf("LICENSE_ID");
-	        registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsLicense, this, tableMultiDatastreams)
-	                .setSourceFieldAccessor(TableImpLicense::getId)
-	                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
-	        );
+    private void initMultiDatastreams(TableCollection tables) {
+        TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
+        if (tableMultiDatastreams != null) {
+            final int licenseIdIdx = tableMultiDatastreams.indexOf("LICENSE_ID");
+            registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsLicense, this, tableMultiDatastreams)
+                    .setSourceFieldAccessor(TableImpLicense::getId)
+                    .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
+            );
 
-	        // We add the relation to us to the MultiDatastreams table.
-	        tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseMultiDatastream, tableMultiDatastreams, this)
-	                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
-	                .setTargetFieldAccessor(TableImpLicense::getId)
-	        );
+            // We add the relation to us to the MultiDatastreams table.
+            tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseMultiDatastream, tableMultiDatastreams, this)
+                    .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
+                    .setTargetFieldAccessor(TableImpLicense::getId)
+            );
         }
 
     }
 
-    private void initGroups(TableCollection<J> tables)
-    {
-    	TableImpGroups<J> tableGroups = tables.getTableForClass(TableImpGroups.class);
+    private void initGroups(TableCollection tables) {
+        TableImpGroups tableGroups = tables.getTableForClass(TableImpGroups.class);
         final int licenseIdIdx = tableGroups.indexOf("LICENSE_ID");
 
         registerRelation(new RelationOneToMany<>(pluginPLUS.npGroupsLicense, this, tableGroups)
                 .setSourceFieldAccessor(TableImpLicense::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
         );
 
         // We add the relation to us to the Groups table.
         tableGroups.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseGroup, tableGroups, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(licenseIdIdx))
+                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
                 .setTargetFieldAccessor(TableImpLicense::getId)
         );
 
     }
-    
+
     @Override
-    public void initProperties(final EntityFactories<J> entityFactories) {
-        final TableCollection<J> tables = getTables();
-        final IdManager idManager = entityFactories.getIdManager();
-        pfReg.addEntryId(idManager, TableImpLicense::getId);
+    public void initProperties(final EntityFactories entityFactories) {
+        final TableCollection tables = getTables();
+        pfReg.addEntryId(entityFactories, TableImpLicense::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
@@ -183,50 +176,48 @@ public class TableImpLicense<J extends Comparable> extends StaTableAbstract<J, T
         pfReg.addEntryString(pluginPLUS.epLicenseLogo, table -> table.colLogo);
 
         // We register a navigationProperty on the Datastreams table.
-        pfReg.addEntry(pluginPLUS.npDatastreamsLicense, TableImpLicense::getId, idManager);
+        pfReg.addEntry(pluginPLUS.npDatastreamsLicense, TableImpLicense::getId, entityFactories);
 
         // We register a navigationProperty on the Groups table.
-        pfReg.addEntry(pluginPLUS.npGroupsLicense, TableImpLicense::getId, idManager);
+        pfReg.addEntry(pluginPLUS.npGroupsLicense, TableImpLicense::getId, entityFactories);
 
-        TableImpDatastreams<J> datastreamsTable = tables.getTableForClass(TableImpDatastreams.class);
+        TableImpDatastreams datastreamsTable = tables.getTableForClass(TableImpDatastreams.class);
         final int licenseDatastreamsIdIdx = datastreamsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
         datastreamsTable.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npLicenseDatastream, table -> (TableField<Record, J>) table.field(licenseDatastreamsIdIdx), idManager);
+                .addEntry(pluginPLUS.npLicenseDatastream, table -> (TableField<Record, ?>) table.field(licenseDatastreamsIdIdx), entityFactories);
 
-        TableImpMultiDatastreams<J> tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-        if (tableMultiDatastreams != null)
-        {
-        	final int licenseMDIdIdx = tableMultiDatastreams.registerField(DSL.name("LICENSE_ID"), getIdType());
-	        tableMultiDatastreams.getPropertyFieldRegistry()
-        		.addEntry(pluginPLUS.npLicenseMultiDatastream, table -> (TableField<Record, J>) ((TableLike<Record>) table).field(licenseMDIdIdx), idManager);
+        TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
+        if (tableMultiDatastreams != null) {
+            final int licenseMDIdIdx = tableMultiDatastreams.registerField(DSL.name("LICENSE_ID"), getIdType());
+            tableMultiDatastreams.getPropertyFieldRegistry()
+                    .addEntry(pluginPLUS.npLicenseMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(licenseMDIdIdx), entityFactories);
         }
 
-        TableImpGroups<J> groupsTable = tables.getTableForClass(TableImpGroups.class);
-        if (groupsTable != null)
-        {
-	        final int licenseGroupsIdIdx = groupsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
-	        groupsTable.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, J>) table.field(licenseGroupsIdIdx), idManager);
+        TableImpGroups groupsTable = tables.getTableForClass(TableImpGroups.class);
+        if (groupsTable != null) {
+            final int licenseGroupsIdIdx = groupsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
+            groupsTable.getPropertyFieldRegistry()
+                    .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, ?>) table.field(licenseGroupsIdIdx), entityFactories);
         }
-}
-    
+    }
+
     @Override
     public EntityType getEntityType() {
         return pluginPLUS.etLicense;
     }
 
     @Override
-    public TableField<Record, J> getId() {
+    public TableField<Record, ?> getId() {
         return colId;
     }
 
     @Override
-    public TableImpLicense<J> as(Name alias) {
-        return new TableImpLicense<>(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    public TableImpLicense as(Name alias) {
+        return new TableImpLicense(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
     }
 
     @Override
-    public TableImpLicense<J> getThis() {
+    public TableImpLicense getThis() {
         return this;
     }
 

@@ -19,14 +19,12 @@ package de.securedimensions.frostserver.plugin.plus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.IdManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.fieldwrapper.StaTimeIntervalWrapper.KEY_TIME_INTERVAL_END;
 import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.fieldwrapper.StaTimeIntervalWrapper.KEY_TIME_INTERVAL_START;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInstant;
@@ -34,7 +32,6 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyField
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.NFP;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 
 import java.time.OffsetDateTime;
@@ -52,7 +49,7 @@ import org.jooq.impl.SQLDataType;
  * @author am
  * @author scf
  */
-public class TableImpProject<J extends Comparable> extends StaTableAbstract<J, TableImpProject<J>> {
+public class TableImpProject extends StaTableAbstract<TableImpProject> {
 
     private static final long serialVersionUID = 1627027393;
 
@@ -109,7 +106,7 @@ public class TableImpProject<J extends Comparable> extends StaTableAbstract<J, T
     /**
      * The column <code>public.PROJECTS.EP_ID</code>.
      */
-    public final TableField<Record, J> colId = createField(DSL.name("ID"), getIdType(), this);
+    public final TableField<Record, ?> colId = createField(DSL.name("ID"), getIdType(), this);
 
     private final PluginPLUS pluginPLUS;
     private final PluginCoreModel pluginCoreModel;
@@ -123,13 +120,13 @@ public class TableImpProject<J extends Comparable> extends StaTableAbstract<J, T
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpProject(DataType<J> idType, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
+    public TableImpProject(DataType<?> idType, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
         super(idType, DSL.name("PROJECTS"), null);
         this.pluginPLUS = pluginProject;
         this.pluginCoreModel = pluginCoreModel;
     }
 
-    private TableImpProject(Name alias, TableImpProject<J> aliased, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
+    private TableImpProject(Name alias, TableImpProject aliased, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
         super(aliased.getIdType(), alias, aliased);
         this.pluginPLUS = pluginProject;
         this.pluginCoreModel = pluginCoreModel;
@@ -137,47 +134,45 @@ public class TableImpProject<J extends Comparable> extends StaTableAbstract<J, T
 
     @Override
     public void initRelations() {
-        final TableCollection<J> tables = getTables();
-        
-        TableImpDatastreams<J> tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
+        final TableCollection tables = getTables();
+
+        TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int projectIdIdx = tableDatastreams.indexOf("PROJECT_ID");
 
         // Add relation to Datastreams table
         registerRelation(new RelationOneToMany<>(pluginPLUS.npDatastreamsProject, this, tableDatastreams)
                 .setSourceFieldAccessor(TableImpProject::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(projectIdIdx))
+                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(projectIdIdx))
         );
 
         // We add the relation to us from the Datastreams table.
         tableDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectDatastream, tableDatastreams, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(projectIdIdx))
+                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(projectIdIdx))
                 .setTargetFieldAccessor(TableImpProject::getId)
         );
 
-        TableImpMultiDatastreams<J> tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-        if (tableMultiDatastreams != null)
-        {
-        	// We add the relation to MultiDatastreams table
-	        final int projectMDIdIdx = tableMultiDatastreams.indexOf("PROJECT_ID");
-	        registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsProject, this, tableMultiDatastreams)
-	                .setSourceFieldAccessor(TableImpProject::getId)
-	                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(projectMDIdIdx))
-	        );
-	
-	        // We add the relation to us from the MultiDatastreams table.
-	        tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectMultiDatastream, tableMultiDatastreams, this)
-	                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(projectMDIdIdx))
-	                .setTargetFieldAccessor(TableImpProject::getId)
-	        );
+        TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
+        if (tableMultiDatastreams != null) {
+            // We add the relation to MultiDatastreams table
+            final int projectMDIdIdx = tableMultiDatastreams.indexOf("PROJECT_ID");
+            registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsProject, this, tableMultiDatastreams)
+                    .setSourceFieldAccessor(TableImpProject::getId)
+                    .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(projectMDIdIdx))
+            );
+
+            // We add the relation to us from the MultiDatastreams table.
+            tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectMultiDatastream, tableMultiDatastreams, this)
+                    .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(projectMDIdIdx))
+                    .setTargetFieldAccessor(TableImpProject::getId)
+            );
         }
 
     }
 
     @Override
-    public void initProperties(final EntityFactories<J> entityFactories) {
-        final TableCollection<J> tables = getTables();
-        final IdManager idManager = entityFactories.getIdManager();
-        pfReg.addEntryId(idManager, TableImpProject::getId);
+    public void initProperties(final EntityFactories entityFactories) {
+        final TableCollection tables = getTables();
+        pfReg.addEntryId(entityFactories, TableImpProject::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
@@ -193,21 +188,20 @@ public class TableImpProject<J extends Comparable> extends StaTableAbstract<J, T
                 new NFP<>(KEY_TIME_INTERVAL_START, table -> table.colRuntimeTimeStart),
                 new NFP<>(KEY_TIME_INTERVAL_END, table -> table.colRuntimeTimeEnd));
 
-        pfReg.addEntry(pluginPLUS.npDatastreamsProject, TableImpProject::getId, idManager);
-        pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId, idManager);
+        pfReg.addEntry(pluginPLUS.npDatastreamsProject, TableImpProject::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId, entityFactories);
 
         // We register a navigationProperty on the Datastreams table.
-        TableImpDatastreams<J> tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
+        TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int projectIdIdx = tableDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
         tableDatastreams.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npProjectDatastream, table -> (TableField<Record, J>) table.field(projectIdIdx), idManager);
-        
-        TableImpMultiDatastreams<J> tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-        if (tableMultiDatastreams != null)
-	    {
-        	final int projectMDIdIdx = tableMultiDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
-	        tableMultiDatastreams.getPropertyFieldRegistry()
-	        		.addEntry(pluginPLUS.npProjectMultiDatastream, table -> (TableField<Record, J>) ((TableLike<Record>) table).field(projectMDIdIdx), idManager);
+                .addEntry(pluginPLUS.npProjectDatastream, table -> (TableField<Record, ?>) table.field(projectIdIdx), entityFactories);
+
+        TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
+        if (tableMultiDatastreams != null) {
+            final int projectMDIdIdx = tableMultiDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
+            tableMultiDatastreams.getPropertyFieldRegistry()
+                    .addEntry(pluginPLUS.npProjectMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(projectMDIdIdx), entityFactories);
         }
 
     }
@@ -218,17 +212,17 @@ public class TableImpProject<J extends Comparable> extends StaTableAbstract<J, T
     }
 
     @Override
-    public TableField<Record, J> getId() {
+    public TableField<Record, ?> getId() {
         return colId;
     }
 
     @Override
-    public TableImpProject<J> as(Name alias) {
-        return new TableImpProject<>(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    public TableImpProject as(Name alias) {
+        return new TableImpProject(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
     }
 
     @Override
-    public TableImpProject<J> getThis() {
+    public TableImpProject getThis() {
         return this;
     }
 
