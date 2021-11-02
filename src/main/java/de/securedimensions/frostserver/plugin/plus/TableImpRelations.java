@@ -3,10 +3,8 @@ package de.securedimensions.frostserver.plugin.plus;
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.IdManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationManyToMany;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
@@ -14,11 +12,6 @@ import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -28,9 +21,9 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TableImpRelations<J extends Comparable> extends StaTableAbstract<J, TableImpRelations<J>> {
+public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TableImpGroups.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(TableImpGroups.class.getName());
 
     private static final long serialVersionUID = 1626971259;
 
@@ -47,22 +40,22 @@ public class TableImpRelations<J extends Comparable> extends StaTableAbstract<J,
     /**
      * The column <code>public.RELATIONS.EP_ID</code>.
      */
-    public final TableField<Record, J> colId = createField(DSL.name("ID"), getIdType(), this);
+    public final TableField<Record, ?> colId = createField(DSL.name("ID"), getIdType(), this);
 
     /**
      * The column <code>public.RELATIONS.EP_SUBJECT_ID</code>.
      */
-    public final TableField<Record, J> colSubjectId = createField(DSL.name("SUBJECT_ID"), getIdType(), this);
+    public final TableField<Record, ?> colSubjectId;
 
     /**
      * The column <code>public.RELATIONS.EP_OBJECT_ID</code>.
      */
-    public final TableField<Record, J> colObjectId = createField(DSL.name("OBJECT_ID"), getIdType(), this);
+    public final TableField<Record, ?> colObjectId;
 
     /**
      * The column <code>public.RELATIONS.EP_GROUP_ID</code>.
      */
-    public final TableField<Record, J> colGroupId = createField(DSL.name("GROUP_ID"), getIdType(), this);
+    public final TableField<Record, ?> colGroupId;
 
     private final PluginPLUS pluginPLUS;
     private final PluginCoreModel pluginCoreModel;
@@ -70,28 +63,38 @@ public class TableImpRelations<J extends Comparable> extends StaTableAbstract<J,
     /**
      * Create a <code>public.TASKS</code> table reference.
      *
-     * @param idType The (SQL)DataType of the Id columns used in the actual
+     * @param idType The (SQL)DataType of the Id column used in the actual
      * database.
+     * @param idTypeObs The (SQL)DataType of the Subject and Object column used
+     * in the actual database.
+     * @param idTypeGroup The (SQL)DataType of the GroupId column used in the
+     * actual database.
      * @param pluginActuation the actuation plugin this table belongs to.
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpRelations(DataType<J> idType, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
+    public TableImpRelations(DataType<?> idType, DataType<?> idTypeObs, DataType<?> idTypeGroup, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
         super(idType, DSL.name("RELATIONS"), null);
         this.pluginPLUS = pluginGrouping;
         this.pluginCoreModel = pluginCoreModel;
+        colSubjectId = createField(DSL.name("SUBJECT_ID"), idTypeObs);
+        colObjectId = createField(DSL.name("OBJECT_ID"), idTypeObs);
+        colGroupId = createField(DSL.name("GROUP_ID"), idTypeGroup);
     }
 
-    private TableImpRelations(Name alias, TableImpRelations<J> aliased, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
+    private TableImpRelations(Name alias, TableImpRelations aliased, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
         super(aliased.getIdType(), alias, aliased);
         this.pluginPLUS = pluginGrouping;
         this.pluginCoreModel = pluginCoreModel;
+        colSubjectId = createField(DSL.name("SUBJECT_ID"), aliased.colSubjectId.getDataType());
+        colObjectId = createField(DSL.name("OBJECT_ID"), aliased.colObjectId.getDataType());
+        colGroupId = createField(DSL.name("GROUP_ID"), aliased.colGroupId.getDataType());
     }
 
     @Override
     public void initRelations() {
-        final TableCollection<J> tables = getTables();
-        final TableImpObservations<J> tableObservations = tables.getTableForClass(TableImpObservations.class);
+        final TableCollection tables = getTables();
+        final TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
 
         registerRelation(new RelationOneToMany<>(pluginPLUS.npSubjectRelation, this, tableObservations)
                 .setSourceFieldAccessor(TableImpRelations::getSubjectId)
@@ -110,36 +113,34 @@ public class TableImpRelations<J extends Comparable> extends StaTableAbstract<J,
                 .setSourceFieldAccessor(TableImpObservations::getId)
                 .setTargetFieldAccessor(TableImpRelations::getObjectId)
         );
-        
+
     }
 
     @Override
-    public void initProperties(final EntityFactories<J> entityFactories) {
-        final TableCollection<J> tables = getTables();
-        final TableImpObservations<J> tableObservations = tables.getTableForClass(TableImpObservations.class);
-        final IdManager idManager = entityFactories.getIdManager();
-        pfReg.addEntryId(idManager, TableImpRelations::getId);
+    public void initProperties(final EntityFactories entityFactories) {
+        final TableCollection tables = getTables();
+        final TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
+        pfReg.addEntryId(entityFactories, TableImpRelations::getId);
         pfReg.addEntryString(pluginPLUS.epRelationRole, table -> table.colRole);
         pfReg.addEntryString(pluginPLUS.epNamespace, table -> table.colNamespace);
 
-        pfReg.addEntry(pluginPLUS.npSubjectRelation, TableImpRelations::getSubjectId, idManager);
-        pfReg.addEntry(pluginPLUS.npObjectRelation, TableImpRelations::getObjectId, idManager);
-        
+        pfReg.addEntry(pluginPLUS.npSubjectRelation, TableImpRelations::getSubjectId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npObjectRelation, TableImpRelations::getObjectId, entityFactories);
+
         // We register a navigationProperty for Subject on the Observations table.
         tableObservations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId, idManager);
+                .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId, entityFactories);
         // We register a navigationProperty for Object on the Observations table.
         tableObservations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npObjectsObservation, TableImpObservations::getId, idManager);
-        
+                .addEntry(pluginPLUS.npObjectsObservation, TableImpObservations::getId, entityFactories);
+
     }
 
     @Override
-    protected void updateNavigationPropertySet(Entity group, EntitySet linkedSet, PostgresPersistenceManager<J> pm, boolean forInsert) throws IncompleteEntityException, NoSuchEntityException {
+    protected void updateNavigationPropertySet(Entity group, EntitySet linkedSet, PostgresPersistenceManager pm, boolean forInsert) throws IncompleteEntityException, NoSuchEntityException {
         EntityType linkedEntityType = linkedSet.getEntityType();
 
         // Todo ???
-        
         super.updateNavigationPropertySet(group, linkedSet, pm, forInsert);
     }
 
@@ -149,29 +150,29 @@ public class TableImpRelations<J extends Comparable> extends StaTableAbstract<J,
     }
 
     @Override
-    public TableField<Record, J> getId() {
+    public TableField<Record, ?> getId() {
         return colId;
     }
 
-    public TableField<Record, J> getSubjectId() {
+    public TableField<Record, ?> getSubjectId() {
         return colSubjectId;
     }
 
-    public TableField<Record, J> getObjectId() {
+    public TableField<Record, ?> getObjectId() {
         return colObjectId;
     }
 
-    public TableField<Record, J> getGroupId() {
+    public TableField<Record, ?> getGroupId() {
         return colGroupId;
     }
 
     @Override
-    public TableImpRelations<J> as(Name alias) {
-        return new TableImpRelations<>(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    public TableImpRelations as(Name alias) {
+        return new TableImpRelations(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
     }
 
     @Override
-    public TableImpRelations<J> getThis() {
+    public TableImpRelations getThis() {
         return this;
     }
 
