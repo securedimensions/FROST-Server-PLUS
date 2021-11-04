@@ -7,7 +7,7 @@ import org.jooq.Record;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-public class TableImpGroupsObservations<J extends Comparable> extends StaLinkTable<J, TableImpGroupsObservations<J>> {
+public class TableImpGroupsObservations extends StaLinkTable<TableImpGroupsObservations> {
 
     public static final String NAME_TABLE = "GROUPS_OBSERVATIONS";
     public static final String NAME_COL_TL_OBSERVATION_ID = "OBSERVATION_ID";
@@ -18,42 +18,46 @@ public class TableImpGroupsObservations<J extends Comparable> extends StaLinkTab
     /**
      * The column <code>public.GROUPS_OBSERVATIONS.GROUP_ID</code>.
      */
-    public final TableField<Record, J> colGroupId = createField(DSL.name(NAME_COL_TL_GROUP_ID), getIdType(), this);
+    public final TableField<Record, ?> colGroupId;
 
     /**
      * The column <code>public.GROUPS_OBSERVATIONS.OBSERVATION_ID</code>.
      */
-    public final TableField<Record, J> colObservationId = createField(DSL.name(NAME_COL_TL_OBSERVATION_ID), getIdType(), this);
+    public final TableField<Record, ?> colObservationId;
 
     /**
      * Create a <code>public.GROUPS_OBSERVATIONS</code> table reference.
      *
-     * @param idType The (SQL)DataType of the Id columns used in the actual
+     * @param idTypeGroup The (SQL)DataType of the Id columns used in the actual
      * database.
      */
-    public TableImpGroupsObservations(DataType<J> idType) {
-        super(idType, DSL.name(NAME_TABLE), null);
+    public TableImpGroupsObservations(DataType<?> idTypeGroup, DataType<?> idTypeObs) {
+        super(DSL.name(NAME_TABLE), null);
+        colGroupId = createField(DSL.name(NAME_COL_TL_GROUP_ID), idTypeGroup);
+        colObservationId = createField(DSL.name(NAME_COL_TL_OBSERVATION_ID), idTypeObs);
     }
 
-    private TableImpGroupsObservations(Name alias, TableImpGroupsObservations<J> aliased) {
-        super(aliased.getIdType(), alias, aliased);
+    private TableImpGroupsObservations(Name alias, TableImpGroupsObservations aliased) {
+        super(alias, aliased);
+        colGroupId = createField(DSL.name(NAME_COL_TL_GROUP_ID), aliased.colGroupId.getDataType());
+        colObservationId = createField(DSL.name(NAME_COL_TL_OBSERVATION_ID), aliased.colObservationId.getDataType());
     }
 
-    public TableField<Record, J> getObservationId() {
+    public TableField<Record, ?> getObservationId() {
         return colObservationId;
     }
 
-    public TableField<Record, J> getGroupId() {
+    public TableField<Record, ?> getGroupId() {
         return colGroupId;
     }
 
     @Override
-    public TableImpGroupsObservations<J> as(Name alias) {
-        return new TableImpGroupsObservations<>(alias, this).initCustomFields();
+    public TableImpGroupsObservations as(Name alias) {
+        return new TableImpGroupsObservations(alias, this).initCustomFields();
     }
 
     @Override
-    public TableImpGroupsObservations<J> getThis() {
+    public TableImpGroupsObservations getThis() {
         return this;
     }
 

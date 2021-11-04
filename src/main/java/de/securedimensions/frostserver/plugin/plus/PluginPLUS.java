@@ -18,47 +18,46 @@
 package de.securedimensions.frostserver.plugin.plus;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
 import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInstant;
 import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInterval;
-import de.fraunhofer.iosb.ilt.frostserver.model.ext.TypeReferencesHelper;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManagerFactory;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.property.EntityPropertyMain;
 import de.fraunhofer.iosb.ilt.frostserver.property.NavigationPropertyMain.NavigationPropertyEntity;
 import de.fraunhofer.iosb.ilt.frostserver.property.NavigationPropertyMain.NavigationPropertyEntitySet;
+import static de.fraunhofer.iosb.ilt.frostserver.property.SpecialNames.AT_IOT_ID;
+import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeSimpleCustom;
+import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeSimplePrimitive;
 import de.fraunhofer.iosb.ilt.frostserver.service.PluginModel;
 import de.fraunhofer.iosb.ilt.frostserver.service.PluginRootDocument;
 import de.fraunhofer.iosb.ilt.frostserver.service.Service;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
-import de.fraunhofer.iosb.ilt.frostserver.settings.ConfigDefaults;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.settings.Settings;
-import de.fraunhofer.iosb.ilt.frostserver.settings.annotation.DefaultValueBoolean;
 import de.fraunhofer.iosb.ilt.frostserver.util.LiquibaseUser;
+import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
-
-import static de.fraunhofer.iosb.ilt.frostserver.model.ext.TypeReferencesHelper.TYPE_REFERENCE_TIMEINSTANT;
-import static de.fraunhofer.iosb.ilt.frostserver.model.ext.TypeReferencesHelper.TYPE_REFERENCE_TIMEINTERVAL;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.net.NetworkInterface;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.UUID;
 
 import org.jooq.DataType;
 import org.slf4j.Logger;
@@ -69,9 +68,9 @@ import org.slf4j.LoggerFactory;
  * @author am
  * @author scf
  */
-public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaults, LiquibaseUser {
+public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUser {
 
-    private static final String LIQUIBASE_CHANGELOG_FILENAME = "liquibase/plus/tables";
+    private static final String LIQUIBASE_CHANGELOG_FILENAME = "liquibase/plus/tables.xml";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginPLUS.class.getName());
 
@@ -80,8 +79,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
     /**
      * Class License
      */
-    public final EntityPropertyMain<String> epLicenseDefinition = new EntityPropertyMain<>("definition", TypeReferencesHelper.TYPE_REFERENCE_STRING);
-    public final EntityPropertyMain<String> epLicenseLogo = new EntityPropertyMain<>("logo", TypeReferencesHelper.TYPE_REFERENCE_STRING);
+    public final EntityPropertyMain<String> epLicenseDefinition = new EntityPropertyMain<>("definition", TypeSimplePrimitive.EDM_STRING);
+    public final EntityPropertyMain<String> epLicenseLogo = new EntityPropertyMain<>("logo", TypeSimplePrimitive.EDM_STRING);
 
     public final NavigationPropertyEntity npLicenseDatastream = new NavigationPropertyEntity("License");
     public final NavigationPropertyEntitySet npDatastreamsLicense = new NavigationPropertyEntitySet("Datastreams", npLicenseDatastream);
@@ -94,16 +93,15 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
 
     public final EntityType etLicense = new EntityType("License", "Licenses");
 
-    
     /**
      * Class Group
      */
-    public final EntityPropertyMain<String> epPurpose = new EntityPropertyMain<>("purpose", TypeReferencesHelper.TYPE_REFERENCE_STRING);
-    public final EntityPropertyMain<TimeInstant> epGroupCreated = new EntityPropertyMain<>("created", TYPE_REFERENCE_TIMEINSTANT, false, true);
-    public final EntityPropertyMain<TimeInterval> epGroupRuntime = new EntityPropertyMain<>("runtime", TYPE_REFERENCE_TIMEINTERVAL, false, true);
+    public final EntityPropertyMain<String> epPurpose = new EntityPropertyMain<>("purpose", TypeSimplePrimitive.EDM_STRING);
+    public final EntityPropertyMain<TimeInstant> epGroupCreated = new EntityPropertyMain<>("created", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
+    public final EntityPropertyMain<TimeInterval> epGroupRuntime = new EntityPropertyMain<>("runtime", TypeSimpleCustom.STA_TIMEINTERVAL, false, true);
 
-    public final EntityPropertyMain<String> epRelationRole = new EntityPropertyMain<>("role", TypeReferencesHelper.TYPE_REFERENCE_STRING);
-    public final EntityPropertyMain<String> epNamespace = new EntityPropertyMain<>("namespace", TypeReferencesHelper.TYPE_REFERENCE_STRING);
+    public final EntityPropertyMain<String> epRelationRole = new EntityPropertyMain<>("role", TypeSimplePrimitive.EDM_STRING);
+    public final EntityPropertyMain<String> epNamespace = new EntityPropertyMain<>("namespace", TypeSimplePrimitive.EDM_STRING);
 
     public final NavigationPropertyEntitySet npObservationGroups = new NavigationPropertyEntitySet("Groups");
     public final NavigationPropertyEntitySet npRelationGroups = new NavigationPropertyEntitySet("Groups");
@@ -132,9 +130,11 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
     public static final TypeReference<Role> TYPE_REFERENCE_ROLE = new TypeReference<Role>() {
         // Empty on purpose.
     };
-    public final EntityPropertyMain<String> epAuthId = new EntityPropertyMain<>("authId", TypeReferencesHelper.TYPE_REFERENCE_STRING);
-    public final EntityPropertyMain<String> epNickName = new EntityPropertyMain<>("nickName", TypeReferencesHelper.TYPE_REFERENCE_STRING);
-    public final EntityPropertyMain<Role> epPartyRole = new EntityPropertyMain<>("role", TYPE_REFERENCE_ROLE);
+    public static final TypeSimpleCustom propertyTypeRole = new TypeSimpleCustom("Plus.Role", "The Party Role", TypeSimplePrimitive.EDM_STRING, TYPE_REFERENCE_ROLE);
+    public final EntityPropertyMain<Role> epPartyRole = new EntityPropertyMain<>("role", propertyTypeRole);
+
+    public final EntityPropertyMain<String> epAuthId = new EntityPropertyMain<>("authId", TypeSimplePrimitive.EDM_STRING);
+    public final EntityPropertyMain<String> epNickName = new EntityPropertyMain<>("nickName", TypeSimplePrimitive.EDM_STRING);
 
     public final NavigationPropertyEntity npPartyDatastream = new NavigationPropertyEntity("Party");
     public final NavigationPropertyEntitySet npDatastreamsParty = new NavigationPropertyEntitySet("Datastreams", npPartyDatastream);
@@ -147,12 +147,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
     /**
      * Class Project
      */
-    public final EntityPropertyMain<String> epClassification = new EntityPropertyMain<>("classification", TypeReferencesHelper.TYPE_REFERENCE_STRING);
-    public final EntityPropertyMain<String> epTermsOfUse = new EntityPropertyMain<>("termsOfUse", TypeReferencesHelper.TYPE_REFERENCE_STRING);
-    public final EntityPropertyMain<String> epPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeReferencesHelper.TYPE_REFERENCE_STRING);
-    public final EntityPropertyMain<TimeInstant> epProjectCreated = new EntityPropertyMain<>("created", TYPE_REFERENCE_TIMEINSTANT, false, true);
-    public final EntityPropertyMain<TimeInterval> epProjectRuntime = new EntityPropertyMain<>("runtime", TYPE_REFERENCE_TIMEINTERVAL, false, true);
-    public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeReferencesHelper.TYPE_REFERENCE_STRING);
+    public final EntityPropertyMain<String> epClassification = new EntityPropertyMain<>("classification", TypeSimplePrimitive.EDM_STRING);
+    public final EntityPropertyMain<String> epTermsOfUse = new EntityPropertyMain<>("termsOfUse", TypeSimplePrimitive.EDM_STRING);
+    public final EntityPropertyMain<String> epPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeSimplePrimitive.EDM_STRING);
+    public final EntityPropertyMain<TimeInstant> epProjectCreated = new EntityPropertyMain<>("created", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
+    public final EntityPropertyMain<TimeInterval> epProjectRuntime = new EntityPropertyMain<>("runtime", TypeSimpleCustom.STA_TIMEINTERVAL, false, true);
+    public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeSimplePrimitive.EDM_STRING);
 
     public final NavigationPropertyEntity npProjectDatastream = new NavigationPropertyEntity("Project");
     public final NavigationPropertyEntitySet npDatastreamsProject = new NavigationPropertyEntitySet("Datastreams", npProjectDatastream);
@@ -162,14 +162,18 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
 
     public final EntityType etProject = new EntityType("Project", "Projects");
 
-    
-    @DefaultValueBoolean(false)
-    public static final String TAG_ENABLE_PLUS = "plus.enable";
+    // Type IDs
+    public EntityPropertyMain<?> epIdGroup;
+    public EntityPropertyMain<?> epIdLicense;
+    public EntityPropertyMain<?> epIdParty;
+    public EntityPropertyMain<?> epIdProject;
+    public EntityPropertyMain<?> epIdRelation;
 
     private static final List<String> REQUIREMENTS_PLUS = Arrays.asList(
             "https://www.github.com/securedimensions/STA-PLUS");
 
     private CoreSettings settings;
+    private PluginPlusSettings modelSettings;
     private boolean enabled;
     private boolean fullyInitialised;
 
@@ -181,67 +185,106 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
     public void init(CoreSettings settings) {
         this.settings = settings;
         Settings pluginSettings = settings.getPluginSettings();
-        enabled = pluginSettings.getBoolean(TAG_ENABLE_PLUS, getClass());
-        if (enabled) {
-            settings.getPluginManager().registerPlugin(this);
+        enabled = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_PLUS, PluginPlusSettings.class);
+        if (!enabled) {
+            return;
         }
-        
-        final PluginCoreModel pluginCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
+        modelSettings = new PluginPlusSettings(settings);
+        settings.getPluginManager().registerPlugin(this);
 
+        final PluginCoreModel pluginCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
+        final ModelRegistry mr = settings.getModelRegistry();
         /**
          * Class License
          */
+        epIdLicense = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeLicense), "id");
         etLicense
-        .registerProperty(ModelRegistry.EP_ID, false)
-        .registerProperty(ModelRegistry.EP_SELFLINK, false)
-        .registerProperty(pluginCoreModel.epName, false)
-        .registerProperty(pluginCoreModel.epDescription, false)
-        .registerProperty(ModelRegistry.EP_PROPERTIES, false)
-        .registerProperty(epLicenseDefinition, true)
-        .registerProperty(epLicenseLogo, false)
-        .registerProperty(npDatastreamsLicense, false)
-        .registerProperty(npGroupsLicense, false);
+                .registerProperty(epIdLicense, false)
+                .registerProperty(ModelRegistry.EP_SELFLINK, false)
+                .registerProperty(pluginCoreModel.epName, false)
+                .registerProperty(pluginCoreModel.epDescription, false)
+                .registerProperty(ModelRegistry.EP_PROPERTIES, false)
+                .registerProperty(epLicenseDefinition, true)
+                .registerProperty(epLicenseLogo, false)
+                .registerProperty(npDatastreamsLicense, false)
+                .registerProperty(npGroupsLicense, false);
 
         npLicenseDatastream.setEntityType(etLicense);
         npDatastreamsLicense.setEntityType(pluginCoreModel.etDatastream);
         pluginCoreModel.etDatastream.registerProperty(npLicenseDatastream, false);
 
-        
-    	/**
-    	 * Class Party
-    	 */
+        /**
+         * Class Party
+         */
+        epIdParty = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeParty), "id");
         etParty
-        .registerProperty(ModelRegistry.EP_ID, false)
-        .registerProperty(ModelRegistry.EP_SELFLINK, false)
-        .registerProperty(pluginCoreModel.epName, false)
-        .registerProperty(pluginCoreModel.epDescription, false)
-        .registerProperty(ModelRegistry.EP_PROPERTIES, false)
-        .registerProperty(epAuthId, false)
-        .registerProperty(epNickName, false)
-        .registerProperty(epPartyRole, true)
-        .registerProperty(npDatastreamsParty, false)
-        .registerProperty(npMultiDatastreamsParty, false)
-        .addValidator((entity, entityPropertiesOnly) -> {
-        	
-        	if (entity.isSetProperty(epAuthId))
-        		throw new IllegalArgumentException("property authId cannot be submitted with the request");
-        	
-        	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
-        	String userId = (String)request.getAttributeMap().get("sub");
-        	if (userId != null)
-        	{
-        		try{
-        		    // This throws exception if userId is not in UUID format
-        			UUID.fromString(userId);
-        		    entity.setProperty(epAuthId, userId);
-        		} catch (IllegalArgumentException exception){
-        			entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
-        		}        			
-        	}
-        	else
-        		entity.setProperty(epAuthId, "00000000-0000-0000-0000-000000000000");
-        	
-        });
+                .registerProperty(epIdParty, false)
+                .registerProperty(ModelRegistry.EP_SELFLINK, false)
+                .registerProperty(pluginCoreModel.epName, false)
+                .registerProperty(pluginCoreModel.epDescription, false)
+                .registerProperty(ModelRegistry.EP_PROPERTIES, false)
+                .registerProperty(epAuthId, false)
+                .registerProperty(epNickName, false)
+                .registerProperty(epPartyRole, true)
+                .registerProperty(npDatastreamsParty, false)
+                .addValidator((entity, entityPropertiesOnly) -> {
+                	
+                	
+                	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+                	Principal principal = request.getUserPrincipal();
+                	
+                	String userId = principal.getName();
+                	if (userId != null)
+                	{
+                    	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
+                    	{
+                    		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
+                    		throw new IllegalArgumentException("Party property authId cannot be set");                    	}
+                		try
+                		{
+                		    // This throws exception if userId is not in UUID format
+                			UUID.fromString(userId);
+                		    entity.setProperty(epAuthId, userId);
+                		} catch (IllegalArgumentException exception)
+                		{
+                			entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
+                		}        			
+                	}
+                	else
+                	{
+                		// All anonymous users gets the Zero UUID
+                		entity.setProperty(epAuthId, "00000000-0000-0000-0000-000000000000");
+                	}
+                })
+                .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
+                	
+                	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+                	Principal principal = request.getUserPrincipal();
+ 
+                	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
+                	{
+                		// An admin can override the authId of any Party
+                		String authId = entity.getProperty(epAuthId);
+                		// This throws exception if POSTed authId is not in UUID format
+            			UUID.fromString(authId);
+            			return;
+                	}
+                	
+                	String userId = principal.getName();
+                	if (userId != null)
+                	{
+                    	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
+                    	{
+                    		// The authId is set by the plugin - it cannot be changed via a PATCH
+                    		throw new IllegalArgumentException("Party property authId cannot be changed");
+                    	}
+                	}
+                	else
+                	{
+                		// Any anonymous user gets Zero UUID
+                		entity.setProperty(epAuthId, "00000000-0000-0000-0000-000000000000");
+                	}
+                });
 
         npPartyDatastream.setEntityType(etParty);
         npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
@@ -251,63 +294,64 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
         /**
          * Class Project
          */
+        epIdProject = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeProject), "id");
         etProject
-        .registerProperty(ModelRegistry.EP_ID, false)
-        .registerProperty(ModelRegistry.EP_SELFLINK, false)
-        .registerProperty(pluginCoreModel.epName, false)
-        .registerProperty(pluginCoreModel.epDescription, false)
-        .registerProperty(ModelRegistry.EP_PROPERTIES, false)
-        .registerProperty(epClassification, false)
-        .registerProperty(epTermsOfUse, true)
-        .registerProperty(epPrivacyPolicy, false)
-        .registerProperty(epProjectCreated, true)
-        .registerProperty(epProjectRuntime, false)
-        .registerProperty(epUrl, false)
-        .registerProperty(npDatastreamsProject, false)
-        .registerProperty(npMultiDatastreamsProject, false);
+                .registerProperty(epIdProject, false)
+                .registerProperty(ModelRegistry.EP_SELFLINK, false)
+                .registerProperty(pluginCoreModel.epName, false)
+                .registerProperty(pluginCoreModel.epDescription, false)
+                .registerProperty(ModelRegistry.EP_PROPERTIES, false)
+                .registerProperty(epClassification, false)
+                .registerProperty(epTermsOfUse, true)
+                .registerProperty(epPrivacyPolicy, false)
+                .registerProperty(epProjectCreated, true)
+                .registerProperty(epProjectRuntime, false)
+                .registerProperty(epUrl, false)
+                .registerProperty(npDatastreamsProject, false);
 
         npProjectDatastream.setEntityType(etProject);
         npDatastreamsProject.setEntityType(pluginCoreModel.etDatastream);
-        
+
         pluginCoreModel.etDatastream.registerProperty(npProjectDatastream, false);
 
         /**
          * Class Group
          */
+        epIdGroup = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeGroup), "id");
         etGroup
-        .registerProperty(ModelRegistry.EP_ID, false)
-        .registerProperty(ModelRegistry.EP_SELFLINK, false)
-        .registerProperty(pluginCoreModel.epName, false)
-        .registerProperty(pluginCoreModel.epDescription, false)
-        .registerProperty(ModelRegistry.EP_PROPERTIES, false)
-        .registerProperty(epPurpose, false)
-        .registerProperty(epGroupCreated, true)
-        .registerProperty(epGroupRuntime, false)
-        .registerProperty(npObservations, false)
-        .registerProperty(npRelations, false)
-        .registerProperty(npLicenseGroup, false);
+                .registerProperty(epIdGroup, false)
+                .registerProperty(ModelRegistry.EP_SELFLINK, false)
+                .registerProperty(pluginCoreModel.epName, false)
+                .registerProperty(pluginCoreModel.epDescription, false)
+                .registerProperty(ModelRegistry.EP_PROPERTIES, false)
+                .registerProperty(epPurpose, false)
+                .registerProperty(epGroupCreated, true)
+                .registerProperty(epGroupRuntime, false)
+                .registerProperty(npObservations, false)
+                .registerProperty(npRelations, false)
+                .registerProperty(npLicenseGroup, false);
 
         npLicenseGroup.setEntityType(etLicense);
-    	npGroupsLicense.setEntityType(etGroup);
+        npGroupsLicense.setEntityType(etGroup);
 
         npObservationGroups.setEntityType(etGroup);
         pluginCoreModel.etObservation.registerProperty(npObservationGroups, false);
 
-
         /**
          * Class Relation
          */
+        epIdRelation = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeRelation), "id");
         etRelation
-        .registerProperty(ModelRegistry.EP_ID, false)
-        .registerProperty(ModelRegistry.EP_SELFLINK, false)
-        .registerProperty(pluginCoreModel.epName, false)
-        .registerProperty(pluginCoreModel.epDescription, false)
-        .registerProperty(ModelRegistry.EP_PROPERTIES, false)
-        .registerProperty(epRelationRole, false)
-        .registerProperty(epNamespace, false)
-        .registerProperty(npSubjectRelation, true)
-        .registerProperty(npObjectRelation, true)
-        .registerProperty(npRelationGroups, false);
+                .registerProperty(epIdRelation, false)
+                .registerProperty(ModelRegistry.EP_SELFLINK, false)
+                .registerProperty(pluginCoreModel.epName, false)
+                .registerProperty(pluginCoreModel.epDescription, false)
+                .registerProperty(ModelRegistry.EP_PROPERTIES, false)
+                .registerProperty(epRelationRole, false)
+                .registerProperty(epNamespace, false)
+                .registerProperty(npSubjectRelation, true)
+                .registerProperty(npObjectRelation, true)
+                .registerProperty(npRelationGroups, false);
 
         npSubjectRelation.setEntityType(pluginCoreModel.etObservation);
         npSubjectsObservation.setEntityType(etRelation);
@@ -321,36 +365,34 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
         pluginCoreModel.etObservation.registerProperty(npSubjectsObservation, false);
         pluginCoreModel.etObservation.registerProperty(npObjectsObservation, false);
 
-        
         final PluginMultiDatastream pluginMultiDatastream = settings.getPluginManager().getPlugin(PluginMultiDatastream.class);
         if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled()) {
-        	
-        	/**
-        	 * Class License
-        	 */
-        	npLicenseMultiDatastream.setEntityType(etLicense);
-        	npMultiDatastreamsLicense.setEntityType(pluginMultiDatastream.etMultiDatastream);
-        	pluginMultiDatastream.etMultiDatastream.registerProperty(npLicenseMultiDatastream, false);
-        	
-        	etLicense.registerProperty(npMultiDatastreamsLicense, false);
-        	
-        	/**
-        	 * Class Party
-        	 */
+            /**
+             * Class License
+             */
+            npLicenseMultiDatastream.setEntityType(etLicense);
+            npMultiDatastreamsLicense.setEntityType(pluginMultiDatastream.etMultiDatastream);
+            pluginMultiDatastream.etMultiDatastream.registerProperty(npLicenseMultiDatastream, false);
+
+            etLicense.registerProperty(npMultiDatastreamsLicense, false);
+
+            /**
+             * Class Party
+             */
             npPartyMultiDatastream.setEntityType(etParty);
             npMultiDatastreamsParty.setEntityType(pluginMultiDatastream.etMultiDatastream);
             pluginMultiDatastream.etMultiDatastream.registerProperty(npPartyMultiDatastream, false);
-        	
+
             etParty.registerProperty(npMultiDatastreamsParty, false);
-            
-        	/**
-        	 * Class Project
-        	 */
+
+            /**
+             * Class Project
+             */
             npProjectMultiDatastream.setEntityType(etProject);
             npMultiDatastreamsProject.setEntityType(pluginMultiDatastream.etMultiDatastream);
-        	pluginMultiDatastream.etMultiDatastream.registerProperty(npProjectMultiDatastream, false);
-        	
-        	etProject.registerProperty(npMultiDatastreamsProject, false);
+            pluginMultiDatastream.etMultiDatastream.registerProperty(npProjectMultiDatastream, false);
+
+            etProject.registerProperty(npMultiDatastreamsProject, false);
         }
 
     }
@@ -394,45 +436,67 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
         if (pluginCoreModel == null || !pluginCoreModel.isFullyInitialised()) {
             return false;
         }
-        
+
         if (pm instanceof PostgresPersistenceManager) {
             PostgresPersistenceManager ppm = (PostgresPersistenceManager) pm;
             TableCollection tableCollection = ppm.getTableCollection();
-            DataType idType = tableCollection.getIdType();
-            
+            final DataType dataTypeLicense = ppm.getDataTypeFor(modelSettings.idTypeLicense);
+            final DataType dataTypeGroup = ppm.getDataTypeFor(modelSettings.idTypeGroup);
+            final DataType dataTypeRelation = ppm.getDataTypeFor(modelSettings.idTypeRelation);
+            final DataType dataTypeParty = ppm.getDataTypeFor(modelSettings.idTypeParty);
+            final DataType dataTypeProject = ppm.getDataTypeFor(modelSettings.idTypeProject);
+            final DataType dataTypeObservation = tableCollection.getTableForType(pluginCoreModel.etObservation).getId().getDataType();
             /**
              * Class License
              */
-            tableCollection.registerTable(etLicense, new TableImpLicense(idType, this, pluginCoreModel));
+            tableCollection.registerTable(etLicense, new TableImpLicense(dataTypeLicense, this, pluginCoreModel));
 
-			/**
-			 * Class Group
-			 */
-            tableCollection.registerTable(etGroup, new TableImpGroups(idType, this, pluginCoreModel));
-            tableCollection.registerTable(new TableImpGroupsObservations<>(idType));
-            tableCollection.registerTable(new TableImpGroupsRelations<>(idType));
-            
+            /**
+             * Class Group
+             */
+            tableCollection.registerTable(etGroup, new TableImpGroups(dataTypeGroup, this, pluginCoreModel));
+            tableCollection.registerTable(new TableImpGroupsObservations(dataTypeGroup, dataTypeObservation));
+            tableCollection.registerTable(new TableImpGroupsRelations(dataTypeGroup, dataTypeRelation));
+
             /**
              * Class Relation
              */
-            tableCollection.registerTable(etRelation, new TableImpRelations(idType, this, pluginCoreModel));
-            
+            tableCollection.registerTable(etRelation, new TableImpRelations(dataTypeRelation, dataTypeObservation, dataTypeGroup, this, pluginCoreModel));
+
             /**
              * Class Party
              */
-            tableCollection.registerTable(etParty, new TableImpParty(idType, this, pluginCoreModel));
-            
+            tableCollection.registerTable(etParty, new TableImpParty(dataTypeParty, this, pluginCoreModel));
+
             /**
              * Class Project
              */
-            tableCollection.registerTable(etProject, new TableImpProject(idType, this, pluginCoreModel));
-            
-            
-            final TableImpObservations tableObservations = (TableImpObservations) tableCollection.getTableForClass(TableImpObservations.class);
-
+            tableCollection.registerTable(etProject, new TableImpProject(dataTypeProject, this, pluginCoreModel));
         }
         fullyInitialised = true;
         return true;
+    }
+
+    public Map<String, Object> createLiqibaseParams(PostgresPersistenceManager ppm, Map<String, Object> target) {
+        if (target == null) {
+            target = new LinkedHashMap<>();
+        }
+        PluginCoreModel pCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
+        pCoreModel.createLiqibaseParams(ppm, target);
+        PluginMultiDatastream pMultiDs = settings.getPluginManager().getPlugin(PluginMultiDatastream.class);
+        if (pMultiDs == null) {
+            // Create placeholder variables, otherwise Liquibase complains.
+            ppm.generateLiquibaseVariables(target, "MultiDatastream", modelSettings.idTypeDefault);
+        } else {
+            pMultiDs.createLiqibaseParams(ppm, target);
+        }
+        ppm.generateLiquibaseVariables(target, "Group", modelSettings.idTypeGroup);
+        ppm.generateLiquibaseVariables(target, "License", modelSettings.idTypeLicense);
+        ppm.generateLiquibaseVariables(target, "Party", modelSettings.idTypeParty);
+        ppm.generateLiquibaseVariables(target, "Project", modelSettings.idTypeProject);
+        ppm.generateLiquibaseVariables(target, "Relation", modelSettings.idTypeRelation);
+
+        return target;
     }
 
     @Override
@@ -440,8 +504,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
         PersistenceManager pm = PersistenceManagerFactory.getInstance(settings).create();
         if (pm instanceof PostgresPersistenceManager) {
             PostgresPersistenceManager ppm = (PostgresPersistenceManager) pm;
-            String fileName = LIQUIBASE_CHANGELOG_FILENAME + ppm.getIdManager().getIdClass().getSimpleName() + ".xml";
-            return ppm.checkForUpgrades(fileName);
+            return ppm.checkForUpgrades(LIQUIBASE_CHANGELOG_FILENAME, createLiqibaseParams(ppm, null));
         }
         return "Unknown persistence manager class";
     }
@@ -451,8 +514,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, ConfigDefaul
         PersistenceManager pm = PersistenceManagerFactory.getInstance(settings).create();
         if (pm instanceof PostgresPersistenceManager) {
             PostgresPersistenceManager ppm = (PostgresPersistenceManager) pm;
-            String fileName = LIQUIBASE_CHANGELOG_FILENAME + ppm.getIdManager().getIdClass().getSimpleName() + ".xml";
-            return ppm.doUpgrades(fileName, out);
+            return ppm.doUpgrades(LIQUIBASE_CHANGELOG_FILENAME, createLiqibaseParams(ppm, null), out);
         }
         out.append("Unknown persistence manager class");
         return false;

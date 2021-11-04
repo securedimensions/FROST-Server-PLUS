@@ -19,10 +19,6 @@ package de.securedimensions.frostserver.plugin.plus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.IdManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
@@ -36,12 +32,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyField
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.NFP;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -57,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * @author am
  * @author scf
  */
-public class TableImpGroups<J extends Comparable> extends StaTableAbstract<J, TableImpGroups<J>> {
+public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TableImpGroups.class.getName());
 
@@ -101,7 +92,7 @@ public class TableImpGroups<J extends Comparable> extends StaTableAbstract<J, Ta
     /**
      * The column <code>public.GROUPS.EP_ID</code>.
      */
-    public final TableField<Record, J> colId = createField(DSL.name("ID"), getIdType(), this);
+    public final TableField<Record, ?> colId = createField(DSL.name("ID"), getIdType(), this);
 
     private final PluginPLUS pluginPLUS;
     private final PluginCoreModel pluginCoreModel;
@@ -115,13 +106,13 @@ public class TableImpGroups<J extends Comparable> extends StaTableAbstract<J, Ta
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpGroups(DataType<J> idType, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel) {
+    public TableImpGroups(DataType<?> idType, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel) {
         super(idType, DSL.name("GROUPS"), null);
         this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
     }
 
-    private TableImpGroups(Name alias, TableImpGroups<J> aliased, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel) {
+    private TableImpGroups(Name alias, TableImpGroups aliased, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel) {
         super(aliased.getIdType(), alias, aliased);
         this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
@@ -129,16 +120,15 @@ public class TableImpGroups<J extends Comparable> extends StaTableAbstract<J, Ta
 
     @Override
     public void initRelations() {
-        final TableCollection<J> tables = getTables();
+        final TableCollection tables = getTables();
 
         initObservationGroups(tables);
         initObservationRelations(tables);
     }
 
-    private void initObservationGroups(TableCollection<J> tables)
-    {
-        final TableImpGroupsObservations<J> tableGroupObservations = tables.getTableForClass(TableImpGroupsObservations.class);
-        TableImpObservations<J> tableObservations = tables.getTableForClass(TableImpObservations.class);
+    private void initObservationGroups(TableCollection tables) {
+        final TableImpGroupsObservations tableGroupObservations = tables.getTableForClass(TableImpGroupsObservations.class);
+        TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
 
         registerRelation(new RelationManyToMany<>(pluginPLUS.npObservations, this, tableGroupObservations, tableObservations)
                 .setSourceFieldAcc(TableImpGroups::getId)
@@ -155,10 +145,9 @@ public class TableImpGroups<J extends Comparable> extends StaTableAbstract<J, Ta
 
     }
 
-    private void initObservationRelations(TableCollection<J> tables)
-    {
-        final TableImpGroupsRelations<J> tableGroupRelations = tables.getTableForClass(TableImpGroupsRelations.class);
-        TableImpRelations<J> tableRelations = tables.getTableForClass(TableImpRelations.class);
+    private void initObservationRelations(TableCollection tables) {
+        final TableImpGroupsRelations tableGroupRelations = tables.getTableForClass(TableImpGroupsRelations.class);
+        TableImpRelations tableRelations = tables.getTableForClass(TableImpRelations.class);
 
         registerRelation(new RelationManyToMany<>(pluginPLUS.npRelations, this, tableGroupRelations, tableRelations)
                 .setSourceFieldAcc(TableImpGroups::getId)
@@ -176,10 +165,9 @@ public class TableImpGroups<J extends Comparable> extends StaTableAbstract<J, Ta
     }
 
     @Override
-    public void initProperties(final EntityFactories<J> entityFactories) {
-        final TableCollection<J> tables = getTables();
-        final IdManager idManager = entityFactories.getIdManager();
-        pfReg.addEntryId(idManager, TableImpGroups::getId);
+    public void initProperties(final EntityFactories entityFactories) {
+        final TableCollection tables = getTables();
+        pfReg.addEntryId(entityFactories, TableImpGroups::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
@@ -193,40 +181,38 @@ public class TableImpGroups<J extends Comparable> extends StaTableAbstract<J, Ta
                 new NFP<>(KEY_TIME_INTERVAL_END, table -> table.colRuntimeTimeEnd));
 
         // Register with Observations
-        pfReg.addEntry(pluginPLUS.npObservations, TableImpGroups::getId, idManager);
+        pfReg.addEntry(pluginPLUS.npObservations, TableImpGroups::getId, entityFactories);
 
-        TableImpObservations<J> tableObservations = tables.getTableForClass(TableImpObservations.class);
+        TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
         tableObservations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npObservationGroups, TableImpObservations::getId, idManager);
+                .addEntry(pluginPLUS.npObservationGroups, TableImpObservations::getId, entityFactories);
 
-        
         // Register with Relations
-        pfReg.addEntry(pluginPLUS.npRelations, TableImpGroups::getId, idManager);
+        pfReg.addEntry(pluginPLUS.npRelations, TableImpGroups::getId, entityFactories);
 
-        TableImpRelations<J> tableRelations = tables.getTableForClass(TableImpRelations.class);
+        TableImpRelations tableRelations = tables.getTableForClass(TableImpRelations.class);
         tableRelations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId, idManager);
+                .addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId, entityFactories);
 
-        
     }
-    
+
     @Override
     public EntityType getEntityType() {
         return pluginPLUS.etGroup;
     }
 
     @Override
-    public TableField<Record, J> getId() {
+    public TableField<Record, ?> getId() {
         return colId;
     }
 
     @Override
-    public TableImpGroups<J> as(Name alias) {
-        return new TableImpGroups<>(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    public TableImpGroups as(Name alias) {
+        return new TableImpGroups(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
     }
 
     @Override
-    public TableImpGroups<J> getThis() {
+    public TableImpGroups getThis() {
         return this;
     }
 
