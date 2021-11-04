@@ -19,17 +19,33 @@ package de.securedimensions.frostserver.plugin.plus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
+import de.fraunhofer.iosb.ilt.frostserver.parser.query.ExpressionParser;
+import de.fraunhofer.iosb.ilt.frostserver.parser.query.Node;
+import de.fraunhofer.iosb.ilt.frostserver.parser.query.QueryParser;
+import de.fraunhofer.iosb.ilt.frostserver.path.ResourcePath;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
+import de.fraunhofer.iosb.ilt.frostserver.query.Query;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
+
+import java.util.Map;
 
 import org.jooq.DataType;
+import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.TableField;
@@ -39,7 +55,7 @@ import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import de.fraunhofer.iosb.ilt.frostserver.query.expression.Expression;
 /**
  *
  * @author am
@@ -162,8 +178,62 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         // We register a navigationProperty on the MultiDatastreams table.
         pfReg.addEntry(pluginPLUS.npMultiDatastreamsParty, TableImpParty::getId, entityFactories);
 
+        TableImpParty tableParty = tables.getTableForClass(TableImpParty.class);
+        
+        tableParty.registerHookPreInsert(-10.0, new HookPreInsert() {
+
+			@Override
+			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
+					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+				
+				String authId = entity.getProperty(pluginPLUS.epAuthId);
+				// Construct the query to find exactly one Party element
+				// The top=0 should not be necessary as there should be only one Party with the given authId, but...
+				Query query = QueryParser.parseQuery("$top=0&$filter=" + pluginPLUS.epAuthId.name + " eq '" + authId + "'", pm.getCoreSettings(), entity.getPath());
+				// Before executing the query, it need to be validated
+				query.validate();
+				
+				Entity party = (Entity)pm.get(entity.getPath(), query);
+				if (party != null)
+				{
+					// Setting the id for the POSTed Party to the id of the existing Party
+					entity.setId(party.getId());
+					// No need to update properties
+					entity.setEntityPropertiesSet(false, false);
+					// No need to insert the entity as it already exists. Just return the Id of the existing Party
+					return false;
+				}
+				// The POSTED Party does not exist so we need to execute the Insert
+				return true;
+			}
+		});
+        
+        
+        tableParty.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+
+			@Override
+			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
+					throws NoSuchEntityException, IncompleteEntityException {
+				
+				Entity party = pm.get(entity.getEntityType(), entity.getId());
+				if (!party.getProperty(pluginPLUS.epAuthId).equalsIgnoreCase(entity.getProperty(pluginPLUS.epAuthId)))
+				{
+					throw new IllegalArgumentException("Cannot update existing Party of another user");
+				}
+			} 
+		});
+        
+        tableParty.registerHookPreDelete(-10.0, new HookPreDelete() {
+
+			@Override
+			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
+				throw new IllegalArgumentException("Deleting Party is not allowed");
+			} 
+		});
+        
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int partyDatastreamsIdIdx = tableDatastreams.registerField(DSL.name("PARTY_ID"), getIdType());
+        
         tableDatastreams.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npPartyDatastream, table -> (TableField<Record, ?>) table.field(partyDatastreamsIdIdx), entityFactories);
 
