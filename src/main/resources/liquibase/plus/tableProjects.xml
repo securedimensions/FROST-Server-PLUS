@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <!--
+     Copyright (C) 2021 Secure Dimensions GmbH, D-81377
+     Munich, Germany.
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU Lesser General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU Lesser General Public License for more details.
+
+     You should have received a copy of the GNU Lesser General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+    <changeSet author="am" id="2021-05-11-PLUS-PROJECTS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <or>
+                    <tableExists tableName="PROJECTS" />
+                </or>
+            </not>
+        </preConditions>
+
+        <createTable tableName="PROJECTS">
+            <column name="NAME" type="TEXT"/>
+            <column name="DESCRIPTION" type="TEXT"/>
+            <column name="PROPERTIES" type="JSONB"/>
+            <column name="CLASSIFICATION" type="TEXT"/>
+            <column name="TERMSOFUSE" type="TEXT"/>
+            <column name="PRIVACYPOLICY" type="TEXT"/>
+            <column name="URL" type="TEXT"/>
+            <column name="CREATED" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="RUNTIME_START" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="RUNTIME_END" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="scf" id="2021-05-11-PLUS-PROJECTS-2" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+        <preConditions onFail="MARK_RAN">
+            <changeLogPropertyDefined property="id-Project" value="LONG" />
+            <not>
+                <columnExists columnName="ID" tableName="PROJECTS" />
+            </not>
+        </preConditions>
+        <addColumn tableName="PROJECTS">
+            <column name="ID" type="${idTypeLong}" autoIncrement="true" position="1">
+                <constraints primaryKey="true" primaryKeyName="PROJECTS_PKEY" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="scf" id="2021-05-11-PLUS-PROJECTS-3" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+        <preConditions onFail="MARK_RAN">
+            <or>
+                <changeLogPropertyDefined property="id-Project" value="STRING" />
+                <changeLogPropertyDefined property="id-Project" value="UUID" />
+            </or>
+            <not>
+                <columnExists columnName="ID" tableName="PROJECTS" />
+            </not>
+        </preConditions>
+        <addColumn tableName="PROJECTS">
+            <column name="ID" type="${idType-Project}" defaultValueComputed="${defaultValueComputed-Project}" position="1">
+                <constraints primaryKey="true" primaryKeyName="PROJECTS_PKEY"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
