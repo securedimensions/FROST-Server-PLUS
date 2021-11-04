@@ -41,14 +41,18 @@ import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.settings.Settings;
 import de.fraunhofer.iosb.ilt.frostserver.util.LiquibaseUser;
+import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
 import java.io.IOException;
 import java.io.Writer;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
 import org.jooq.DataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,7 +220,65 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epAuthId, false)
                 .registerProperty(epNickName, false)
                 .registerProperty(epPartyRole, true)
-                .registerProperty(npDatastreamsParty, false);
+                .registerProperty(npDatastreamsParty, false)
+                .addValidator((entity, entityPropertiesOnly) -> {
+                	
+                	
+                	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+                	Principal principal = request.getUserPrincipal();
+                	
+                	String userId = principal.getName();
+                	if (userId != null)
+                	{
+                    	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
+                    	{
+                    		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
+                    		throw new IllegalArgumentException("Party property authId cannot be set");                    	}
+                		try
+                		{
+                		    // This throws exception if userId is not in UUID format
+                			UUID.fromString(userId);
+                		    entity.setProperty(epAuthId, userId);
+                		} catch (IllegalArgumentException exception)
+                		{
+                			entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
+                		}        			
+                	}
+                	else
+                	{
+                		// All anonymous users gets the Zero UUID
+                		entity.setProperty(epAuthId, "00000000-0000-0000-0000-000000000000");
+                	}
+                })
+                .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
+                	
+                	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+                	Principal principal = request.getUserPrincipal();
+ 
+                	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
+                	{
+                		// An admin can override the authId of any Party
+                		String authId = entity.getProperty(epAuthId);
+                		// This throws exception if POSTed authId is not in UUID format
+            			UUID.fromString(authId);
+            			return;
+                	}
+                	
+                	String userId = principal.getName();
+                	if (userId != null)
+                	{
+                    	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
+                    	{
+                    		// The authId is set by the plugin - it cannot be changed via a PATCH
+                    		throw new IllegalArgumentException("Party property authId cannot be changed");
+                    	}
+                	}
+                	else
+                	{
+                		// Any anonymous user gets Zero UUID
+                		entity.setProperty(epAuthId, "00000000-0000-0000-0000-000000000000");
+                	}
+                });
 
         npPartyDatastream.setEntityType(etParty);
         npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
