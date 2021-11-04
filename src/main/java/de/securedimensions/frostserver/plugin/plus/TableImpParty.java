@@ -19,19 +19,14 @@ package de.securedimensions.frostserver.plugin.plus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.IdManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpLocations;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 
 import org.jooq.DataType;
@@ -50,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * @author am
  * @author scf
  */
-public class TableImpParty<J extends Comparable> extends StaTableAbstract<J, TableImpParty<J>> {
+public class TableImpParty extends StaTableAbstract<TableImpParty> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TableImpParty.class.getName());
 
@@ -89,7 +84,7 @@ public class TableImpParty<J extends Comparable> extends StaTableAbstract<J, Tab
     /**
      * The column <code>public.PARTIES.EP_ID</code>.
      */
-    public final TableField<Record, J> colId = createField(DSL.name("ID"), getIdType(), this);
+    public final TableField<Record, ?> colId = createField(DSL.name("ID"), getIdType(), this);
 
     private final PluginPLUS pluginPLUS;
     private final PluginCoreModel pluginCoreModel;
@@ -103,13 +98,13 @@ public class TableImpParty<J extends Comparable> extends StaTableAbstract<J, Tab
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpParty(DataType<J> idType, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel) {
+    public TableImpParty(DataType<?> idType, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel) {
         super(idType, DSL.name("PARTIES"), null);
         this.pluginPLUS = pluginParty;
         this.pluginCoreModel = pluginCoreModel;
     }
 
-    private TableImpParty(Name alias, TableImpParty<J> aliased, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel) {
+    private TableImpParty(Name alias, TableImpParty aliased, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel) {
         super(aliased.getIdType(), alias, aliased);
         this.pluginPLUS = pluginParty;
         this.pluginCoreModel = pluginCoreModel;
@@ -117,45 +112,43 @@ public class TableImpParty<J extends Comparable> extends StaTableAbstract<J, Tab
 
     @Override
     public void initRelations() {
-        final TableCollection<J> tables = getTables();
-        
-        TableImpDatastreams<J> tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
+        final TableCollection tables = getTables();
+
+        TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int partyIdIdx = tableDatastreams.indexOf("PARTY_ID");
 
         // We add relation to the Datstreams table
         registerRelation(new RelationOneToMany<>(pluginPLUS.npDatastreamsParty, this, tableDatastreams)
                 .setSourceFieldAccessor(TableImpParty::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(partyIdIdx))
+                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(partyIdIdx))
         );
 
         // We add the relation to us from the Datastreams table.
         tableDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyDatastream, tableDatastreams, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(partyIdIdx))
+                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(partyIdIdx))
                 .setTargetFieldAccessor(TableImpParty::getId)
         );
 
-        TableImpMultiDatastreams<J> tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-        if (tableMultiDatastreams != null)
-        {
-	        final int partyMDIdIdx = tableMultiDatastreams.indexOf("PARTY_ID");
-	        registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsParty, this, tableMultiDatastreams)
-	                .setSourceFieldAccessor(TableImpParty::getId)
-	                .setTargetFieldAccessor(table -> (TableField<Record, J>) table.field(partyMDIdIdx))
-	        );
+        TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
+        if (tableMultiDatastreams != null) {
+            final int partyMDIdIdx = tableMultiDatastreams.indexOf("PARTY_ID");
+            registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsParty, this, tableMultiDatastreams)
+                    .setSourceFieldAccessor(TableImpParty::getId)
+                    .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(partyMDIdIdx))
+            );
 
-	        // We add the relation to us to the MultiDatastreams table.
-	        tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyMultiDatastream, tableMultiDatastreams, this)
-	                .setSourceFieldAccessor(table -> (TableField<Record, J>) table.field(partyMDIdIdx))
-	                .setTargetFieldAccessor(TableImpParty::getId)
-	        );
+            // We add the relation to us to the MultiDatastreams table.
+            tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyMultiDatastream, tableMultiDatastreams, this)
+                    .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(partyMDIdIdx))
+                    .setTargetFieldAccessor(TableImpParty::getId)
+            );
         }
     }
-    
+
     @Override
-    public void initProperties(final EntityFactories<J> entityFactories) {
-        final TableCollection<J> tables = getTables();
-        final IdManager idManager = entityFactories.getIdManager();
-        pfReg.addEntryId(idManager, TableImpParty::getId);
+    public void initProperties(final EntityFactories entityFactories) {
+        final TableCollection tables = getTables();
+        pfReg.addEntryId(entityFactories, TableImpParty::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
@@ -164,43 +157,42 @@ public class TableImpParty<J extends Comparable> extends StaTableAbstract<J, Tab
         pfReg.addEntrySimple(pluginPLUS.epPartyRole, table -> table.colRole);
 
         // We register a navigationProperty on the Datastreams table.
-        pfReg.addEntry(pluginPLUS.npDatastreamsParty, TableImpParty::getId, idManager);
-     
-        // We register a navigationProperty on the MultiDatastreams table.
-        pfReg.addEntry(pluginPLUS.npMultiDatastreamsParty, TableImpParty::getId, idManager);
+        pfReg.addEntry(pluginPLUS.npDatastreamsParty, TableImpParty::getId, entityFactories);
 
-        TableImpDatastreams<J> tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
+        // We register a navigationProperty on the MultiDatastreams table.
+        pfReg.addEntry(pluginPLUS.npMultiDatastreamsParty, TableImpParty::getId, entityFactories);
+
+        TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int partyDatastreamsIdIdx = tableDatastreams.registerField(DSL.name("PARTY_ID"), getIdType());
         tableDatastreams.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npPartyDatastream, table -> (TableField<Record, J>) table.field(partyDatastreamsIdIdx), idManager);
+                .addEntry(pluginPLUS.npPartyDatastream, table -> (TableField<Record, ?>) table.field(partyDatastreamsIdIdx), entityFactories);
 
-        TableImpMultiDatastreams<J> tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-        if (tableMultiDatastreams != null)
-        {
-        	final int partyMDIdIdx = tableMultiDatastreams.registerField(DSL.name("PARTY_ID"), getIdType());
+        TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
+        if (tableMultiDatastreams != null) {
+            final int partyMDIdIdx = tableMultiDatastreams.registerField(DSL.name("PARTY_ID"), getIdType());
             tableMultiDatastreams.getPropertyFieldRegistry()
-        		.addEntry(pluginPLUS.npPartyMultiDatastream, table -> (TableField<Record, J>) ((TableLike<Record>) table).field(partyMDIdIdx), idManager);
+                    .addEntry(pluginPLUS.npPartyMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(partyMDIdIdx), entityFactories);
         }
-        
+
     }
-    
+
     @Override
     public EntityType getEntityType() {
         return pluginPLUS.etParty;
     }
 
     @Override
-    public TableField<Record, J> getId() {
+    public TableField<Record, ?> getId() {
         return colId;
     }
 
     @Override
-    public TableImpParty<J> as(Name alias) {
-        return new TableImpParty<>(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    public TableImpParty as(Name alias) {
+        return new TableImpParty(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
     }
 
     @Override
-    public TableImpParty<J> getThis() {
+    public TableImpParty getThis() {
         return this;
     }
 
