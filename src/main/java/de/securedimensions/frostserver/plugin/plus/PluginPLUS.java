@@ -239,8 +239,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
                     	{
                     		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
-                    		throw new IllegalArgumentException("Party property authId cannot be set");                    	}
-                		try
+                    		throw new IllegalArgumentException("Party property authId cannot be set");                    	
+                		}
+                    	try
                 		{
                 		    // This throws exception if userId is not in UUID format
                 			UUID.fromString(userId);
@@ -278,6 +279,15 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     		// The authId is set by the plugin - it cannot be changed via a PATCH
                     		throw new IllegalArgumentException("Party property authId cannot be changed");
                     	}
+                    	try
+                		{
+                		    // This throws exception if userId is not in UUID format
+                			UUID.fromString(userId);
+                		    entity.setProperty(epAuthId, userId);
+                		} catch (IllegalArgumentException exception)
+                		{
+                			entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
+                		}
                 	}
                 	else
                 	{
