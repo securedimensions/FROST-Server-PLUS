@@ -1,9 +1,12 @@
 package de.securedimensions.frostserver.plugin.plus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
+import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
@@ -17,6 +20,7 @@ import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +30,21 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TableImpGroups.class.getName());
 
     private static final long serialVersionUID = 1626971259;
+
+    /**
+     * The column <code>public.GROUPS.EP_DESCRIPTION</code>.
+     */
+    public final TableField<Record, String> colDescription = createField(DSL.name("DESCRIPTION"), SQLDataType.CLOB, this);
+
+    /**
+     * The column <code>public.GROUPS.EP_NAME</code>.
+     */
+    public final TableField<Record, String> colName = createField(DSL.name("NAME"), SQLDataType.CLOB.defaultValue(DSL.field("'no name'::text", SQLDataType.CLOB)), this);
+
+    /**
+     * The column <code>public.GROUPS.EP_PROPERTIES</code>.
+     */
+    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
 
     /**
      * The column <code>public.RELATIONS.ROLE</code>.
@@ -121,6 +140,10 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
         final TableCollection tables = getTables();
         final TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
         pfReg.addEntryId(entityFactories, TableImpRelations::getId);
+        pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
+        pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
+        pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
+
         pfReg.addEntryString(pluginPLUS.epRelationRole, table -> table.colRole);
         pfReg.addEntryString(pluginPLUS.epNamespace, table -> table.colNamespace);
 
