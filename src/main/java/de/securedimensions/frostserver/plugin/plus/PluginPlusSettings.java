@@ -37,8 +37,6 @@ public final class PluginPlusSettings implements ConfigDefaults {
     @DefaultValue("")
     public static final String TAG_ID_TYPE_LICENSE = "plus.idType.license";
     @DefaultValue("")
-    public static final String TAG_ID_TYPE_PARTY = "plus.idType.party";
-    @DefaultValue("")
     public static final String TAG_ID_TYPE_PROJECT = "plus.idType.project";
     @DefaultValue("")
     public static final String TAG_ID_TYPE_RELATION = "plus.idType.relation";
@@ -46,7 +44,7 @@ public final class PluginPlusSettings implements ConfigDefaults {
     public final String idTypeDefault;
     public final String idTypeGroup;
     public final String idTypeLicense;
-    public final String idTypeParty;
+    public final String idTypeParty = "UUID"; /* fixed */
     public final String idTypeProject;
     public final String idTypeRelation;
 
@@ -55,7 +53,6 @@ public final class PluginPlusSettings implements ConfigDefaults {
         idTypeDefault = pluginSettings.get(CoreModelSettings.TAG_ID_TYPE_DEFAULT, PluginPlusSettings.class).toUpperCase();
         idTypeGroup = pluginSettings.get(TAG_ID_TYPE_GROUP, idTypeDefault).toUpperCase();
         idTypeLicense = pluginSettings.get(TAG_ID_TYPE_LICENSE, idTypeDefault).toUpperCase();
-        idTypeParty = pluginSettings.get(TAG_ID_TYPE_PARTY, idTypeDefault).toUpperCase();
         idTypeProject = pluginSettings.get(TAG_ID_TYPE_PROJECT, idTypeDefault).toUpperCase();
         idTypeRelation = pluginSettings.get(TAG_ID_TYPE_RELATION, idTypeDefault).toUpperCase();
     }
