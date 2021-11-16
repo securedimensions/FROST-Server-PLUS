@@ -40,6 +40,9 @@
             <column name="LICENSE_ID" type="${idType-License}">
                 <constraints nullable="true"/>
             </column>
+            <column name="PARTY_ID" type="${idType-Party}">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
     </changeSet>
 

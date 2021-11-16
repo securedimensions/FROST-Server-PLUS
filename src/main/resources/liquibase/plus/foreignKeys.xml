@@ -26,6 +26,13 @@
         </preConditions>
 
         <addForeignKeyConstraint
+            constraintName="THINGS_PARTY_ID_FKEY"
+            baseTableName="THINGS" baseColumnNames="PARTY_ID"
+            referencedTableName="PARTIES" referencedColumnNames="ID"
+            deferrable="false" initiallyDeferred="false"
+            onDelete="CASCADE" onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
             constraintName="DATASTREAMS_LICENSE_ID_FKEY"
             baseTableName="DATASTREAMS" baseColumnNames="LICENSE_ID"
             referencedTableName="LICENSES" referencedColumnNames="ID"
@@ -50,6 +57,13 @@
             constraintName="GROUPS_LICENSE_ID_FKEY"
             baseTableName="GROUPS" baseColumnNames="LICENSE_ID"
             referencedTableName="LICENSES" referencedColumnNames="ID"
+            deferrable="false" initiallyDeferred="false"
+            onDelete="CASCADE" onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+            constraintName="GROUPS_PARTY_ID_FKEY"
+            baseTableName="GROUPS" baseColumnNames="PARTY_ID"
+            referencedTableName="PARTIES" referencedColumnNames="ID"
             deferrable="false" initiallyDeferred="false"
             onDelete="CASCADE" onUpdate="CASCADE"/>
 
