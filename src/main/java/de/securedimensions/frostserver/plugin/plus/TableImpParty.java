@@ -20,6 +20,8 @@ package de.securedimensions.frostserver.plugin.plus;
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
+import de.fraunhofer.iosb.ilt.frostserver.parser.path.PathParser;
 import de.fraunhofer.iosb.ilt.frostserver.parser.query.ExpressionParser;
 import de.fraunhofer.iosb.ilt.frostserver.parser.query.Node;
 import de.fraunhofer.iosb.ilt.frostserver.parser.query.QueryParser;
@@ -37,12 +39,15 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbst
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.query.Query;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 
+import java.security.Principal;
 import java.util.Map;
+import java.util.UUID;
 
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -56,6 +61,7 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.fraunhofer.iosb.ilt.frostserver.query.expression.Expression;
+import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 /**
  *
  * @author am
@@ -76,11 +82,6 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
      * The column <code>public.PARTIES.EP_NAME</code>.
      */
     public final TableField<Record, String> colName = createField(DSL.name("NAME"), SQLDataType.CLOB.defaultValue(DSL.field("'no name'::text", SQLDataType.CLOB)), this);
-
-    /**
-     * The column <code>public.PARTIES.EP_PROPERTIES</code>.
-     */
-    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
 
     /**
      * The column <code>public.PARTIES.EP_AUTHID</code>.
@@ -131,17 +132,42 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         final TableCollection tables = getTables();
 
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
-        final int partyIdIdx = tableDatastreams.indexOf("PARTY_ID");
+        TableImpGroups tableGroups = tables.getTableForClass(TableImpGroups.class);
+        TableImpThings tableThings = tables.getTableForClass(TableImpThings.class);
+
+        // We add relation to the Things table
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npThingsParty, this, tableThings)
+                .setSourceFieldAccessor(TableImpParty::getId)
+                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(tableThings.indexOf("PARTY_ID")))
+        );
+
+        // We add the relation to us from the Things table.
+        tableThings.registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyThing, tableThings, this)
+                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(tableThings.indexOf("PARTY_ID")))
+                .setTargetFieldAccessor(TableImpParty::getId)
+        );
+
+        // We add relation to the Groups table
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npGroupsParty, this, tableGroups)
+                .setSourceFieldAccessor(TableImpParty::getId)
+                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(tableGroups.indexOf("PARTY_ID")))
+        );
+
+        // We add the relation to us from the Things table.
+        tableGroups.registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyGroup, tableGroups, this)
+                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(tableGroups.indexOf("PARTY_ID")))
+                .setTargetFieldAccessor(TableImpParty::getId)
+        );
 
         // We add relation to the Datstreams table
         registerRelation(new RelationOneToMany<>(pluginPLUS.npDatastreamsParty, this, tableDatastreams)
                 .setSourceFieldAccessor(TableImpParty::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(partyIdIdx))
+                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(tableDatastreams.indexOf("PARTY_ID")))
         );
 
         // We add the relation to us from the Datastreams table.
         tableDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyDatastream, tableDatastreams, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(partyIdIdx))
+                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(tableDatastreams.indexOf("PARTY_ID")))
                 .setTargetFieldAccessor(TableImpParty::getId)
         );
 
@@ -167,10 +193,15 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         pfReg.addEntryId(entityFactories, TableImpParty::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
-        pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
         pfReg.addEntryString(pluginPLUS.epAuthId, table -> table.colAuthId);
         pfReg.addEntryString(pluginPLUS.epNickName, table -> table.colNickName);
         pfReg.addEntrySimple(pluginPLUS.epPartyRole, table -> table.colRole);
+
+        // We register a navigationProperty on the Things table.
+        pfReg.addEntry(pluginPLUS.npThingsParty, TableImpParty::getId, entityFactories);
+
+        // We register a navigationProperty on the Groups table.
+        pfReg.addEntry(pluginPLUS.npGroupsParty, TableImpParty::getId, entityFactories);
 
         // We register a navigationProperty on the Datastreams table.
         pfReg.addEntry(pluginPLUS.npDatastreamsParty, TableImpParty::getId, entityFactories);
@@ -185,26 +216,47 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 			@Override
 			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
 					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
-				
-				String authId = entity.getProperty(pluginPLUS.epAuthId);
-				// Construct the query to find exactly one Party element
-				// The top=0 should not be necessary as there should be only one Party with the given authId, but...
-				Query query = QueryParser.parseQuery("$top=0&$filter=" + pluginPLUS.epAuthId.name + " eq '" + authId + "'", pm.getCoreSettings(), entity.getPath());
-				// Before executing the query, it need to be validated
-				query.validate();
-				
-				Entity party = (Entity)pm.get(entity.getPath(), query);
+
+				ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+            	Principal principal = request.getUserPrincipal();
+            	
+            	if (principal == null)
+            		return false;
+            	
+            	// We have a username available from the Principal
+            	String userId = principal.getName();
+             		
+            	try
+        		{
+        		    // This throws exception if userId is not in UUID format
+        			UUID.fromString(userId);
+        		} 
+            	catch (IllegalArgumentException exception)
+        		{
+            		// generate the UUID from the userId
+        			userId = UUID.nameUUIDFromBytes(userId.getBytes()).toString();
+        		}
+            	
+            	if ((entity.isSetProperty(pluginPLUS.epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty((pluginPLUS.epAuthId)))))
+            	{
+            		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
+            		throw new IllegalArgumentException("Party property authId cannot be set");                   	
+        		}
+            	
+            	entity.setProperty(pluginPLUS.epAuthId, userId);
+        		entity.setId(new IdUuid(userId));
+            	
+            	Entity party = (Entity)pm.get(getEntityType(), entity.getId());
 				if (party != null)
 				{
-					// Setting the id for the POSTed Party to the id of the existing Party
-					entity.setId(party.getId());
-					// No need to update properties
-					entity.setEntityPropertiesSet(false, false);
 					// No need to insert the entity as it already exists. Just return the Id of the existing Party
 					return false;
 				}
-				// The POSTED Party does not exist so we need to execute the Insert
-				return true;
+				else
+				{
+					// The POSTED Party does not exist so we need to execute the Insert
+					return true;					
+				}
 			}
 		});
         
@@ -215,11 +267,34 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
 					throws NoSuchEntityException, IncompleteEntityException {
 				
-				Entity party = pm.get(entity.getEntityType(), entity.getId());
-				if (!party.getProperty(pluginPLUS.epAuthId).equalsIgnoreCase(entity.getProperty(pluginPLUS.epAuthId)))
-				{
-					throw new IllegalArgumentException("Cannot update existing Party of another user");
-				}
+				ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+            	Principal principal = request.getUserPrincipal();
+            	
+            	if (principal == null)
+            		throw new IllegalArgumentException("Cannot update existing Party - no user identified");
+            	
+            	// We have a username available from the Principal
+            	String userId = principal.getName();
+             		
+            	try
+        		{
+        		    // This throws exception if userId is not in UUID format
+        			UUID.fromString(userId);
+        		} 
+            	catch (IllegalArgumentException exception)
+        		{
+            		// generate the UUID from the userId
+        			userId = UUID.nameUUIDFromBytes(userId.getBytes()).toString();
+        		}
+            	
+            	if (!userId.equalsIgnoreCase(entity.getId().toString()))
+            	{
+            		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
+            		throw new IllegalArgumentException("Cannot update existing Party of another user");                   	
+        		}
+
+            	entity.setProperty(pluginPLUS.epAuthId, userId);
+        		entity.setId(new IdUuid(userId));
 			} 
 		});
         
@@ -231,11 +306,22 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 			} 
 		});
         
+        TableImpGroups tableGroups = tables.getTableForClass(TableImpGroups.class);
+        TableImpThings tableThings = tables.getTableForClass(TableImpThings.class);
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
+
+        final int partyThingsIdIdx = tableThings.registerField(DSL.name("PARTY_ID"), getIdType());
+        final int partyGroupsIdIdx = tableGroups.registerField(DSL.name("PARTY_ID"), getIdType());
         final int partyDatastreamsIdIdx = tableDatastreams.registerField(DSL.name("PARTY_ID"), getIdType());
         
+        tableThings.getPropertyFieldRegistry()
+        .addEntry(pluginPLUS.npPartyThing, table -> (TableField<Record, ?>) table.field(partyThingsIdIdx), entityFactories);
+
+        tableGroups.getPropertyFieldRegistry()
+        .addEntry(pluginPLUS.npPartyGroup, table -> (TableField<Record, ?>) table.field(partyGroupsIdIdx), entityFactories);
+
         tableDatastreams.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npPartyDatastream, table -> (TableField<Record, ?>) table.field(partyDatastreamsIdIdx), entityFactories);
+        .addEntry(pluginPLUS.npPartyDatastream, table -> (TableField<Record, ?>) table.field(partyDatastreamsIdIdx), entityFactories);
 
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {

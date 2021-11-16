@@ -20,6 +20,7 @@ package de.securedimensions.frostserver.plugin.plus;
 import com.fasterxml.jackson.core.type.TypeReference;
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInstant;
 import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInterval;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManager;
@@ -43,6 +44,7 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.Settings;
 import de.fraunhofer.iosb.ilt.frostserver.util.LiquibaseUser;
 import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.NetworkInterface;
@@ -136,6 +138,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<String> epAuthId = new EntityPropertyMain<>("authId", TypeSimplePrimitive.EDM_STRING);
     public final EntityPropertyMain<String> epNickName = new EntityPropertyMain<>("nickName", TypeSimplePrimitive.EDM_STRING);
 
+    public final NavigationPropertyEntity npPartyThing = new NavigationPropertyEntity("Party");
+    public final NavigationPropertyEntitySet npThingsParty = new NavigationPropertyEntitySet("Things", npPartyThing);
+
+    public final NavigationPropertyEntity npPartyGroup = new NavigationPropertyEntity("Party");
+    public final NavigationPropertyEntitySet npGroupsParty = new NavigationPropertyEntitySet("Groups", npPartyGroup);
+
     public final NavigationPropertyEntity npPartyDatastream = new NavigationPropertyEntity("Party");
     public final NavigationPropertyEntitySet npDatastreamsParty = new NavigationPropertyEntitySet("Datastreams", npPartyDatastream);
 
@@ -211,7 +219,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
         npLicenseDatastream.setEntityType(etLicense);
         npDatastreamsLicense.setEntityType(pluginCoreModel.etDatastream);
-        pluginCoreModel.etDatastream.registerProperty(npLicenseDatastream, false);
+        pluginCoreModel.etDatastream
+        		.registerProperty(npLicenseDatastream, false);
 
         /**
          * Class Party
@@ -222,46 +231,47 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(ModelRegistry.EP_SELFLINK, false)
                 .registerProperty(pluginCoreModel.epName, false)
                 .registerProperty(pluginCoreModel.epDescription, false)
-                .registerProperty(ModelRegistry.EP_PROPERTIES, false)
                 .registerProperty(epAuthId, false)
                 .registerProperty(epNickName, false)
                 .registerProperty(epPartyRole, true)
-                .registerProperty(npDatastreamsParty, false)
+                .registerProperty(npThingsParty, false)
+		        .registerProperty(npGroupsParty, false)
+		        .registerProperty(npDatastreamsParty, false)
                 .addValidator((entity, entityPropertiesOnly) -> {
                 	
                 	
                 	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
                 	Principal principal = request.getUserPrincipal();
                 	
+                	if (principal == null)
+                		throw new IllegalArgumentException("No user identified");
+                	
+                	
                 	String userId = principal.getName();
-                	if (userId != null)
+                	
+                	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
                 	{
-                    	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
-                    	{
-                    		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
-                    		throw new IllegalArgumentException("Party property authId cannot be set");                    	
-                		}
-                    	try
-                		{
-                		    // This throws exception if userId is not in UUID format
-                			UUID.fromString(userId);
-                		    entity.setProperty(epAuthId, userId);
-                		} catch (IllegalArgumentException exception)
-                		{
-                			entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
-                		}        			
-                	}
-                	else
-                	{
-                		// All anonymous users gets the Zero UUID
-                		entity.setProperty(epAuthId, "00000000-0000-0000-0000-000000000000");
-                	}
+                		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
+                		throw new IllegalArgumentException("Party property authId cannot be set");                    	}
+            		try
+            		{
+            		    // This throws exception if userId is not in UUID format
+            			UUID.fromString(userId);
+            		    entity.setProperty(epAuthId, userId);
+            		} catch (IllegalArgumentException exception)
+            		{
+            			entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
+            		}        			
+                	
                 })
                 .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
                 	
                 	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
                 	Principal principal = request.getUserPrincipal();
  
+                	if (principal == null)
+                		throw new IllegalArgumentException("No user identified");
+
                 	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
                 	{
                 		// An admin can override the authId of any Party
@@ -272,34 +282,26 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	}
                 	
                 	String userId = principal.getName();
-                	if (userId != null)
+                	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
                 	{
-                    	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
-                    	{
-                    		// The authId is set by the plugin - it cannot be changed via a PATCH
-                    		throw new IllegalArgumentException("Party property authId cannot be changed");
-                    	}
-                    	try
-                		{
-                		    // This throws exception if userId is not in UUID format
-                			UUID.fromString(userId);
-                		    entity.setProperty(epAuthId, userId);
-                		} catch (IllegalArgumentException exception)
-                		{
-                			entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
-                		}
+                		// The authId is set by the plugin - it cannot be changed via a PATCH
+                		throw new IllegalArgumentException("Party property authId cannot be changed");
                 	}
-                	else
-                	{
-                		// Any anonymous user gets Zero UUID
-                		entity.setProperty(epAuthId, "00000000-0000-0000-0000-000000000000");
-                	}
+                	
                 });
 
+        npPartyThing.setEntityType(etParty);
+        pluginCoreModel.etThing.registerProperty(npPartyThing, false);
+        npThingsParty.setEntityType(pluginCoreModel.etThing);
+        
+        npPartyGroup.setEntityType(etParty);
+        etGroup.registerProperty(npPartyGroup, false);
+        npGroupsParty.setEntityType(etGroup);
+        
         npPartyDatastream.setEntityType(etParty);
+        pluginCoreModel.etDatastream.registerProperty(npPartyDatastream, false);
         npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
 
-        pluginCoreModel.etDatastream.registerProperty(npPartyDatastream, false);
 
         /**
          * Class Project
@@ -321,7 +323,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
         npProjectDatastream.setEntityType(etProject);
         npDatastreamsProject.setEntityType(pluginCoreModel.etDatastream);
-
         pluginCoreModel.etDatastream.registerProperty(npProjectDatastream, false);
 
         /**
@@ -339,7 +340,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epGroupRuntime, false)
                 .registerProperty(npObservations, false)
                 .registerProperty(npRelations, false)
-                .registerProperty(npLicenseGroup, false);
+                .registerProperty(npLicenseGroup, false)
+                .registerProperty(npPartyGroup, false);
 
         npLicenseGroup.setEntityType(etLicense);
         npGroupsLicense.setEntityType(etGroup);
@@ -365,6 +367,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
         npSubjectRelation.setEntityType(pluginCoreModel.etObservation);
         npSubjectsObservation.setEntityType(etRelation);
+        
         npObjectRelation.setEntityType(pluginCoreModel.etObservation);
         npObjectsObservation.setEntityType(etRelation);
 
