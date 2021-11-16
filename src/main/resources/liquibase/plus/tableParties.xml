@@ -30,7 +30,6 @@
         <createTable tableName="PARTIES">
             <column name="NAME" type="TEXT"/>
             <column name="DESCRIPTION" type="TEXT"/>
-            <column name="PROPERTIES" type="JSONB"/>
             <column name="AUTHID" type="TEXT"/>
             <column name="NICKNAME" type="TEXT"/>
             <column name="ROLE" type="TEXT"/>

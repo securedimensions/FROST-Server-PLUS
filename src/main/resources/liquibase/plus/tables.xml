@@ -23,6 +23,7 @@
     <include relativeToChangelogFile="true" file="tableProjects.xml" />
     <include relativeToChangelogFile="true" file="tableParties.xml" />
     <include relativeToChangelogFile="true" file="tableLicenses.xml" />
+    <include relativeToChangelogFile="true" file="tableThings.xml" />
     <include relativeToChangelogFile="true" file="tableDatastreams.xml" />
     <include relativeToChangelogFile="true" file="tableMultiDatastreams.xml" />
     <include relativeToChangelogFile="true" file="tableGroups.xml" />
