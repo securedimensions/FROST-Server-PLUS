@@ -246,7 +246,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	if (principal == null)
                 		throw new IllegalArgumentException("No user identified");
                 	
-                	
+                	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
+                		return;
+
                 	String userId = principal.getName();
                 	
                 	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
