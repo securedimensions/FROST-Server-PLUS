@@ -222,11 +222,21 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	Principal principal = request.getUserPrincipal();
             	
             	if (principal == null)
-            		return false;
+            		throw new IllegalArgumentException("Cannot create Party - no user identified");
             	
+				
             	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
-            		return true;
-
+            	{
+            		// The admin has extra rights
+                	entity.setId(new IdUuid(entity.getProperty(pluginPLUS.epAuthId)));
+                	Entity party = (Entity)pm.get(getEntityType(), entity.getId());
+    				if (party != null)
+    				{
+    					// No need to insert the entity as it already exists. Just return the Id of the existing Party
+    					return false;
+    				}
+    				return true;
+            	}
             	// We have a username available from the Principal
             	String userId = principal.getName();
              		
@@ -249,18 +259,15 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	
             	entity.setProperty(pluginPLUS.epAuthId, userId);
         		entity.setId(new IdUuid(userId));
-            	
-            	Entity party = (Entity)pm.get(getEntityType(), entity.getId());
+        		Entity party = (Entity)pm.get(getEntityType(), entity.getId());
 				if (party != null)
 				{
 					// No need to insert the entity as it already exists. Just return the Id of the existing Party
 					return false;
 				}
-				else
-				{
-					// The POSTED Party does not exist so we need to execute the Insert
-					return true;					
-				}
+            	
+				return true;					
+				
 			}
 		});
         
