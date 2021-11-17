@@ -42,6 +42,7 @@ import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.query.Query;
+import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 
@@ -223,6 +224,9 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	if (principal == null)
             		return false;
             	
+            	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
+            		return true;
+
             	// We have a username available from the Principal
             	String userId = principal.getName();
              		
@@ -272,6 +276,9 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	
             	if (principal == null)
             		throw new IllegalArgumentException("Cannot update existing Party - no user identified");
+            	
+            	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
+            		return;
             	
             	// We have a username available from the Principal
             	String userId = principal.getName();

@@ -276,6 +276,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	{
                 		// An admin can override the authId of any Party
                 		String authId = entity.getProperty(epAuthId);
+                		if (authId == null)
+                			return;
+                		
                 		// This throws exception if POSTed authId is not in UUID format
             			UUID.fromString(authId);
             			return;
