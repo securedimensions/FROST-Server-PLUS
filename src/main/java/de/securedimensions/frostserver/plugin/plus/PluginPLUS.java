@@ -178,7 +178,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public EntityPropertyMain<?> epIdRelation;
 
     private static final List<String> REQUIREMENTS_PLUS = Arrays.asList(
-            "https://www.github.com/securedimensions/STA-PLUS");
+            "https://github.com/securedimensions/FROST-Server-PLUS");
 
     private CoreSettings settings;
     private PluginPlusSettings modelSettings;
@@ -253,7 +253,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	
                 	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
                 	{
-                		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
+                		// The authId is set by this plugin - it cannot be different from the POSTed Party property authId
                 		throw new IllegalArgumentException("Party property authId cannot be set");                    	}
             		try
             		{

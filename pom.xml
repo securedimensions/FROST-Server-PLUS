@@ -26,7 +26,7 @@
        <repository>
             <id>Maven Central</id>
             <url>https://repo1.maven.org/maven2/</url>
-        </repository>
+        </repository>        
     </repositories>
 
     <build>
@@ -42,6 +42,13 @@
                     </buildArgs>
                 </configuration>
             </plugin>
+            <plugin>    
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+            <source>1.8</source>
+            <target>11</target>
+        </configuration>
+    </plugin>
         </plugins>
     </build>
 
@@ -88,5 +95,56 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.fraunhofer.iosb.ilt</groupId>
+            <artifactId>FROST-Client</artifactId>
+            <version>${FROST-Client.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.fraunhofer.iosb.ilt.FROST-Server</groupId>
+            <artifactId>FROST-Server.Tests</artifactId>
+            <version>${parent.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server -->
+		<dependency>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-server</artifactId>
+		    <version>10.0.7</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>10.0.7</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20210307</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.15.3</version>
+            <scope>test</scope>
+        </dependency>
+		<dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>1.7.0</version>
+            <scope>test</scope>
+        </dependency>     
     </dependencies>
 </project>
