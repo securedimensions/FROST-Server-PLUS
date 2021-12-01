@@ -316,6 +316,16 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 
 			@Override
 			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
+				ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+            	Principal principal = request.getUserPrincipal();
+            	
+            	if (principal == null)
+            		throw new IllegalArgumentException("Cannot delete Party - no user identified");
+            	
+				
+            	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
+            		return;
+            	
 				throw new IllegalArgumentException("Deleting Party is not allowed");
 			} 
 		});
@@ -345,7 +355,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         }
 
     }
-
+    
     @Override
     public EntityType getEntityType() {
         return pluginPLUS.etParty;
