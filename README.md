@@ -8,9 +8,9 @@ Work on this project is funded by the European Commission under Grant Agreement 
 
 The following figures illustrate the extension in an UML diagram.
 
-![Sensor Things Datamodel (Datastream) with PLUS extension](doc/2021-05-21-DataModel-Datastream.png "Sensor Things Datamodel (Datastream) with PLUS extension")
+![Sensor Things Datamodel (Datastream) with PLUS extension](doc/2021-12-01-DataModel-Datastream.png "Sensor Things Datamodel (Datastream) with PLUS extension")
 
-![Sensor Things Datamodel (MultiDatastream) with PLUS extension](doc/2021-05-21-DataModel-MultiDatastream.png "Sensor Things Datamodel (MultiDatastream) with PLUS extension")
+![Sensor Things Datamodel (MultiDatastream) with PLUS extension](doc/2021-12-01-DataModel-MultiDatastream.png "Sensor Things Datamodel (MultiDatastream) with PLUS extension")
 
 ## Settings
 
