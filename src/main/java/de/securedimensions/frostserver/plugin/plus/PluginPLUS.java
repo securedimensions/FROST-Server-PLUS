@@ -45,6 +45,8 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.settings.Settings;
 import de.fraunhofer.iosb.ilt.frostserver.util.LiquibaseUser;
 import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
 import java.io.IOException;
@@ -246,7 +248,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	Principal principal = request.getUserPrincipal();
                 	
                 	if (principal == null)
-                		throw new IllegalArgumentException("No user identified");
+                		throw new UnauthorizedException("No user identified");
                 	
                 	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
                 		return;
@@ -274,7 +276,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	Principal principal = request.getUserPrincipal();
  
                 	if (principal == null)
-                		throw new IllegalArgumentException("No user identified");
+                		throw new UnauthorizedException("No user identified");
 
                 	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
                 	{
@@ -292,7 +294,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
                 	{
                 		// The authId is set by the plugin - it cannot be changed via a PATCH
-                		throw new IllegalArgumentException("Party property authId cannot be changed");
+                		throw new ForbiddenException("Party property authId cannot be changed");
                 	}
                 	
                 });

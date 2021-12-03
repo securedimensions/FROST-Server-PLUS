@@ -43,8 +43,10 @@ import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.query.Query;
 import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
 
 import java.security.Principal;
 import java.util.Map;
@@ -222,7 +224,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	Principal principal = request.getUserPrincipal();
             	
             	if (principal == null)
-            		throw new IllegalArgumentException("Cannot create Party - no user identified");
+            		throw new UnauthorizedException("Cannot create Party - no user identified");
             	
 				
             	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
@@ -282,7 +284,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	Principal principal = request.getUserPrincipal();
             	
             	if (principal == null)
-            		throw new IllegalArgumentException("Cannot update existing Party - no user identified");
+            		throw new UnauthorizedException("Cannot update existing Party - no user identified");
             	
             	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
             		return;
@@ -304,7 +306,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	if (!userId.equalsIgnoreCase(entity.getId().toString()))
             	{
             		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
-            		throw new IllegalArgumentException("Cannot update existing Party of another user");                   	
+            		throw new ForbiddenException("Cannot update existing Party of another user");                   	
         		}
 
             	entity.setProperty(pluginPLUS.epAuthId, userId);
@@ -320,13 +322,13 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	Principal principal = request.getUserPrincipal();
             	
             	if (principal == null)
-            		throw new IllegalArgumentException("Cannot delete Party - no user identified");
+            		throw new UnauthorizedException("Cannot delete Party - no user identified");
             	
 				
             	if ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin())
             		return;
             	
-				throw new IllegalArgumentException("Deleting Party is not allowed");
+				throw new ForbiddenException("Deleting Party is not allowed");
 			} 
 		});
         

@@ -1,39 +1,10 @@
 package de.securedimensions.frostserver.plugin.plus;
 
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.StatusCodeException;
-import de.fraunhofer.iosb.ilt.sta.model.Datastream;
-import de.fraunhofer.iosb.ilt.sta.model.Entity;
-import de.fraunhofer.iosb.ilt.sta.model.Location;
-import de.fraunhofer.iosb.ilt.sta.model.Observation;
-import de.fraunhofer.iosb.ilt.sta.model.ObservedProperty;
-import de.fraunhofer.iosb.ilt.sta.model.Sensor;
-import de.fraunhofer.iosb.ilt.sta.model.Thing;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import de.fraunhofer.iosb.ilt.sta.service.TokenManagerOpenIDConnect;
-import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
-import de.fraunhofer.iosb.ilt.statests.ServerVersion;
-import de.fraunhofer.iosb.ilt.statests.TestSuite;
-import de.fraunhofer.iosb.ilt.statests.util.EntityType;
-import de.fraunhofer.iosb.ilt.statests.util.EntityUtils;
-import de.fraunhofer.iosb.ilt.statests.util.HTTPMethods;
-import de.fraunhofer.iosb.ilt.statests.util.HTTPMethods.HttpResponse;
-import de.fraunhofer.iosb.ilt.statests.util.ServiceUrlHelper;
-
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
-
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
@@ -43,11 +14,12 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -55,6 +27,12 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
+import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
+import de.fraunhofer.iosb.ilt.statests.ServerVersion;
+import de.fraunhofer.iosb.ilt.statests.util.EntityUtils;
 
 /**
  * Tests for the Party class properties. According to the ownership concept, a
@@ -101,7 +79,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 		SERVER_PROPERTIES.put("auth_allowAnonymousRead", "true");
 		SERVER_PROPERTIES.put("plugins.plugins", "de.securedimensions.frostserver.plugin.plus.PluginPLUS");
 		SERVER_PROPERTIES.put("plugins.plus.enable", "true");
-		SERVER_PROPERTIES.put("auth.provider", "de.securedimensions.frostserver.plugin.plus.PrincipalAuthProvider");
+		SERVER_PROPERTIES.put("auth.provider", "de.securedimensions.frostserver.plugin.plus.auth.PrincipalAuthProvider");
 		SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
 	}
 
@@ -139,7 +117,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	}
 
 	private static void cleanup() throws ServiceFailureException {
-		EntityUtils.deleteAll(version, serverSettings, service);
+		//EntityUtils.deleteAll(version, serverSettings, service);
 	}
 
 	/*
@@ -180,8 +158,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 		setAuth(service, ALICE, "");
 		CloseableHttpResponse response = service.execute(httpPost);
 
-		if ((response.getStatusLine().getStatusCode() == HTTP_CODE_400) ||
-			(response.getStatusLine().getStatusCode() == HTTP_CODE_403))
+		if (response.getStatusLine().getStatusCode() == HTTP_CODE_400)
 		{
 			Assert.assertTrue(OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE, Boolean.TRUE);
 		} else if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
@@ -270,8 +247,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 		setAuth(service, LJS, "");
 		CloseableHttpResponse response = service.execute(httpPatch);
 
-		if ((response.getStatusLine().getStatusCode() == HTTP_CODE_400) ||
-				(response.getStatusLine().getStatusCode() == HTTP_CODE_403))
+		if (response.getStatusLine().getStatusCode() == HTTP_CODE_403)
 		{
 			Assert.assertTrue(SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_AUTHID, Boolean.TRUE);
 		} else {
@@ -291,8 +267,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 		setAuth(service, ALICE, "");
 		CloseableHttpResponse response = service.execute(httpPatch);
 
-		if ((response.getStatusLine().getStatusCode() == HTTP_CODE_400) ||
-				(response.getStatusLine().getStatusCode() == HTTP_CODE_403))
+		if (response.getStatusLine().getStatusCode() == HTTP_CODE_403)
 		{
 			Assert.assertTrue(OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE, Boolean.TRUE);
 		} else {
@@ -351,8 +326,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 		setAuth(service, LJS, "");
 		CloseableHttpResponse response = service.execute(httpDelete);
 
-		if ((response.getStatusLine().getStatusCode() == HTTP_CODE_400) ||
-				(response.getStatusLine().getStatusCode() == HTTP_CODE_403))
+		if (response.getStatusLine().getStatusCode() == HTTP_CODE_403)
 		{
 			Assert.assertTrue(SAME_USER_SHOULD_NOT_BE_ABLE_TO_DELETE, Boolean.TRUE);
 		} else {
@@ -369,8 +343,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 		setAuth(service, LJS, "");
 		CloseableHttpResponse response = service.execute(httpDelete);
 
-		if ((response.getStatusLine().getStatusCode() == HTTP_CODE_400) ||
-				(response.getStatusLine().getStatusCode() == HTTP_CODE_403))
+		if (response.getStatusLine().getStatusCode() == HTTP_CODE_403)
 		{
 			Assert.assertTrue(OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE, Boolean.TRUE);
 		} else {
