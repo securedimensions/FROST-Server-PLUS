@@ -20,10 +20,7 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-05-19-PLUS-ForeignKeys" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
-        <preConditions onFail="MARK_RAN">
-            <foreignKeyConstraintExists foreignKeyName="DATASTREAMS_LICENSE_ID_FKEY" />
-        </preConditions>
+    <changeSet author="am" id="2021-12-03-PLUS-DATASTREAMS-ForeignKeys" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
 
         <addForeignKeyConstraint
             constraintName="THINGS_PARTY_ID_FKEY"
@@ -117,13 +114,10 @@
             onDelete="CASCADE" onUpdate="CASCADE"/>
     </changeSet>
 
-    <changeSet author="am" id="2021-05-25-PLUS-MULTI_DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2021-12-03-PLUS-MULTI_DATASTREAMS-ForeignKeys" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="MULTI_DATASTREAMS" />
-            <not>
-                <foreignKeyConstraintExists foreignKeyName="MULTI_DATASTREAMS_LICENSE_ID_FKEY" />
-            </not>
-        </preConditions>
+       </preConditions>
 
         <addForeignKeyConstraint
             constraintName="MULTI_DATASTREAMS_LICENSE_ID_FKEY"

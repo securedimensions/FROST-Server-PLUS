@@ -33,6 +33,8 @@ import de.fraunhofer.iosb.ilt.frostserver.property.EntityPropertyMain;
 import de.fraunhofer.iosb.ilt.frostserver.property.NavigationPropertyMain.NavigationPropertyEntity;
 import de.fraunhofer.iosb.ilt.frostserver.property.NavigationPropertyMain.NavigationPropertyEntitySet;
 import static de.fraunhofer.iosb.ilt.frostserver.property.SpecialNames.AT_IOT_ID;
+
+import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeComplex;
 import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeSimpleCustom;
 import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeSimplePrimitive;
 import de.fraunhofer.iosb.ilt.frostserver.service.PluginModel;
@@ -100,7 +102,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
      */
     public final EntityPropertyMain<String> epPurpose = new EntityPropertyMain<>("purpose", TypeSimplePrimitive.EDM_STRING);
     public final EntityPropertyMain<TimeInstant> epGroupCreated = new EntityPropertyMain<>("created", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
-    public final EntityPropertyMain<TimeInterval> epGroupRuntime = new EntityPropertyMain<>("runtime", TypeSimpleCustom.STA_TIMEINTERVAL, false, true);
+    public final EntityPropertyMain<TimeInterval> epGroupRuntime = new EntityPropertyMain<>("runtime", TypeComplex.STA_TIMEINTERVAL, false, true);
 
     public final EntityPropertyMain<String> epRelationRole = new EntityPropertyMain<>("role", TypeSimplePrimitive.EDM_STRING);
     public final EntityPropertyMain<String> epNamespace = new EntityPropertyMain<>("namespace", TypeSimplePrimitive.EDM_STRING);
@@ -159,7 +161,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<String> epTermsOfUse = new EntityPropertyMain<>("termsOfUse", TypeSimplePrimitive.EDM_STRING);
     public final EntityPropertyMain<String> epPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeSimplePrimitive.EDM_STRING);
     public final EntityPropertyMain<TimeInstant> epProjectCreated = new EntityPropertyMain<>("created", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
-    public final EntityPropertyMain<TimeInterval> epProjectRuntime = new EntityPropertyMain<>("runtime", TypeSimpleCustom.STA_TIMEINTERVAL, false, true);
+    public final EntityPropertyMain<TimeInterval> epProjectRuntime = new EntityPropertyMain<>("runtime", TypeComplex.STA_TIMEINTERVAL, false, true);
     public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeSimplePrimitive.EDM_STRING);
 
     public final NavigationPropertyEntity npProjectDatastream = new NavigationPropertyEntity("Project");
