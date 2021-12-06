@@ -32,6 +32,8 @@ public final class PluginPlusSettings implements ConfigDefaults {
 
     @DefaultValueBoolean(false)
     public static final String TAG_ENABLE_PLUS = "plus.enable";
+    @DefaultValueBoolean(false)
+    public static final String TAG_ENABLE_OWNERSHIP_CONCEPT = "plus.enable.ownershipConcept";
     @DefaultValue("")
     public static final String TAG_ID_TYPE_GROUP = "plus.idType.group";
     @DefaultValue("")
@@ -40,7 +42,7 @@ public final class PluginPlusSettings implements ConfigDefaults {
     public static final String TAG_ID_TYPE_PROJECT = "plus.idType.project";
     @DefaultValue("")
     public static final String TAG_ID_TYPE_RELATION = "plus.idType.relation";
-
+ 
     public final String idTypeDefault;
     public final String idTypeGroup;
     public final String idTypeLicense;

@@ -34,6 +34,9 @@ import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.fraunhofer.iosb.ilt.statests.util.EntityUtils;
 
+import de.securedimensions.frostserver.plugin.plus.auth.PrincipalAuthProvider;
+import de.securedimensions.frostserver.plugin.plus.PluginPLUS;
+
 /**
  * Tests for the Party class properties. According to the ownership concept, a
  * Party's properties can only be changed by the user that 'owns' the Party
@@ -76,10 +79,12 @@ public class PartyCRUDTests extends AbstractTestClass {
 	private static final Properties SERVER_PROPERTIES = new Properties();
 
 	static {
-		SERVER_PROPERTIES.put("auth_allowAnonymousRead", "true");
-		SERVER_PROPERTIES.put("plugins.plugins", "de.securedimensions.frostserver.plugin.plus.PluginPLUS");
+		SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
 		SERVER_PROPERTIES.put("plugins.plus.enable", "true");
-		SERVER_PROPERTIES.put("auth.provider", "de.securedimensions.frostserver.plugin.plus.auth.PrincipalAuthProvider");
+		SERVER_PROPERTIES.put("plugins.plus.enableOwnershipConcept", "true");
+		SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
+		// For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
+		SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
 		SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
 	}
 
