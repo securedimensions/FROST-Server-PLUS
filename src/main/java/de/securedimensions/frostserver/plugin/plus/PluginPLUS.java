@@ -187,6 +187,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     private CoreSettings settings;
     private PluginPlusSettings modelSettings;
     private boolean enabled;
+    private boolean ownershipConceptEnabled;
     private boolean fullyInitialised;
 
     public PluginPLUS() {
@@ -201,6 +202,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         if (!enabled) {
             return;
         }
+        ownershipConceptEnabled = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_OWNERSHIP_CONCEPT, PluginPlusSettings.class);
         modelSettings = new PluginPlusSettings(settings);
         settings.getPluginManager().registerPlugin(this);
 
@@ -243,6 +245,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 		        .registerProperty(npDatastreamsParty, false)
                 .addValidator((entity, entityPropertiesOnly) -> {
                 	
+                	if (ownershipConceptEnabled != true)
+                		return;
                 	
                 	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
                 	Principal principal = request.getUserPrincipal();
@@ -271,6 +275,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	
                 })
                 .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
+                	
+                	if (ownershipConceptEnabled != true)
+                		return;
                 	
                 	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
                 	Principal principal = request.getUserPrincipal();
@@ -542,4 +549,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         return false;
     }
 
+    public boolean isOwnershipConceptEnabled()
+    {
+    	return ownershipConceptEnabled;
+    }
 }

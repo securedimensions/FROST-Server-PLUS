@@ -220,6 +220,9 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
 					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
+            	if (pluginPLUS.isOwnershipConceptEnabled() != true)
+            		return false;
+            	
 				ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
             	Principal principal = request.getUserPrincipal();
             	
@@ -280,6 +283,9 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
 					throws NoSuchEntityException, IncompleteEntityException {
 				
+            	if (pluginPLUS.isOwnershipConceptEnabled() != true)
+            		return;
+            	
 				ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
             	Principal principal = request.getUserPrincipal();
             	
@@ -318,7 +324,11 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 
 			@Override
 			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
-				ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
+
+            	if (pluginPLUS.isOwnershipConceptEnabled() != true)
+            		return;
+            	
+            	ServiceRequest request = ServiceRequest.LOCAL_REQUEST.get();
             	Principal principal = request.getUserPrincipal();
             	
             	if (principal == null)
