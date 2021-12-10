@@ -33,7 +33,9 @@ public final class PluginPlusSettings implements ConfigDefaults {
     @DefaultValueBoolean(false)
     public static final String TAG_ENABLE_PLUS = "plus.enable";
     @DefaultValueBoolean(false)
-    public static final String TAG_ENABLE_OWNERSHIP_CONCEPT = "plus.enable.ownershipConcept";
+    public static final String TAG_ENABLE_ENFORCE_OWNERSHIP = "plus.enable.enforceOwnsership";
+    @DefaultValueBoolean(false)
+    public static final String TAG_ENABLE_TRANSFER_OWNERSHIP = "plus.enable.transferOwnsership";
     @DefaultValue("")
     public static final String TAG_ID_TYPE_GROUP = "plus.idType.group";
     @DefaultValue("")
