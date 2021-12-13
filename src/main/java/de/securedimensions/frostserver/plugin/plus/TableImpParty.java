@@ -215,11 +215,11 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
 					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
+            	if (pluginPLUS.isEnforceOwnershipEnabled() == false)
             		return true;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
+            	Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+        		
             	if (isAdmin(principal))
             	{
             		// The admin has extra rights
@@ -234,7 +234,8 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	}
             	
             	// We have a username available from the Principal
-            	String userId = principal.getName();
+        		assertPrincipal(principal);
+        		String userId = principal.getName();
              		
             	try
         		{
@@ -279,10 +280,12 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
+
             	if (isAdmin(principal))
             		return;
             	
             	// We have a username available from the Principal
+        		assertPrincipal(principal);
             	String userId = principal.getName();
              		
             	try
@@ -347,7 +350,8 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	String userId = principal.getName();
 
             	Entity thisGroup = (Entity)pm.get(pluginPLUS.etGroup, entity.getId());
-            	if (thisGroup.isSetProperty(pluginPLUS.npPartyGroup))
+        		assertPrincipal(principal);
+        		if (thisGroup.isSetProperty(pluginPLUS.npPartyGroup))
             	{
             		Entity partyOnGroup = thisGroup.getProperty(pluginPLUS.npPartyGroup);
                 	if (!partyOnGroup.getId().toString().equalsIgnoreCase(userId))
@@ -381,6 +385,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             		return;
             	
             	// We have a username available from the Principal
+        		assertPrincipal(principal);
             	String userId = principal.getName();
              		
             	Entity thisGroup = (Entity)pm.get(pluginPLUS.etGroup, entity.getId());
@@ -450,6 +455,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             		return;
             	
             	// We have a username available from the Principal
+        		assertPrincipal(principal);
             	String userId = principal.getName();
             	
             	Entity thisGroup = (Entity)pm.get(pluginPLUS.etGroup, ParserUtils.idFromObject((entityId)));
@@ -469,51 +475,18 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         TableImpThings tableThings = tables.getTableForClass(TableImpThings.class);
         final int partyThingsIdIdx = tableThings.registerField(DSL.name("PARTY_ID"), getIdType());
         tableThings.getPropertyFieldRegistry()
-        .addEntry(pluginPLUS.npPartyThing, table -> (TableField<Record, ?>) table.field(partyThingsIdIdx), entityFactories);
-        tableThings.registerHookPreInsert(-10.0, new HookPreInsert() {
-
-			@Override
-			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
-					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
-
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
-            		return true;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
-
-            	if (isAdmin(principal))
-            		return true;
-            	
-            	// We have a username available from the Principal
-            	String userId = principal.getName();
-
-            	if (entity.isSetProperty(pluginPLUS.npPartyThing))
-            	{
-            		// The request contains a party to be linked to this Thing. It needs to represent the acting user!
-            		if (!entity.getProperty(pluginPLUS.npPartyThing).getId().toString().equalsIgnoreCase(userId))
-            			throw new ForbiddenException("Thing cannot be linked to a Party that doesn't represent the acting user");
-            	}
-            		
-            	
-            	return true;
-			}
-        });
-        
+        	.addEntry(pluginPLUS.npPartyThing, table -> (TableField<Record, ?>) table.field(partyThingsIdIdx), entityFactories);
+         
         tableThings.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
 			@Override
 			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
 					throws NoSuchEntityException, IncompleteEntityException {
 				
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
-            		return;
-            	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	if (isAdmin(principal))
-            		return;
-            	
             	// We have a username available from the Principal
+        		assertPrincipal(principal);
             	String userId = principal.getName();
              		
             	Entity thisThing = (Entity)pm.get(pluginCoreModel.etThing, entity.getId());
@@ -524,7 +497,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
                 	Entity partyOnThing = thisThing.getProperty(pluginPLUS.npPartyThing);
         			// The thing to patch has a Party associated
                 	if (!partyOnThing.getId().toString().equalsIgnoreCase(userId))
-                		throw new IllegalArgumentException("Thing not linked to acting Party"); 
+                		throw new IllegalArgumentException("Thing not associated with acting Party"); 
 
                 	if (entity.isSetProperty(pluginPLUS.npPartyThing)) 
                 	{
@@ -546,7 +519,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         		}
         		else
         		{
-        			// This thing is not yet linked to a Party
+        			// This thing is not yet associated with a Party
         			if (entity.isSetProperty(pluginPLUS.npPartyThing))
         			{
                 		// The PATCH request tries to update the Party
@@ -555,13 +528,13 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             			// The Thing to update has no Party associated.
             			// => We can only link to that Party which is representing the acting user
             			if (!partyOnRequest.getId().toString().equalsIgnoreCase(userId))
-            				throw new IllegalArgumentException("Thing can only be linked to the Party representing the acting user"); 
+            				throw new IllegalArgumentException("Thing can only be associated with the Party representing the acting user"); 
         			}
         			else
         			{
 	        			// The PATCH request tries to update other properties
-	                	// The Thing is NOT associated to a Party, so updating any other properties is forbidden
-	        			throw new ForbiddenException("Thing not linked to a Party"); 
+	                	// The Thing is NOT associated with a Party, so updating any other properties is forbidden
+	        			throw new ForbiddenException("Thing not associated with a Party"); 
         			}
         		}
             		            	
@@ -578,6 +551,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             		return;
             	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
 
             	if (isAdmin(principal))
             		return;
@@ -618,6 +592,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             		return true;
             	
             	// We have a username available from the Principal
+        		assertPrincipal(principal);
             	String userId = principal.getName();
 
             	Entity thisDatastream = (Entity)pm.get(pluginCoreModel.etDatastream, entity.getId());
@@ -655,6 +630,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             		return;
             	
             	// We have a username available from the Principal
+        		assertPrincipal(principal);
             	String userId = principal.getName();
              		
             	Entity thisDatastream = (Entity)pm.get(pluginCoreModel.etDatastream, entity.getId());
@@ -724,6 +700,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             		return;
             	
             	// We have a username available from the Principal
+        		assertPrincipal(principal);
             	String userId = principal.getName();
             	
             	Entity thisDatastream = (Entity)pm.get(pluginCoreModel.etDatastream, ParserUtils.idFromObject((entityId)));
@@ -760,6 +737,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
                 		return true;
                 	
                 	// We have a username available from the Principal
+            		assertPrincipal(principal);
                 	String userId = principal.getName();
 
                 	Entity thisMultiDatastream = (Entity)pm.get(pluginMultiDatastream.etMultiDatastream, entity.getId());
@@ -797,6 +775,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
                 		return;
                 	
                 	// We have a username available from the Principal
+            		assertPrincipal(principal);
                 	String userId = principal.getName();
                  		
                 	Entity thisMultiDatastream = (Entity)pm.get(pluginMultiDatastream.etMultiDatastream, entity.getId());
@@ -866,6 +845,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
                 		return;
                 	
                 	// We have a username available from the Principal
+            		assertPrincipal(principal);
                 	String userId = principal.getName();
                 	
                 	Entity thisMultiDatastream = (Entity)pm.get(pluginMultiDatastream.etMultiDatastream, ParserUtils.idFromObject((entityId)));
@@ -899,6 +879,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             		return true;
             	
             	// We have a username available from the Principal
+        		assertPrincipal(principal);
             	String userId = principal.getName();
 
             	EntitySet things = entity.getProperty(pluginCoreModel.npThingsLocation);
@@ -909,7 +890,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	Entity party = thing.getProperty(pluginPLUS.npPartyThing);
             	
             	if (!party.getId().toString().equalsIgnoreCase(userId))
-            		throw new IllegalArgumentException("Location cannot be linked to Thing because not linked to acting Party"); 
+            		throw new ForbiddenException("Location cannot be linked to Thing because not linked to acting Party"); 
             	
             	return true;
 			}
@@ -961,6 +942,12 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         return this;
     }
 
+    private void assertPrincipal(Principal principal)
+    {    	
+    	if (principal == null)
+    		throw new UnauthorizedException("No Principal");
+    }
+    
     private boolean isAdmin(Principal principal)
     {    	
     	if (principal == null)
