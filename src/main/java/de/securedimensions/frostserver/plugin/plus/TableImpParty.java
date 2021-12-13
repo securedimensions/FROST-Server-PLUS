@@ -217,8 +217,17 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 
             	if (pluginPLUS.isEnforceOwnershipEnabled() == false)
             	{
+            		// test if the authId is set
+            		if (!entity.isSetProperty(pluginPLUS.epAuthId))
+            			return true;
+            		
+            		// make sure that the Party's iot.id is equal to the authId
             		entity.setId(new IdUuid(entity.getProperty(pluginPLUS.epAuthId)));
-            		return true;
+            		// If the Party already exist, we can skip processing
+            		if (pm.get(pluginPLUS.etParty, entity.getId()) == null)
+            			return true;
+            		else
+            			return false;
             	}
             	
             	Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
