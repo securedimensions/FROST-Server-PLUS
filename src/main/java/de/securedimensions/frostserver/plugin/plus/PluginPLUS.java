@@ -248,7 +248,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 		        .registerProperty(npDatastreamsParty, false)
                 .addValidator((entity, entityPropertiesOnly) -> {
                 	
-                	if (enforceOwnsership != true)
+                	if (enforceOwnsership == false)
                 		return;
                 	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -261,7 +261,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
                 	{
                 		// The authId is set by this plugin - it cannot be different from the POSTed Party property authId
-                		throw new IllegalArgumentException("Party property authId cannot be set");                    	
+                		throw new IllegalArgumentException("Party property 'authId' must represent the acting user");                    	
                 	}
             		try
             		{
@@ -276,7 +276,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 })
                 .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
                 	
-                	if (enforceOwnsership != true)
+                	if (enforceOwnsership == false)
                 		return;
                 	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -297,93 +297,48 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId))))
                 	{
                 		// The authId is set by the plugin - it cannot be changed via a PATCH
-                		throw new ForbiddenException("Party property authId cannot be changed");
+                		throw new ForbiddenException("Party property 'authId' cannot be changed");
                 	}
                 	
                 });
 
+        /**
+         * Class Thing
+         */
         npPartyThing.setEntityType(etParty);
         pluginCoreModel.etThing
 	        .registerProperty(npPartyThing, false)
 	        .addValidator((entity, entityPropertiesOnly) -> {
 	        	
-	        	if (enforceOwnsership != true)
+	        	if (enforceOwnsership == false)
 	        		return;
 	        	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	if (isAdmin(principal))
-            		return;
-	
-	        	String userId = principal.getName();
-	        	
-	        	Entity party = entity.getProperty(npPartyThing);
-	        	if (party != null)
-	        	{
-		        	Id partyId = party.getId();
-		        	String authId = party.getProperty(epAuthId);
+        		if (isAdmin(principal))
+        			return;
+        		
+        		Entity party = entity.getProperty(npPartyThing);
+        		if (party != null)
+        			assertOwnership(entity, party, principal);
 
-		        	if ((partyId == null) && (authId == null))
-		        		throw new IllegalArgumentException("Party not idenified");    
-
-		        	if ((authId != null) && (partyId != null))
-		        	{
-		        		LOGGER.warn("Party identified by @iot.ia and authId - using authId");
-		        	}
-		        	
-		        	if (authId != null)
-		        		party.setId(new IdUuid (authId));
-		        	
-		        	
-		        	if (!userId.equalsIgnoreCase(party.getId().toString()))
-		        	{
-		        		// The Id of the Party must match the userId
-		        		// Thing can only be associated to the Party identifying the acting user
-		        		throw new ForbiddenException("Thing can only be linked to the Party identifying the acting user");                    	
-		        	}
-		        	
-		        	
-	        	}
 	        })
 	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
 	        	
-	        	if (enforceOwnsership != true)
+	        	if (enforceOwnsership == false)
 	        		return;
 	        	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	if (isAdmin(principal))
-            		return;
+        		if (isAdmin(principal))
+        			return;
 	
-	        	String userId = principal.getName();
-	        	
-	        	Entity party = entity.getProperty(npPartyThing);
-	        	if (party != null)
-	        	{
-		        	Id partyId = party.getId();
-		        	String authId = party.getProperty(epAuthId);
+        		Entity party = entity.getProperty(npPartyThing);
+        		if (party != null)
+        			assertOwnership(entity, party, principal);
+        		else
+        			assertPrincipal(principal);
 
-		        	if ((partyId == null) && (authId == null))
-		        		throw new IllegalArgumentException("Party not idenified");    
-
-		        	if ((authId != null) && (partyId != null))
-		        	{
-		        		LOGGER.warn("Party identified by @iot.ia and authId - using authId");
-		        	}
-		        	
-		        	if (authId != null)
-		        		party.setId(new IdUuid (authId));
-		        	
-		        	
-		        	if (!transferOwnsership && (!userId.equalsIgnoreCase(party.getId().toString())))
-		        	{
-		        		// The Id of the Party must match the userId
-		        		// Thing can only be associated to the Party identifying the acting user
-		        		throw new ForbiddenException("Thing must be associated with the Party identifying the acting user");                    	
-		        	}
-		        	
-		        	
-	        	}
 	        });
 
         npThingsParty.setEntityType(pluginCoreModel.etThing);
@@ -392,88 +347,35 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         etGroup.registerProperty(npPartyGroup, false);
         npGroupsParty.setEntityType(etGroup);
         
+        /**
+         * Class Datastream
+         */
         npPartyDatastream.setEntityType(etParty);
         pluginCoreModel.etDatastream
         	.registerProperty(npPartyDatastream, false)
 	        .addValidator((entity, entityPropertiesOnly) -> {
 	        	
-	        	if (enforceOwnsership != true)
+	        	if (enforceOwnsership == false)
 	        		return;
 	        	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	if (isAdmin(principal))
-            		return;
+            	assertAdmin(principal);
 	
-	        	String userId = principal.getName();
-	        	
-	        	Entity party = entity.getProperty(npPartyDatastream);
-	        	if (party != null)
-	        	{
-		        	Id partyId = party.getId();
-		        	String authId = party.getProperty(epAuthId);
+	        	assertOwnership(entity, entity.getProperty(npPartyDatastream), principal);
 
-		        	if ((partyId == null) && (authId == null))
-		        		throw new IllegalArgumentException("Party not idenified");    
-
-		        	if ((authId != null) && (partyId != null))
-		        	{
-		        		LOGGER.warn("Party identified by @iot.ia and authId - using authId");
-		        	}
-		        	
-		        	if (authId != null)
-		        		party.setId(new IdUuid (authId));
-		        	
-		        	
-		        	if (!userId.equalsIgnoreCase(party.getId().toString()))
-		        	{
-		        		// The Id of the Party must match the userId
-		        		// Datastream can only be associated to the Party identifying the acting user
-		        		throw new ForbiddenException("Datastream must be associated with the Party identifying the acting user");                    	
-		        	}
-		        	
-		        	
-	        	}
 	        })
 	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
 	        	
-	        	if (enforceOwnsership != true)
+	        	if (enforceOwnsership == false)
 	        		return;
 	        	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	if (isAdmin(principal))
-            		return;
+            	assertAdmin(principal);
 	
-	        	String userId = principal.getName();
-	        	
-	        	Entity party = entity.getProperty(npPartyDatastream);
-	        	if (party != null)
-	        	{
-		        	Id partyId = party.getId();
-		        	String authId = party.getProperty(epAuthId);
+	        	assertOwnership(entity, entity.getProperty(npPartyDatastream), principal);
 
-		        	if ((partyId == null) && (authId == null))
-		        		throw new IllegalArgumentException("Party not idenified");    
-
-		        	if ((authId != null) && (partyId != null))
-		        	{
-		        		LOGGER.warn("Party identified by @iot.ia and authId - using authId");
-		        	}
-		        	
-		        	if (authId != null)
-		        		party.setId(new IdUuid (authId));
-		        	
-		        	
-		        	if (!transferOwnsership && (!userId.equalsIgnoreCase(party.getId().toString())))
-		        	{
-		        		// The Id of the Party must match the userId
-		        		// Datastream can only be associated to the Party identifying the acting user
-		        		throw new ForbiddenException("Datastream must be associated with the Party identifying the acting user");                    	
-		        	}
-		        	
-		        	
-	        	}
 	        });
         	
         npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
@@ -517,7 +419,31 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(npObservations, false)
                 .registerProperty(npRelations, false)
                 .registerProperty(npLicenseGroup, false)
-                .registerProperty(npPartyGroup, false);
+                .registerProperty(npPartyGroup, false)
+                .addValidator((entity, entityPropertiesOnly) -> {
+    	        	
+    	        	if (enforceOwnsership == false)
+    	        		return;
+    	        	
+            		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+                	assertAdmin(principal);
+    	
+    	        	assertOwnership(entity, entity.getProperty(npPartyGroup), principal);
+
+    	        })
+    	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
+    	        	
+    	        	if (enforceOwnsership == false)
+    	        		return;
+    	        	
+            		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+                	assertAdmin(principal);
+    	
+    	        	assertOwnership(entity, entity.getProperty(npPartyGroup), principal);
+
+    	        });
 
         npLicenseGroup.setEntityType(etLicense);
         npGroupsLicense.setEntityType(etGroup);
@@ -550,11 +476,51 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         npRelationGroups.setEntityType(etGroup);
         npRelations.setEntityType(etRelation);
 
-        // link subject and object to Relations
-        pluginCoreModel.etObservation.registerProperty(npSubjectsObservation, false);
-        pluginCoreModel.etObservation.registerProperty(npObjectsObservation, false);
-
         final PluginMultiDatastream pluginMultiDatastream = settings.getPluginManager().getPlugin(PluginMultiDatastream.class);
+
+        // link subject and object to Relations
+        pluginCoreModel.etObservation
+        		.registerProperty(npSubjectsObservation, false)
+        		.registerProperty(npObjectsObservation, false)
+        		.addValidator((entity, entityPropertiesOnly) -> {
+    	        	
+    	        	if (enforceOwnsership == false)
+    	        		return;
+    	        	
+            		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+                	if(isAdmin(principal))
+                		return;
+    	
+                	Entity datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
+                	if (datastream != null)
+                		assertOwnership(entity, datastream.getProperty(npPartyDatastream), principal);
+
+                	Entity multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
+                	if (multiDatastream != null)
+                		assertOwnership(entity, multiDatastream.getProperty(npPartyDatastream), principal);
+
+    	        })
+    	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
+    	        	
+    	        	if (enforceOwnsership == false)
+    	        		return;
+    	        	
+            		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+                	if(isAdmin(principal))
+                		return;
+    	
+                	Entity datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
+                	if (datastream != null)
+                		assertOwnership(entity, datastream.getProperty(npPartyDatastream), principal);
+
+                	Entity multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
+                	if (multiDatastream != null)
+                		assertOwnership(entity, multiDatastream.getProperty(npPartyDatastream), principal);
+
+    	        });
+
         if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled()) {
             /**
              * Class License
@@ -574,83 +540,27 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             	.registerProperty(npPartyMultiDatastream, false)
     	        .addValidator((entity, entityPropertiesOnly) -> {
     	        	
-    	        	if (enforceOwnsership != true)
+    	        	if (enforceOwnsership == false)
     	        		return;
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-                	if (isAdmin(principal))
-                		return;
+                	assertAdmin(principal);
     	
-    	        	String userId = principal.getName();
-    	        	
-    	        	Entity party = entity.getProperty(npPartyMultiDatastream);
-    	        	if (party != null)
-    	        	{
-    		        	Id partyId = party.getId();
-    		        	String authId = party.getProperty(epAuthId);
+    	        	assertOwnership(entity, entity.getProperty(npPartyMultiDatastream), principal);
 
-    		        	if ((partyId == null) && (authId == null))
-    		        		throw new IllegalArgumentException("Party not idenified");    
-
-    		        	if ((authId != null) && (partyId != null))
-    		        	{
-    		        		LOGGER.warn("Party identified by @iot.ia and authId - using authId");
-    		        	}
-    		        	
-    		        	if (authId != null)
-    		        		party.setId(new IdUuid (authId));
-    		        	
-    		        	
-    		        	if (!userId.equalsIgnoreCase(party.getId().toString()))
-    		        	{
-    		        		// The Id of the Party must match the userId
-    		        		// MultiDatastream can only be associated to the Party identifying the acting user
-    		        		throw new ForbiddenException("MultiDatastream must be associated with the Party identifying the acting user");                    	
-    		        	}
-    		        	
-    		        	
-    	        	}
-    	        })
+     	        })
     	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
     	        	
-    	        	if (enforceOwnsership != true)
+    	        	if (enforceOwnsership == false)
     	        		return;
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-                	if (isAdmin(principal))
-                		return;
+                	assertAdmin(principal);
     	
-    	        	String userId = principal.getName();
-    	        	
-    	        	Entity party = entity.getProperty(npPartyMultiDatastream);
-    	        	if (party != null)
-    	        	{
-    		        	Id partyId = party.getId();
-    		        	String authId = party.getProperty(epAuthId);
+    	        	assertOwnership(entity, entity.getProperty(npPartyMultiDatastream), principal);
 
-    		        	if ((partyId == null) && (authId == null))
-    		        		throw new IllegalArgumentException("Party not idenified");    
-
-    		        	if ((authId != null) && (partyId != null))
-    		        	{
-    		        		LOGGER.warn("Party identified by @iot.ia and authId - using authId");
-    		        	}
-    		        	
-    		        	if (authId != null)
-    		        		party.setId(new IdUuid (authId));
-    		        	
-    		        	
-    		        	if (!transferOwnsership && (!userId.equalsIgnoreCase(party.getId().toString())))
-    		        	{
-    		        		// The Id of the Party must match the userId
-    		        		// MultiDatastream can only be associated to the Party identifying the acting user
-    		        		throw new ForbiddenException("MultiDatastream must be associated with the Party identifying the acting user");                    	
-    		        	}
-    		        	
-    		        	
-    	        	}
     	        });
 
 
@@ -801,13 +711,60 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     {
     	return transferOwnsership;
     }
+    
     private boolean isAdmin(Principal principal)
-    {    	
+    {
     	if (principal == null)
-    		throw new UnauthorizedException("Cannot create Party - no user identified");
-    	
-		
+			return false;
+			
     	return ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin());
+    	
     }
 
+    private void assertPrincipal(Principal principal)
+    {    	
+    	if (principal == null)
+    		throw new UnauthorizedException("No Principal");
+    }
+    
+    private void assertAdmin(Principal principal)
+    {    	
+    	assertPrincipal(principal);    	
+		
+    	if (!isAdmin(principal))
+    		throw new UnauthorizedException("User is not admin");
+    }
+
+    private void assertOwnership(Entity entity, Entity party, Principal principal)
+    {
+    	assertPrincipal(principal);    	   
+    	
+    	if (party != null)
+    	{
+        	Id partyId = party.getId();
+        	String authId = party.getProperty(epAuthId);
+
+        	if ((partyId == null) && (authId == null))
+        		throw new IllegalArgumentException("Party not idenified");    
+
+        	if ((authId != null) && (partyId != null))
+        	{
+        		LOGGER.warn("Party identified by @iot.id and authId - using authId");
+        	}
+        	
+        	if (authId != null)
+        		party.setId(new IdUuid (authId));
+        	
+        	String userId = principal.getName();
+        	if (!userId.equalsIgnoreCase(party.getId().toString()))
+        	{
+        		// The Id of the Party must match the userId
+        		// Entity can only be associated to the Party identifying the acting user
+        		throw new ForbiddenException(entity.getEntityType().entityName + " can only be associated with the Party identifying the acting user");                    	
+        	}
+        	
+        	
+    	}
+
+    }
 }
