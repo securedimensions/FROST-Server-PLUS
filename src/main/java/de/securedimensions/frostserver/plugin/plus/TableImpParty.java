@@ -216,8 +216,11 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
             	if (pluginPLUS.isEnforceOwnershipEnabled() == false)
+            	{
+            		entity.setId(new IdUuid(entity.getProperty(pluginPLUS.epAuthId)));
             		return true;
-
+            	}
+            	
             	Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
         		
             	if (isAdmin(principal))
