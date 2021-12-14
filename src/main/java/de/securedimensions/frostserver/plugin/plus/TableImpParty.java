@@ -47,6 +47,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollect
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpLocations;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
@@ -84,9 +85,9 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
     public final TableField<Record, String> colAuthId = createField(DSL.name("AUTHID"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PARTIES.EP_NICKNAME</code>.
+     * The column <code>public.PARTIES.EP_DISPLAYNAME</code>.
      */
-    public final TableField<Record, String> colNickName = createField(DSL.name("NICKNAME"), SQLDataType.CLOB, this);
+    public final TableField<Record, String> colDisplayName = createField(DSL.name("DISPLAYNAME"), SQLDataType.CLOB, this);
 
     /**
      * The column <code>public.PARTIES.EP_ROLE</code>.
@@ -192,7 +193,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryString(pluginPLUS.epAuthId, table -> table.colAuthId);
-        pfReg.addEntryString(pluginPLUS.epNickName, table -> table.colNickName);
+        pfReg.addEntryString(pluginPLUS.epDisplayName, table -> table.colDisplayName);
         pfReg.addEntrySimple(pluginPLUS.epPartyRole, table -> table.colRole);
 
         // We register a navigationProperty on the Things table.
@@ -589,144 +590,100 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         tableDatastreams.getPropertyFieldRegistry()
         .addEntry(pluginPLUS.npPartyDatastream, table -> (TableField<Record, ?>) table.field(partyDatastreamsIdIdx), entityFactories);
         
-        tableDatastreams.registerHookPreInsert(-10.0, new HookPreInsert() {
-
-			@Override
-			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
-					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
-
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
-            		return true;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
-
-            	if (isAdmin(principal))
-            		return true;
-            	
-            	// We have a username available from the Principal
-        		assertPrincipal(principal);
-            	String userId = principal.getName();
-
-            	Entity thisDatastream = (Entity)pm.get(pluginCoreModel.etDatastream, entity.getId());
-            	if (thisDatastream.isSetProperty(pluginPLUS.npPartyDatastream))
-            	{
-            		Entity partyOnThing = thisDatastream.getProperty(pluginPLUS.npPartyDatastream);
-                	if (!partyOnThing.getId().toString().equalsIgnoreCase(userId))
-                		throw new IllegalArgumentException("Datastream not linked to acting Party"); 
-                	
-            	}
-            	else if (entity.isSetProperty(pluginPLUS.npPartyDatastream))
-            	{
-            		// The request contains a party to be linked to this Datastream. It needs to represent the acting user!
-            		if (!entity.getProperty(pluginPLUS.npPartyDatastream).getId().toString().equalsIgnoreCase(userId))
-            			throw new ForbiddenException("Datastrea, cannot be linked to a Party that doesn't represent the acting user");
-            	}
-            		
-            	
-            	return true;
-			}
-        });
-        
         tableDatastreams.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
-			@Override
-			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
-					throws NoSuchEntityException, IncompleteEntityException {
-				
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
-            		return;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+ 			@Override
+ 			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
+ 					throws NoSuchEntityException, IncompleteEntityException {
+ 				
+         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	if (isAdmin(principal))
-            		return;
-            	
-            	// We have a username available from the Principal
-        		assertPrincipal(principal);
-            	String userId = principal.getName();
-             		
-            	Entity thisDatastream = (Entity)pm.get(pluginCoreModel.etDatastream, entity.getId());
-            	
-        		if (thisDatastream.isSetProperty(pluginPLUS.npPartyDatastream))
-        		{
-        			// This Datastream is linked to a Party
-                	Entity partyOnDatastream = thisDatastream.getProperty(pluginPLUS.npPartyDatastream);
-        			// The Datastream to patch has a Party associated
-                	if (!partyOnDatastream.getId().toString().equalsIgnoreCase(userId))
-                		throw new IllegalArgumentException("Datastream not linked to acting Party"); 
+             	// We have a username available from the Principal
+         		assertPrincipal(principal);
+             	String userId = principal.getName();
+              		
+             	Entity thisThing = (Entity)pm.get(pluginCoreModel.etDatastream, entity.getId());
+             	
+         		if (thisThing.isSetProperty(pluginPLUS.npPartyDatastream))
+         		{
+         			// This Datastream is linked to a Party
+                 	Entity partyOnThing = thisThing.getProperty(pluginPLUS.npPartyDatastream);
+         			// The thing to patch has a Party associated
+                 	if (!partyOnThing.getId().toString().equalsIgnoreCase(userId))
+                 		throw new IllegalArgumentException("Datastream not associated with acting Party"); 
 
-                	if (entity.isSetProperty(pluginPLUS.npPartyDatastream)) 
-                	{
-                		// The PATCH request tries to update the Party
-                		Entity partyOnRequest = entity.getProperty(pluginPLUS.npPartyDatastream);
-                		
-            			// =>If the request tries to link to the acting Party simply return
-            			if (partyOnRequest.getId().toString().equalsIgnoreCase(userId))
-            				return;
-            			
-            			// The request tries to link to another party - transfer of ownership
-                		if (pluginPLUS.isTransferOwnershipEnabled() == false)
-                			throw new ForbiddenException("Transfer of ownership to Party " + userId + " is not allowed");
+                 	if (entity.isSetProperty(pluginPLUS.npPartyDatastream)) 
+                 	{
+                 		// The PATCH request tries to update the Party
+                 		Entity partyOnRequest = entity.getProperty(pluginPLUS.npPartyDatastream);
+                 		
+             			// =>If the request tries to link to the acting Party simply return
+             			if (partyOnRequest.getId().toString().equalsIgnoreCase(userId))
+             				return;
+             			
+             			// The request tries to link to another party - transfer of ownership
+                 		if (pluginPLUS.isTransferOwnershipEnabled() == false)
+                 			throw new ForbiddenException("Transfer of ownership to Party " + userId + " is not allowed");
 
-                	}
+                 	}
 
-                	// Update of all other properties can happen without checking, as the Datasream is linked to the acting party
+                 	// Update of all other properties can happen without checking, as the Datastream is linked to the acting party
 
-        		}
-        		else
-        		{
-        			// This Datastream is not yet linked to a Party
-        			if (entity.isSetProperty(pluginPLUS.npPartyDatastream))
-        			{
-                		// The PATCH request tries to update the Party
-                		Entity partyOnRequest = entity.getProperty(pluginPLUS.npPartyDatastream);
-                		
-            			// The Datastream to update has no Party associated.
-            			// => We can only link to that Party which is representing the acting user
-            			if (!partyOnRequest.getId().toString().equalsIgnoreCase(userId))
-            				throw new IllegalArgumentException("Datastream can only be linked to the Party representing the acting user"); 
-        			}
-        			else
-        			{
-	        			// The PATCH request tries to update other properties
-	                	// The Datastream is NOT associated to a Party, so updating any other properties is forbidden
-	        			throw new ForbiddenException("Datastream not linked to a Party"); 
-        			}
-        		}
-            		            	
+         		}
+         		else
+         		{
+         			// This Datastream is not yet associated with a Party
+         			if (entity.isSetProperty(pluginPLUS.npPartyDatastream))
+         			{
+                 		// The PATCH request tries to update the Party
+                 		Entity partyOnRequest = entity.getProperty(pluginPLUS.npPartyDatastream);
+                 		
+             			// The Datastream to update has no Party associated.
+             			// => We can only link to that Party which is representing the acting user
+             			if (!partyOnRequest.getId().toString().equalsIgnoreCase(userId))
+             				throw new IllegalArgumentException("Datastream can only be associated with the Party representing the acting user"); 
+         			}
+         			else
+         			{
+ 	        			// The PATCH request tries to update other properties
+ 	                	// The Datastream is NOT associated with a Party, so updating any other properties is forbidden
+ 	        			throw new ForbiddenException("Datastream not associated with a Party"); 
+         			}
+         		}
+             		            	
 
-			} 
-		});
+ 			} 
+ 		});
 
         tableDatastreams.registerHookPreDelete(-10.0, new HookPreDelete() {
 
-			@Override
-			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
+ 			@Override
+ 			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
 
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
-            		return;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+             	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
+             		return;
+             	
+         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	if (isAdmin(principal))
-            		return;
-            	
-            	// We have a username available from the Principal
-        		assertPrincipal(principal);
-            	String userId = principal.getName();
-            	
-            	Entity thisDatastream = (Entity)pm.get(pluginCoreModel.etDatastream, ParserUtils.idFromObject((entityId)));
-            	if (thisDatastream.isSetProperty(pluginPLUS.npPartyDatastream))
-            	{
-            		Entity partyOnDatastream = thisDatastream.getProperty(pluginPLUS.npPartyDatastream);
-                	if (!partyOnDatastream.getId().toString().equalsIgnoreCase(userId))
-                		throw new IllegalArgumentException("Datastream not linked to acting Party"); 
-                	
-            	}
-            	else
-            		throw new ForbiddenException("Datastream not linked to a Party");
-			} 
-		});
+
+             	if (isAdmin(principal))
+             		return;
+             	
+             	// We have a username available from the Principal
+             	String userId = principal.getName();
+             	
+             	Entity thisThing = (Entity)pm.get(pluginCoreModel.etThing, ParserUtils.idFromObject((entityId)));
+             	if (thisThing.isSetProperty(pluginPLUS.npPartyThing))
+             	{
+             		Entity partyOnThing = thisThing.getProperty(pluginPLUS.npPartyThing);
+                 	if (!partyOnThing.getId().toString().equalsIgnoreCase(userId))
+                 		throw new IllegalArgumentException("Thing not linked to acting Party"); 
+                 	
+             	}
+             	else
+             		throw new ForbiddenException("Thing not linked to a Party");
+ 			} 
+ 		});
 
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {
@@ -932,7 +889,67 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
             	throw new ForbiddenException("Location cannot be Deleted");
 			}
         });
-}
+
+        TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
+        tableObservations.registerHookPreInsert(-10.0, new HookPreInsert() {
+
+			@Override
+			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
+					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+
+            	if (pluginPLUS.isEnforceOwnershipEnabled() == false)
+            		return true;
+            	
+        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+            	if (isAdmin(principal))
+            		return true;
+            	
+            	ensureOwnershipDatastream(pm, entity, principal);
+            	
+            	return true;
+            	
+			}
+        });
+
+        tableObservations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+
+			@Override
+			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
+					throws NoSuchEntityException, IncompleteEntityException {
+				
+            	if (pluginPLUS.isEnforceOwnershipEnabled() == false)
+            		return;
+            	
+        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+            	if (isAdmin(principal))
+            		return;
+            	
+            	ensureOwnershipDatastream(pm, entity, principal);
+
+			}
+        });
+
+        tableObservations.registerHookPreDelete(-10.0, new HookPreDelete() {
+
+			@Override
+			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
+
+            	if (pluginPLUS.isEnforceOwnershipEnabled() == false)
+            		return;
+            	
+        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+            	if (isAdmin(principal))
+            		return;
+            	
+            	ensureOwnershipDatastream(pm, entityId, principal);
+
+			}
+        });
+
+    }
     
     @Override
     public EntityType getEntityType() {
@@ -968,4 +985,65 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 		
     	return ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin());
     }
+    
+    private void ensureOwnershipDatastream(PostgresPersistenceManager pm, Entity entity, Principal principal)
+    {
+    	// We have a username available from the Principal
+		assertPrincipal(principal);
+    	String userId = principal.getName();
+
+        // The Datastream from the DB contains the Party association if it exists
+        Entity datastream = null;
+        if (entity.isSetProperty(pluginCoreModel.npDatastreamObservation))
+        	datastream = (Entity)pm.get(pluginCoreModel.etDatastream, entity.getProperty(pluginCoreModel.npDatastreamObservation).getId());
+        
+        Entity multiDatastream = null;
+        if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled() && entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation)) {
+       		multiDatastream = (Entity)pm.get(pluginMultiDatastream.etMultiDatastream, entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
+        }
+		// Ensure Ownership for (Mulit)Datastream
+    	Entity party = null;
+    	
+    	if (datastream != null)
+    		party = datastream.getProperty(pluginPLUS.npPartyDatastream);
+    	else
+    		party = multiDatastream.getProperty(pluginPLUS.npPartyMultiDatastream);
+    	
+    	if (party == null)
+    		throw new ForbiddenException("Observation not linked to a Party");
+    	
+    	if (!party.getId().toString().equalsIgnoreCase(userId))
+    		throw new ForbiddenException("Observation not linked to acting Party"); 
+    	
+    }
+    
+    private void ensureOwnershipDatastream(PostgresPersistenceManager pm, Object entityId, Principal principal)
+    {
+    	// We have a username available from the Principal
+		assertPrincipal(principal);
+    	String userId = principal.getName();
+
+    	// The Observation from the DB contains the Datastream
+    	Entity observation = (Entity)pm.get(pluginCoreModel.etObservation, ParserUtils.idFromObject((entityId)));
+        // The Datastream from the DB contains the Party association if it exists
+        Entity datastream = (Entity)pm.get(pluginCoreModel.etDatastream, observation.getProperty(pluginCoreModel.npDatastreamObservation).getId());
+        Entity multiDatastream = null;
+        if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled() && observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation)) {
+       		multiDatastream = (Entity)pm.get(pluginMultiDatastream.etMultiDatastream, observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
+        }
+		// Ensure Ownership for (Mulit)Datastream
+    	Entity party = null;
+    	
+    	if (datastream != null)
+    		party = datastream.getProperty(pluginPLUS.npPartyDatastream);
+    	else
+    		party = multiDatastream.getProperty(pluginPLUS.npPartyMultiDatastream);
+    	
+    	if (party == null)
+    		throw new ForbiddenException("Observation not linked to a Party");
+    	
+    	if (!party.getId().toString().equalsIgnoreCase(userId))
+    		throw new ForbiddenException("Observation not linked to acting Party"); 
+    }
+
 }

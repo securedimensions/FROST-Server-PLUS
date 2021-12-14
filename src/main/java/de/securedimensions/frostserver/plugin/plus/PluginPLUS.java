@@ -104,11 +104,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
      * Class Group
      */
     public final EntityPropertyMain<String> epPurpose = new EntityPropertyMain<>("purpose", TypeSimplePrimitive.EDM_STRING);
-    public final EntityPropertyMain<TimeInstant> epGroupCreated = new EntityPropertyMain<>("created", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
-    public final EntityPropertyMain<TimeInterval> epGroupRuntime = new EntityPropertyMain<>("runtime", TypeComplex.STA_TIMEINTERVAL, false, true);
+    public final EntityPropertyMain<TimeInstant> epGroupCreated = new EntityPropertyMain<>("creationTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
+    public final EntityPropertyMain<TimeInterval> epGroupRuntime = new EntityPropertyMain<>("runTime", TypeComplex.STA_TIMEINTERVAL, false, true);
 
     public final EntityPropertyMain<String> epRelationRole = new EntityPropertyMain<>("role", TypeSimplePrimitive.EDM_STRING);
-    public final EntityPropertyMain<String> epNamespace = new EntityPropertyMain<>("namespace", TypeSimplePrimitive.EDM_STRING);
 
     public final NavigationPropertyEntitySet npObservationGroups = new NavigationPropertyEntitySet("Groups");
     public final NavigationPropertyEntitySet npRelationGroups = new NavigationPropertyEntitySet("Groups");
@@ -120,6 +119,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     /**
      * Class Relation
      */
+    public final EntityPropertyMain<String> epExternalObject = new EntityPropertyMain<>("externalObject", TypeSimplePrimitive.EDM_STRING);
+
     public final NavigationPropertyEntity npSubjectRelation = new NavigationPropertyEntity("Subject");
     public final NavigationPropertyEntitySet npSubjectsObservation = new NavigationPropertyEntitySet("Subjects", npSubjectRelation);
 
@@ -141,7 +142,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<Role> epPartyRole = new EntityPropertyMain<>("role", propertyTypeRole);
 
     public final EntityPropertyMain<String> epAuthId = new EntityPropertyMain<>("authId", TypeSimplePrimitive.EDM_STRING);
-    public final EntityPropertyMain<String> epNickName = new EntityPropertyMain<>("nickName", TypeSimplePrimitive.EDM_STRING);
+    public final EntityPropertyMain<String> epDisplayName = new EntityPropertyMain<>("displayName", TypeSimplePrimitive.EDM_STRING);
 
     public final NavigationPropertyEntity npPartyThing = new NavigationPropertyEntity("Party");
     public final NavigationPropertyEntitySet npThingsParty = new NavigationPropertyEntitySet("Things", npPartyThing);
@@ -163,8 +164,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<String> epClassification = new EntityPropertyMain<>("classification", TypeSimplePrimitive.EDM_STRING);
     public final EntityPropertyMain<String> epTermsOfUse = new EntityPropertyMain<>("termsOfUse", TypeSimplePrimitive.EDM_STRING);
     public final EntityPropertyMain<String> epPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeSimplePrimitive.EDM_STRING);
-    public final EntityPropertyMain<TimeInstant> epProjectCreated = new EntityPropertyMain<>("created", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
-    public final EntityPropertyMain<TimeInterval> epProjectRuntime = new EntityPropertyMain<>("runtime", TypeComplex.STA_TIMEINTERVAL, false, true);
+    public final EntityPropertyMain<TimeInstant> epProjectCreated = new EntityPropertyMain<>("creationTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
+    public final EntityPropertyMain<TimeInterval> epProjectRuntime = new EntityPropertyMain<>("runTime", TypeComplex.STA_TIMEINTERVAL, false, true);
     public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeSimplePrimitive.EDM_STRING);
 
     public final NavigationPropertyEntity npProjectDatastream = new NavigationPropertyEntity("Project");
@@ -241,7 +242,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(pluginCoreModel.epName, false)
                 .registerProperty(pluginCoreModel.epDescription, false)
                 .registerProperty(epAuthId, false)
-                .registerProperty(epNickName, false)
+                .registerProperty(epDisplayName, false)
                 .registerProperty(epPartyRole, true)
                 .registerProperty(npThingsParty, false)
 		        .registerProperty(npGroupsParty, false)
@@ -353,30 +354,38 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         npPartyDatastream.setEntityType(etParty);
         pluginCoreModel.etDatastream
         	.registerProperty(npPartyDatastream, false)
-	        .addValidator((entity, entityPropertiesOnly) -> {
-	        	
-	        	if (enforceOwnsership == false)
-	        		return;
-	        	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+        	 .addValidator((entity, entityPropertiesOnly) -> {
+ 	        	
+ 	        	if (enforceOwnsership == false)
+ 	        		return;
+ 	        	
+         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	assertAdmin(principal);
-	
-	        	assertOwnership(entity, entity.getProperty(npPartyDatastream), principal);
+         		if (isAdmin(principal))
+         			return;
+         		
+         		Entity party = entity.getProperty(npPartyDatastream);
+         		if (party != null)
+         			assertOwnership(entity, party, principal);
 
-	        })
-	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
-	        	
-	        	if (enforceOwnsership == false)
-	        		return;
-	        	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+ 	        })
+ 	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
+ 	        	
+ 	        	if (enforceOwnsership == false)
+ 	        		return;
+ 	        	
+         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-            	assertAdmin(principal);
-	
-	        	assertOwnership(entity, entity.getProperty(npPartyDatastream), principal);
+         		if (isAdmin(principal))
+         			return;
+ 	
+         		Entity party = entity.getProperty(npPartyDatastream);
+         		if (party != null)
+         			assertOwnership(entity, party, principal);
+         		else
+         			assertPrincipal(principal);
 
-	        });
+ 	        });
         	
         npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
 
@@ -462,9 +471,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(pluginCoreModel.epDescription, false)
                 .registerProperty(ModelRegistry.EP_PROPERTIES, false)
                 .registerProperty(epRelationRole, false)
-                .registerProperty(epNamespace, false)
+                .registerProperty(epExternalObject, false)
                 .registerProperty(npSubjectRelation, true)
-                .registerProperty(npObjectRelation, true)
+                .registerProperty(npObjectRelation, false)
                 .registerProperty(npRelationGroups, false);
 
         npSubjectRelation.setEntityType(pluginCoreModel.etObservation);
@@ -482,7 +491,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         pluginCoreModel.etObservation
         		.registerProperty(npSubjectsObservation, false)
         		.registerProperty(npObjectsObservation, false)
-        		.addValidator((entity, entityPropertiesOnly) -> {
+     	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
     	        	
     	        	if (enforceOwnsership == false)
     	        		return;
@@ -496,28 +505,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	if (datastream != null)
                 		assertOwnership(entity, datastream.getProperty(npPartyDatastream), principal);
 
-                	Entity multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
-                	if (multiDatastream != null)
-                		assertOwnership(entity, multiDatastream.getProperty(npPartyDatastream), principal);
-
-    	        })
-    	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
-    	        	
-    	        	if (enforceOwnsership == false)
-    	        		return;
-    	        	
-            		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
-
-                	if(isAdmin(principal))
-                		return;
-    	
-                	Entity datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
-                	if (datastream != null)
-                		assertOwnership(entity, datastream.getProperty(npPartyDatastream), principal);
-
-                	Entity multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
-                	if (multiDatastream != null)
-                		assertOwnership(entity, multiDatastream.getProperty(npPartyDatastream), principal);
+                	if (pluginMultiDatastream != null)
+                	{
+                		Entity multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
+                    	if (multiDatastream != null)
+                    		assertOwnership(entity, multiDatastream.getProperty(npPartyDatastream), principal);
+                	}
 
     	        });
 
