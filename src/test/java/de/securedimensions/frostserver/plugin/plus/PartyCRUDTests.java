@@ -76,12 +76,15 @@ public class PartyCRUDTests extends AbstractTestClass {
 	public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
 	public static final String ADMIN = "admin";
 
+	private static String PARTY_ALICE = String.format("{\"name\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"displayName\": \"ALICE\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
+	private static String PARTY_LJS = String.format("{\"name\": \"Long John Silver Citizen Scientist\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"displayName\": \"LJS\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
+
 	private static final Properties SERVER_PROPERTIES = new Properties();
 
 	static {
 		SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
-		SERVER_PROPERTIES.put("plugins.plus.enable", "true");
-		SERVER_PROPERTIES.put("plugins.plus.enableOwnershipConcept", "true");
+		SERVER_PROPERTIES.put("plugins.plus.enable", true);
+		SERVER_PROPERTIES.put("plugins.plus.enable.enforceOwnsership", true);
 		SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
 		// For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
 		SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
@@ -90,14 +93,14 @@ public class PartyCRUDTests extends AbstractTestClass {
 
 	private static SensorThingsService service;
 
-	private String partyLJS, partyALICE;
+	private String partyLJSUrl, partyALICEUrl;
 
 	public PartyCRUDTests(ServerVersion version) throws ServiceFailureException, IOException, URISyntaxException {
 		super(version, SERVER_PROPERTIES);
 		// This is the party that we are going to apply the Update and Delete tests
 		// on...
-		partyLJS = serverSettings.getServiceUrl(version) + "/Parties('" + LJS + "')";
-		partyALICE = serverSettings.getServiceUrl(version) + "/Parties('" + ALICE + "')";
+		partyLJSUrl = serverSettings.getServiceUrl(version) + "/Parties('" + LJS + "')";
+		partyALICEUrl = serverSettings.getServiceUrl(version) + "/Parties('" + ALICE + "')";
 	}
 
 	@Override
@@ -126,7 +129,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	}
 
 	/*
-	 * UPDATE Tests
+	 * CREATE Tests
 	 */
 
 	/*
@@ -134,7 +137,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	 */
 	@Test
 	public void test01SameUserCreateParty() throws ClientProtocolException, IOException {
-		String request = "{\"name\": \"Long John Silver\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"" + LJS + "\"}";
+		String request = PARTY_LJS;
 		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
@@ -156,7 +159,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	 */
 	@Test
 	public void test02OtherUserCreateParty() throws ClientProtocolException, IOException {
-		String request = "{\"name\": \"Long John Silver\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"" + LJS + "\"}";
+		String request = PARTY_LJS;
 		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
@@ -179,7 +182,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	 */
 	@Test
 	public void test03AdminCreateParty() throws ClientProtocolException, IOException {
-		String request = "{\"name\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"role\": \"individual\", \"authId\": \"" + ALICE + "\"}";
+		String request = PARTY_ALICE;
 		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
@@ -189,7 +192,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 		if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
 			// we need to make sure that Alice was created
 			Assert.assertTrue(ADMIN_SHOULD_BE_ABLE_TO_CREATE,
-					response.getFirstHeader("Location").getValue().equalsIgnoreCase(partyALICE));
+					response.getFirstHeader("Location").getValue().equalsIgnoreCase(partyALICEUrl));
 		} else {
 			fail(response, ADMIN_SHOULD_BE_ABLE_TO_CREATE);
 		}
@@ -200,7 +203,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	 */
 	@Test
 	public void test02AnonCreateParty() throws ClientProtocolException, IOException {
-		String request = "{\"name\": \"Long John Silver\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"" + LJS + "\"}";
+		String request = PARTY_LJS;
 		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
@@ -227,7 +230,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	@Test
 	public void test10SameUserUpdateParty() throws ClientProtocolException, IOException {
 		String request = "{\"role\": \"institutional\"}";
-		HttpPatch httpPatch = new HttpPatch(partyLJS);
+		HttpPatch httpPatch = new HttpPatch(partyLJSUrl);
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
 		setAuth(service, LJS, "");
@@ -246,7 +249,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	@Test
 	public void test11SameUserUpdatePartyAuthId() throws ClientProtocolException, IOException {
 		String request = "{\"authId\": \"505851c3-2de9-4844-9bd5-d185fe944265\"}";
-		HttpPatch httpPatch = new HttpPatch(partyLJS);
+		HttpPatch httpPatch = new HttpPatch(partyLJSUrl);
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
 		setAuth(service, LJS, "");
@@ -266,7 +269,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	@Test
 	public void test12OtherUserUpdateParty() throws ClientProtocolException, IOException {
 		String request = "{\"role\": \"institutional\"}";
-		HttpPatch httpPatch = new HttpPatch(partyLJS);
+		HttpPatch httpPatch = new HttpPatch(partyLJSUrl);
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
 		setAuth(service, ALICE, "");
@@ -286,7 +289,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	@Test
 	public void test13AdminUpdateParty() throws ClientProtocolException, IOException {
 		String request = "{\"role\": \"institutional\"}";
-		HttpPatch httpPatch = new HttpPatch(partyALICE);
+		HttpPatch httpPatch = new HttpPatch(partyALICEUrl);
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
 		setAuth(service, ADMIN, "");
@@ -305,7 +308,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	@Test
 	public void test14AnonUpdateParty() throws ClientProtocolException, IOException {
 		String request = "{\"role\": \"institutional\"}";
-		HttpPatch httpPatch = new HttpPatch(partyALICE);
+		HttpPatch httpPatch = new HttpPatch(partyALICEUrl);
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
 		unsetAuth(service);
@@ -327,7 +330,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	 */
 	@Test
 	public void test20SameUserDeleteParty() throws ClientProtocolException, IOException {
-		HttpDelete httpDelete = new HttpDelete(partyLJS);
+		HttpDelete httpDelete = new HttpDelete(partyLJSUrl);
 		setAuth(service, LJS, "");
 		CloseableHttpResponse response = service.execute(httpDelete);
 
@@ -344,7 +347,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	 */
 	@Test
 	public void test21OtherUserDeleteParty() throws ClientProtocolException, IOException {
-		HttpDelete httpDelete = new HttpDelete(partyALICE);
+		HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
 		setAuth(service, LJS, "");
 		CloseableHttpResponse response = service.execute(httpDelete);
 
@@ -362,7 +365,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	@Test
 	public void test22AdminDeleteParty() throws ClientProtocolException, IOException {
 		// Party Alice created by Admin in a previous test
-		HttpDelete httpDelete = new HttpDelete(partyALICE);
+		HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
 		setAuth(service, ADMIN, "");
 		CloseableHttpResponse response = service.execute(httpDelete);
 
@@ -379,7 +382,7 @@ public class PartyCRUDTests extends AbstractTestClass {
 	 */
 	@Test
 	public void test23AnonDeleteParty() throws ClientProtocolException, IOException {
-		HttpDelete httpDelete = new HttpDelete(partyALICE);
+		HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
 		unsetAuth(service);
 		CloseableHttpResponse response = service.execute(httpDelete);
 

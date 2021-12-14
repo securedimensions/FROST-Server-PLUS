@@ -39,32 +39,32 @@ import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.plus.auth.PrincipalAuthProvider;
 
 /**
- * Tests for the Party class properties. According to the ownership concept, a
- * Party's properties can only be changed by the user that 'owns' the Party
- * instance. That user has the same UUID as the Party's authId property.
+ * Tests for the Datastream class properties. According to the ownership concept, a
+ * Datastream's properties can only be changed by the user that 'owns' the Datastream
+ * instance. 
  *
  * @author Andreas Matheus
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ThingCRUDTests extends AbstractTestClass {
+public class DatastreamCRUDTests extends AbstractTestClass {
 
 	/**
 	 * The logger for this class.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(ThingCRUDTests.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DatastreamCRUDTests.class);
 
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE = "Admin should be able to create.";
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE = "Admin should be able to update.";
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE = "Admin should be able to delete.";
-	private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_ASSOCIATED = "Same user should be able to create Thing associated to own Party.";
+	private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_ASSOCIATED = "Same user should be able to create Datastream associated to own Party.";
 	private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE = "Same user should be able to update.";
-	private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_LOCATION = "Same user should be able to update Location.";
+	private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION = "Same user should be able to update Observation.";
 	private static final String SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY = "Same user should be able to update Party.";
 	private static final String SAME_USER_SHOULD_NOT_BE_ABLE_TO_DELETE = "Same User should NOT be able to delete.";
-	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_ASSOCIATED = "Other user should NOT be able to create Thing associated to other Party.";
+	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_ASSOCIATED = "Other user should NOT be able to create Datastream associated to other Party.";
 	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE = "Other user should NOT be able to update.";
 	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE = "Other user should NOT be able to delete.";
-	private static final String ANY_USER_SHOULD_BE_ABLE_TO_CREATE_UNLINKED = "Any user should be able to create Thing NOT linked to a Party.";
+	private static final String ANY_USER_SHOULD_BE_ABLE_TO_CREATE_UNLINKED = "Any user should be able to create Datastream NOT linked to a Party.";
 	private static final String ANON_SHOULD_NOT_BE_ABLE_TO_CREATE = "anon should NOT be able to create.";
 	private static final String ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE = "anon should NOT be able to update.";
 	private static final String ANON_SHOULD_NOT_BE_ABLE_TO_DELETE = "anon should NOT be able to delete.";
@@ -73,47 +73,111 @@ public class ThingCRUDTests extends AbstractTestClass {
 	public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
 	public static final String ADMIN = "admin";
 
-	private static final String  THING = "{\n"
-			+ "    \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
-			+ "    \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
-			+ "    \"properties\": {\n"
-			+ "        \"CPU\": \"1.4GHz\",\n"
-			+ "        \"RAM\": \"4GB\"\n"
+	private static final String  DATASTREAM = "{\n"
+			+ "    \"unitOfMeasurement\": {\n"
+			+ "        \"name\": \"n/a\",\n"
+			+ "        \"symbol\": \"\",\n"
+			+ "        \"definition\": \"https://www.merriam-webster.com/dictionary/picture\"\n"
+			+ "    },\n"
+			+ "    \"name\": \"photo datastream\",\n"
+			+ "    \"description\": \"this datastream is about pictures\",\n"
+			+ "    \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
+			+ "    \"ObservedProperty\": {\n"
+			+ "        \"name\": \"Picture\",\n"
+			+ "        \"definition\": \"https://www.merriam-webster.com/dictionary/picture\",\n"
+			+ "        \"description\": \"The image taken by the camera (the sensor)\"\n"
+			+ "    },\n"
+			+ "    \"Sensor\": {\n"
+			+ "        \"name\": \"Pi NoIR - Raspberry Pi Infrared Camera Module\",\n"
+			+ "        \"description\": \"Sony IMX 219 PQ CMOS image sensor in a fixed-focus module with IR blocking filter removed\",\n"
+			+ "        \"encodingType\": \"application/pdf\",\n"
+			+ "        \"metadata\": \"https://cdn-reichelt.de/documents/datenblatt/A300/RASP_CAN_2.pdf\"\n"
+			+ "    },\n"
+			+ "    \"License\": {\n"
+			+ "        \"name\": \"CC0\",\n"
+			+ "        \"definition\": \"https://creativecommons.org/publicdomain/zero/1.0/\",\n"
+			+ "        \"description\": \"CC0 1.0 Universal (CC0 1.0) Public Domain Dedication\",\n"
+			+ "        \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/cc-zero.png\"\n"
+			+ "    },\n"
+			+ "    \"Thing\": {\n"
+			+ "         \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
+			+ "        \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
+			+ "        \"properties\": {\n"
+			+ "            \"CPU\": \"1.4GHz\",\n"
+			+ "            \"RAM\": \"4GB\"\n"
+			+ "        }\n"
 			+ "    }\n"
 			+ "}";
 	
 	private static String PARTY_ALICE = String.format("{\"name\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
 	private static String PARTY_LJS = String.format("{\"name\": \"Long John Silver Citizen Scientist\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
 	
-	private static String THING_PARTY = "{\n"
-			+ "    \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
-			+ "    \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
-			+ "    \"properties\": {\n"
-			+ "        \"CPU\": \"1.4GHz\",\n"
-			+ "        \"RAM\": \"4GB\"\n"
+	private static String DATASTREAM_PARTY = "{\n"
+			+ "    \"unitOfMeasurement\": {\n"
+			+ "        \"name\": \"n/a\",\n"
+			+ "        \"symbol\": \"\",\n"
+			+ "        \"definition\": \"https://www.merriam-webster.com/dictionary/picture\"\n"
+			+ "    },\n"
+			+ "    \"name\": \"photo datastream\",\n"
+			+ "    \"description\": \"this datastream is about pictures\",\n"
+			+ "    \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
+			+ "    \"ObservedProperty\": {\n"
+			+ "        \"name\": \"Picture\",\n"
+			+ "        \"definition\": \"https://www.merriam-webster.com/dictionary/picture\",\n"
+			+ "        \"description\": \"The image taken by the camera (the sensor)\"\n"
+			+ "    },\n"
+			+ "    \"Sensor\": {\n"
+			+ "        \"name\": \"Pi NoIR - Raspberry Pi Infrared Camera Module\",\n"
+			+ "        \"description\": \"Sony IMX 219 PQ CMOS image sensor in a fixed-focus module with IR blocking filter removed\",\n"
+			+ "        \"encodingType\": \"application/pdf\",\n"
+			+ "        \"metadata\": \"https://cdn-reichelt.de/documents/datenblatt/A300/RASP_CAN_2.pdf\"\n"
+			+ "    },\n"
+			+ "    \"License\": {\n"
+			+ "        \"name\": \"CC0\",\n"
+			+ "        \"definition\": \"https://creativecommons.org/publicdomain/zero/1.0/\",\n"
+			+ "        \"description\": \"CC0 1.0 Universal (CC0 1.0) Public Domain Dedication\",\n"
+			+ "        \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/cc-zero.png\"\n"
 			+ "    },\n"
 			+ "    \"Party\": {\n"
 			+ "        \"name\": \"Long John Silver Citizen Scientist\",\n"
 			+ "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
 			+ "        \"role\": \"individual\",\n"
 			+ "        \"authId\": \"%s\"\n"
+			+ "    },\n"
+			+ "    \"Thing\": {\n"
+			+ "         \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
+			+ "        \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
+			+ "        \"properties\": {\n"
+			+ "            \"CPU\": \"1.4GHz\",\n"
+			+ "            \"RAM\": \"4GB\"\n"
+			+ "        }\n"
 			+ "    }\n"
 			+ "}";
 	
-	private static final String LOCATION = "{\n"
-			+ "    \"name\": \"My Garden\",\n"
-			+ "    \"description\": \"The north facing part of the property\",\n"
-			+ "    \"encodingType\": \"application/geo+json\",\n"
-			+ "    \"location\": {\n"
-			+ "        \"type\": \"Point\",\n"
-			+ "        \"coordinates\": [\n"
-			+ "            0,\n"
-			+ "            1\n"
-			+ "        ]\n"
+	private static final String OBSERVATION = "{\n"
+			+ "    \"phenomenonTime\": \"2021-04-20T02:00:00Z\",\n"
+			+ "    \"resultTime\": \"2021-04-21T15:43:00Z\",\n"
+			+ "    \"result\": \"\",\n"
+			+ "    \"parameters\": {\n"
+			+ "        \"tilt_angle\": \"30\",\n"
+			+ "        \"distance\": \"5\",\n"
+			+ "        \"shutter\": \"2.4\",\n"
+			+ "        \"speed\": \"1/400\"\n"
 			+ "    },\n"
-			+ "    \"properties\": {\n"
-			+ "        \"city\": \"Munich\",\n"
-			+ "        \"countryCode\": \"DE\"\n"
+			+ "    \"FeatureOfInterest\": {\n"
+			+ "        \"name\": \"The observed boundary\",\n"
+			+ "        \"description\": \"The actual real worl area observed\",\n"
+			+ "        \"encodingType\": \"application/geo+json\",\n"
+			+ "        \"feature\": {\n"
+			+ "            \"type\": \"Feature\",\n"
+			+ "            \"geometry\": {\n"
+			+ "              \"type\": \"Polygon\",\n"
+			+ "              \"coordinates\": [\n"
+			+ "                [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],\n"
+			+ "                  [100.0, 1.0], [100.0, 0.0] ]\n"
+			+ "                ]\n"
+			+ "            }\n"
+			+ "        }\n"
 			+ "    }\n"
 			+ "}";
 	
@@ -140,7 +204,7 @@ public class ThingCRUDTests extends AbstractTestClass {
 
 	private String partyLJS, partyALICE;
 
-	public ThingCRUDTests(ServerVersion version) throws ServiceFailureException, IOException, URISyntaxException {
+	public DatastreamCRUDTests(ServerVersion version) throws ServiceFailureException, IOException, URISyntaxException {
 		super(version, SERVER_PROPERTIES);
 		// This is the party that we are going to apply the Update and Delete tests
 		// on...
@@ -181,9 +245,9 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * SAME_USER_SHOULD_BE_ABLE_TO_CREATE_ASSOCIATED Success: 201 Fail: n/a
 	 */
 	@Test
-	public void test01SameUserCreateThingsAssoc() throws ClientProtocolException, IOException {
-		String request = String.format(THING_PARTY,LJS);
-		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
+	public void test01SameUserCreateDatastreamsAssoc() throws ClientProtocolException, IOException {
+		String request = String.format(DATASTREAM_PARTY,LJS);
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, LJS, "");
@@ -208,9 +272,9 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_ASSOCIATED Success: 403 Fail: 201
 	 */
 	@Test
-	public void test02OtherUserCreateThingAssoc() throws ClientProtocolException, IOException {
-		String request = String.format(THING_PARTY,LJS);
-		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
+	public void test02OtherUserCreateDatastreamAssoc() throws ClientProtocolException, IOException {
+		String request = String.format(DATASTREAM_PARTY,LJS);
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, ALICE, "");
@@ -231,16 +295,16 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * ADMIN_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
 	 */
 	@Test
-	public void test03AdminCreateThingAssoc() throws ClientProtocolException, IOException {
-		String request = String.format(THING_PARTY,ALICE);
-		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
+	public void test03AdminCreateDatastreamAssoc() throws ClientProtocolException, IOException {
+		String request = String.format(DATASTREAM_PARTY,ALICE);
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, ADMIN, "");
 		CloseableHttpResponse response = service.execute(httpPost);
 
 		if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
-			// we need to make sure that the Thing is associated with Alice
+			// we need to make sure that the Datastream is associated with Alice
 			String location = response.getFirstHeader("Location").getValue();
 			HttpGet httpGet = new HttpGet(location + "/Party");
 			response = service.execute(httpGet);
@@ -258,9 +322,9 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * ANON_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 401 Fail: 201
 	 */
 	@Test
-	public void test02AnonCreateThingAssoc() throws ClientProtocolException, IOException {
-		String request = String.format(THING_PARTY,LJS);
-		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
+	public void test02AnonCreateDatastreamAssoc() throws ClientProtocolException, IOException {
+		String request = String.format(DATASTREAM_PARTY,LJS);
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 
@@ -280,9 +344,9 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * ANY_USER_SHOULD_BE_ABLE_TO_CREATE_UNLINKED Success: 201 Fail: n/a
 	 */
 	@Test
-	public void test01AnyeUserCreateThing() throws ClientProtocolException, IOException {
-		String request = THING;
-		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
+	public void test01AnyeUserCreateDatastream() throws ClientProtocolException, IOException {
+		String request = DATASTREAM;
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, LJS, "");
@@ -300,10 +364,10 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * UPDATE Tests
 	 */
 
-	private String createThingParty(String user) throws IOException
+	private String createDatastreamParty(String user) throws IOException
 	{
-		String request = String.format(THING_PARTY,user);
-		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
+		String request = String.format(DATASTREAM_PARTY,user);
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, LJS, "");
@@ -316,8 +380,8 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * SAME_USER_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
 	 */
 	@Test
-	public void test10SameUserUpdateThing() throws ClientProtocolException, IOException {
-		String thingURL = createThingParty(LJS);
+	public void test10SameUserUpdateDatastream() throws ClientProtocolException, IOException {
+		String thingURL = createDatastreamParty(LJS);
 		
 		String request = "{\"name\": \"foo bar\"}";
 		HttpPatch httpPatch = new HttpPatch(thingURL);
@@ -334,23 +398,21 @@ public class ThingCRUDTests extends AbstractTestClass {
 	}
 
 	/*
-	 * SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_LOCATION Success: 200 Fail: n/a
+	 * SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION Success: 200 Fail: n/a
 	 */
 	@Test
-	public void test10SameUserUpdateThingLocation() throws ClientProtocolException, IOException {
-		String thingURL = createThingParty(LJS);
-		
-		String request = LOCATION;
-		HttpPost httpPost = new HttpPost(thingURL + "/Locations");
+	public void test10SameUserUpdateDatastreamObservation() throws ClientProtocolException, IOException {
+		String request = OBSERVATION;
+		HttpPost httpPost = new HttpPost(createDatastreamParty(LJS) + "/Observations");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, LJS, "");
 		CloseableHttpResponse response = service.execute(httpPost);
 
 		if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
-			Assert.assertTrue(SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_LOCATION, Boolean.TRUE);
+			Assert.assertTrue(SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION, Boolean.TRUE);
 		} else {
-			fail(response, SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_LOCATION);
+			fail(response, SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION);
 		}
 	}
 
@@ -358,8 +420,8 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 200 Fail: n/a
 	 */
 	@Test
-	public void test10SameUserUpdateThingParty() throws ClientProtocolException, IOException {
-		String thingURL = createThingParty(LJS);
+	public void test10SameUserUpdateDatastreamParty() throws ClientProtocolException, IOException {
+		String thingURL = createDatastreamParty(LJS);
 		
 		String request = "{\"Party\":" + PARTY_ALICE + "}";
 		HttpPatch httpPatch = new HttpPatch(thingURL);
@@ -380,11 +442,9 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE Success: 403 Fail: n/a
 	 */
 	@Test
-	public void test12OtherUserUpdateThingLocation() throws ClientProtocolException, IOException {
-		String thingURL = createThingParty(LJS);
-		
-		String request = LOCATION;
-		HttpPost httpPost = new HttpPost(thingURL + "/Locations");
+	public void test12OtherUserUpdateDatastreamObservation() throws ClientProtocolException, IOException {
+		String request = OBSERVATION;
+		HttpPost httpPost = new HttpPost(createDatastreamParty(LJS) + "/Observations");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, ALICE, "");
@@ -402,11 +462,9 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 * ADMIN_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
 	 */
 	@Test
-	public void test13AdminUpdateThingLocation() throws ClientProtocolException, IOException {
-		String thingURL = createThingParty(LJS);
-		
-		String request = LOCATION;
-		HttpPost httpPost = new HttpPost(thingURL + "/Locations");
+	public void test13AdminUpdateDatastreamObservation() throws ClientProtocolException, IOException {
+		String request = OBSERVATION;
+		HttpPost httpPost = new HttpPost(createDatastreamParty(LJS) + "/Observations");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, ADMIN, "");
@@ -424,10 +482,8 @@ public class ThingCRUDTests extends AbstractTestClass {
 	 */
 	@Test
 	public void test14AnonUpdateParty() throws ClientProtocolException, IOException {
-		String thingURL = createThingParty(LJS);
-		
-		String request = "{\"Location\":" + LOCATION + "}";
-		HttpPatch httpPatch = new HttpPatch(thingURL);
+		String request = "{\"Observation\":" + OBSERVATION + "}";
+		HttpPatch httpPatch = new HttpPatch(createDatastreamParty(LJS));
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
 		unsetAuth(service);
