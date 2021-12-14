@@ -20,7 +20,7 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-05-11-PLUS-PARTIES-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2021-12-14-PLUS-PARTIES-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="PARTIES" />
@@ -31,7 +31,7 @@
             <column name="NAME" type="TEXT"/>
             <column name="DESCRIPTION" type="TEXT"/>
             <column name="AUTHID" type="TEXT"/>
-            <column name="NICKNAME" type="TEXT"/>
+            <column name="DISPLAYNAME" type="TEXT"/>
             <column name="ROLE" type="TEXT"/>
         </createTable>
     </changeSet>
