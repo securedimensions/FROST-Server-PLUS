@@ -19,9 +19,15 @@ package de.securedimensions.frostserver.plugin.plus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
+
 import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.fieldwrapper.StaTimeIntervalWrapper.KEY_TIME_INTERVAL_END;
 import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.fieldwrapper.StaTimeIntervalWrapper.KEY_TIME_INTERVAL_START;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationManyToMany;
@@ -32,8 +38,20 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyField
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.NFP;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
+import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
+import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
+import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
+
+import java.security.Principal;
 import java.time.OffsetDateTime;
+import java.util.Map;
+
 import org.jooq.DataType;
+import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.TableField;
@@ -194,6 +212,76 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
         tableRelations.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId, entityFactories);
 
+        /*
+        // Register with Party
+        pfReg.addEntry(pluginPLUS.npParties, TableImpGroups::getId, entityFactories);
+
+        TableImpParty tableParties = tables.getTableForClass(TableImpParty.class);
+        tableParties.getPropertyFieldRegistry()
+                .addEntry(pluginPLUS.npPartyGroups, TableImpParty::getId, entityFactories);
+        */
+
+        
+        this.registerHookPreInsert(-10.0, new HookPreInsert() {
+
+			@Override
+			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
+					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+
+            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
+            		return true;
+            	
+        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+            	if (isAdmin(principal))
+            		return true;
+            	
+            	Entity party = entity.getProperty(pluginPLUS.npPartyGroup);
+            	if (party != null)
+            		assertOwnershipParty(party, principal);
+            	            	
+            	return true;
+			}
+        });
+        
+        this.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+
+			@Override
+			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
+					throws NoSuchEntityException, IncompleteEntityException {
+				
+            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
+            		return;
+            	
+        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+            	if (isAdmin(principal))
+            		return;
+            	
+            	Entity group = (Entity)pm.get(pluginPLUS.etGroup, ParserUtils.idFromObject((entityId)));
+            	assertOwnershipGroup(group, principal);            		            	
+
+			} 
+		});
+
+        this.registerHookPreDelete(-10.0, new HookPreDelete() {
+
+			@Override
+			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
+
+            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
+            		return;
+            	
+        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+
+            	if (isAdmin(principal))
+            		return;
+            	
+            	Entity group = (Entity)pm.get(pluginPLUS.etGroup, ParserUtils.idFromObject((entityId)));
+            	assertOwnershipGroup(group, principal);
+			} 
+		});
+
     }
 
     @Override
@@ -216,4 +304,65 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
         return this;
     }
 
+    private void assertPrincipal(Principal principal)
+    {    	
+    	if (principal == null)
+    		throw new UnauthorizedException("No Principal");
+    }
+    
+    private boolean isAdmin(Principal principal)
+    {    	
+    	if (principal == null)
+    		throw new UnauthorizedException("Cannot create Party - no user identified");
+    	
+		
+    	return ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin());
+    }
+
+    private void assertOwnershipGroup(Entity group, Principal principal)
+    {
+    	assertPrincipal(principal);
+    	
+    	if (group == null)
+    		throw new IllegalArgumentException("Group does not exist");
+
+    	if (!group.getEntityType().equals(pluginPLUS.etGroup))
+    		throw new IllegalArgumentException("Entity not of type Group");
+    		
+    	// We can get the username from the Principal
+		String userId = principal.getName();
+
+    	// Ensure Ownership for Group
+    	Entity party = null;
+    	
+    	if (group != null)
+    		party = group.getProperty(pluginPLUS.npPartyGroup);
+    	
+    	if (party == null)
+    		throw new ForbiddenException("Group not linked to a Party");
+    	
+    	if (!party.getId().toString().equalsIgnoreCase(userId))
+    		throw new ForbiddenException("Group not linked to acting Party"); 
+    	
+    }
+
+    private void assertOwnershipParty(Entity party, Principal principal)
+    {
+    	assertPrincipal(principal);
+    	
+    	if (party == null)
+    		throw new IllegalArgumentException("Party does not exist");
+
+    	if (!party.getEntityType().equals(pluginPLUS.etParty))
+    		throw new IllegalArgumentException("Entity not of type Party");
+    		
+    	// We can get the username from the Principal
+		String userId = principal.getName();
+		if ((party.isSetProperty(pluginPLUS.epAuthId)) && (!userId.equalsIgnoreCase(party.getProperty(pluginPLUS.epAuthId))))
+    	{
+    		// The authId is set by the plugin - it cannot be changed via a PATCH
+    		throw new ForbiddenException("Party not representing acting user");
+    	}
+    }
+    
 }

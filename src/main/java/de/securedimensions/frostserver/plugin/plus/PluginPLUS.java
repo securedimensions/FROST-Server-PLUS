@@ -111,8 +111,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
     public final NavigationPropertyEntitySet npObservationGroups = new NavigationPropertyEntitySet("Groups");
     public final NavigationPropertyEntitySet npRelationGroups = new NavigationPropertyEntitySet("Groups");
+    public final NavigationPropertyEntitySet npPartyGroups = new NavigationPropertyEntitySet("Parties");
     public final NavigationPropertyEntitySet npObservations = new NavigationPropertyEntitySet("Observations", npObservationGroups);
     public final NavigationPropertyEntitySet npRelations = new NavigationPropertyEntitySet("Relations", npRelationGroups);
+    public final NavigationPropertyEntitySet npParties = new NavigationPropertyEntitySet("Parties", npPartyGroups);
 
     public final EntityType etGroup = new EntityType("Group", "Groups");
 
@@ -436,7 +438,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-                	assertAdmin(principal);
+            		if (isAdmin(principal))
+                		return;
     	
     	        	assertOwnership(entity, entity.getProperty(npPartyGroup), principal);
 
@@ -448,7 +451,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-                	assertAdmin(principal);
+            		if (isAdmin(principal))
+                		return;
     	
     	        	assertOwnership(entity, entity.getProperty(npPartyGroup), principal);
 
@@ -538,7 +542,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-                	assertAdmin(principal);
+            		if (isAdmin(principal))
+                		return;
     	
     	        	assertOwnership(entity, entity.getProperty(npPartyMultiDatastream), principal);
 
@@ -550,7 +555,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
-                	assertAdmin(principal);
+            		if (isAdmin(principal))
+                		return;
     	
     	        	assertOwnership(entity, entity.getProperty(npPartyMultiDatastream), principal);
 
