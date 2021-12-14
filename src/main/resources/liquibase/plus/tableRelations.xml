@@ -20,7 +20,7 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-07-23-PLUS-RELATIONS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2021-12-14-PLUS-RELATIONS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
                 <or>
@@ -33,12 +33,12 @@
             <column name="DESCRIPTION" type="TEXT"/>
             <column name="PROPERTIES" type="JSONB"/>
             <column name="ROLE" type="TEXT"/>
-            <column name="NAMESPACE" type="TEXT"/>
+            <column name="EXTERNAL_OBJECT" type="TEXT"/>
             <column name="SUBJECT_ID" type="${idType-Observation}">
                 <constraints nullable="false"/>
             </column>
             <column name="OBJECT_ID" type="${idType-Observation}">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="GROUP_ID" type="${idType-Group}">
                 <constraints nullable="true"/>

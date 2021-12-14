@@ -52,9 +52,9 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     public final TableField<Record, String> colRole = createField(DSL.name("ROLE"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.RELATIONS.EP_NAMESPACE</code>.
+     * The column <code>public.RELATIONS.EP_EXTERNAL_OBJECT</code>.
      */
-    public final TableField<Record, String> colNamespace = createField(DSL.name("NAMESPACE"), SQLDataType.CLOB, this);
+    public final TableField<Record, String> colExternalObject = createField(DSL.name("EXTERNAL_OBJECT"), SQLDataType.CLOB, this);
 
     /**
      * The column <code>public.RELATIONS.EP_ID</code>.
@@ -145,7 +145,7 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
 
         pfReg.addEntryString(pluginPLUS.epRelationRole, table -> table.colRole);
-        pfReg.addEntryString(pluginPLUS.epNamespace, table -> table.colNamespace);
+        pfReg.addEntryString(pluginPLUS.epExternalObject, table -> table.colExternalObject);
 
         pfReg.addEntry(pluginPLUS.npSubjectRelation, TableImpRelations::getSubjectId, entityFactories);
         pfReg.addEntry(pluginPLUS.npObjectRelation, TableImpRelations::getObjectId, entityFactories);
