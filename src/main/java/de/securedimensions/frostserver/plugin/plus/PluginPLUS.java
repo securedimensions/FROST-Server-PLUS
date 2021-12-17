@@ -27,8 +27,10 @@ import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInterval;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManagerFactory;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.property.EntityPropertyMain;
 import de.fraunhofer.iosb.ilt.frostserver.property.NavigationPropertyMain.NavigationPropertyEntity;
@@ -49,6 +51,13 @@ import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperDatastream;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperGroup;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperLocation;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperMultiDatastream;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperObservation;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperParty;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperThing;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
 import java.io.IOException;
 import java.io.Writer;
@@ -190,6 +199,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
     private CoreSettings settings;
     private PluginPlusSettings modelSettings;
+    
+    private PluginCoreModel pluginCoreModel;
+	private PluginMultiDatastream pluginMultiDatastream;
+
     private boolean enabled;
     private boolean enforceOwnsership;
     private boolean transferOwnsership;
@@ -212,7 +225,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         modelSettings = new PluginPlusSettings(settings);
         settings.getPluginManager().registerPlugin(this);
 
-        final PluginCoreModel pluginCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
+        pluginCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
+        pluginMultiDatastream = settings.getPluginManager().getPlugin(PluginMultiDatastream.class);
+        
         final ModelRegistry mr = settings.getModelRegistry();
         /**
          * Class License
@@ -489,7 +504,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         npRelationGroups.setEntityType(etGroup);
         npRelations.setEntityType(etRelation);
 
-        final PluginMultiDatastream pluginMultiDatastream = settings.getPluginManager().getPlugin(PluginMultiDatastream.class);
 
         // link subject and object to Relations
         pluginCoreModel.etObservation
@@ -612,8 +626,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     @Override
     public boolean linkEntityTypes(PersistenceManager pm) {
         LOGGER.info("Linking PLUS Types...");
-        final PluginCoreModel pluginCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
-    	final PluginMultiDatastream pluginMultiDatastream = settings.getPluginManager().getPlugin(PluginMultiDatastream.class);
 
         if (pluginCoreModel == null || !pluginCoreModel.isFullyInitialised()) {
             return false;
@@ -636,7 +648,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             /**
              * Class Group
              */
-            tableCollection.registerTable(etGroup, new TableImpGroups(dataTypeGroup, this, pluginCoreModel));
+            tableCollection.registerTable(etGroup, new TableImpGroups(dataTypeGroup, this, pluginCoreModel, pluginMultiDatastream));
             tableCollection.registerTable(new TableImpGroupsObservations(dataTypeGroup, dataTypeObservation));
             tableCollection.registerTable(new TableImpGroupsRelations(dataTypeGroup, dataTypeRelation));
 
@@ -654,6 +666,20 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
              * Class Project
              */
             tableCollection.registerTable(etProject, new TableImpProject(dataTypeProject, this, pluginCoreModel));
+            
+            /*
+             * Table Helpers
+             */
+            
+            new TableHelperParty(settings, ppm).registerPreHooks();
+            new TableHelperDatastream(settings, ppm).registerPreHooks();
+            new TableHelperMultiDatastream(settings, ppm).registerPreHooks();
+            new TableHelperThing(settings, ppm).registerPreHooks();
+            new TableHelperGroup(settings, ppm).registerPreHooks();
+            new TableHelperObservation(settings, ppm).registerPreHooks();
+            new TableHelperLocation(settings, ppm).registerPreHooks();
+
+            
         }
         fullyInitialised = true;
         return true;
@@ -663,14 +689,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         if (target == null) {
             target = new LinkedHashMap<>();
         }
-        PluginCoreModel pCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
-        pCoreModel.createLiqibaseParams(ppm, target);
-        PluginMultiDatastream pMultiDs = settings.getPluginManager().getPlugin(PluginMultiDatastream.class);
-        if (pMultiDs == null) {
+        pluginCoreModel.createLiqibaseParams(ppm, target);
+        if (pluginMultiDatastream == null) {
             // Create placeholder variables, otherwise Liquibase complains.
             ppm.generateLiquibaseVariables(target, "MultiDatastream", modelSettings.idTypeDefault);
         } else {
-            pMultiDs.createLiqibaseParams(ppm, target);
+        	pluginMultiDatastream.createLiqibaseParams(ppm, target);
         }
         ppm.generateLiquibaseVariables(target, "Group", modelSettings.idTypeGroup);
         ppm.generateLiquibaseVariables(target, "License", modelSettings.idTypeLicense);

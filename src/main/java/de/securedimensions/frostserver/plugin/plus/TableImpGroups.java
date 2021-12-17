@@ -37,7 +37,9 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyField
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInterval;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.NFP;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpLocations;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
@@ -45,6 +47,8 @@ import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperGroup;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperLocation;
 
 import java.security.Principal;
 import java.time.OffsetDateTime;
@@ -114,6 +118,8 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
 
     private final PluginPLUS pluginPLUS;
     private final PluginCoreModel pluginCoreModel;
+    private final PluginMultiDatastream pluginMultiDatastream;
+
 
     /**
      * Create a <code>public.GROUPS</code> table reference.
@@ -124,16 +130,18 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpGroups(DataType<?> idType, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel) {
+    public TableImpGroups(DataType<?> idType, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         super(idType, DSL.name("GROUPS"), null);
         this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
+        this.pluginMultiDatastream = pluginMultiDatastream;
     }
 
-    private TableImpGroups(Name alias, TableImpGroups aliased, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel) {
+    private TableImpGroups(Name alias, TableImpGroups aliased, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         super(aliased.getIdType(), alias, aliased);
         this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
+        this.pluginMultiDatastream = pluginMultiDatastream;
     }
 
     @Override
@@ -211,76 +219,7 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
         TableImpRelations tableRelations = tables.getTableForClass(TableImpRelations.class);
         tableRelations.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId, entityFactories);
-
-        /*
-        // Register with Party
-        pfReg.addEntry(pluginPLUS.npParties, TableImpGroups::getId, entityFactories);
-
-        TableImpParty tableParties = tables.getTableForClass(TableImpParty.class);
-        tableParties.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npPartyGroups, TableImpParty::getId, entityFactories);
-        */
-
         
-        this.registerHookPreInsert(-10.0, new HookPreInsert() {
-
-			@Override
-			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
-					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
-
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
-            		return true;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
-
-            	if (isAdmin(principal))
-            		return true;
-            	
-            	Entity party = entity.getProperty(pluginPLUS.npPartyGroup);
-            	if (party != null)
-            		assertOwnershipParty(party, principal);
-            	            	
-            	return true;
-			}
-        });
-        
-        this.registerHookPreUpdate(-10.0, new HookPreUpdate() {
-
-			@Override
-			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
-					throws NoSuchEntityException, IncompleteEntityException {
-				
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
-            		return;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
-
-            	if (isAdmin(principal))
-            		return;
-            	
-            	Entity group = (Entity)pm.get(pluginPLUS.etGroup, ParserUtils.idFromObject((entityId)));
-            	assertOwnershipGroup(group, principal);            		            	
-
-			} 
-		});
-
-        this.registerHookPreDelete(-10.0, new HookPreDelete() {
-
-			@Override
-			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
-
-            	if (pluginPLUS.isEnforceOwnershipEnabled() != true)
-            		return;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
-
-            	if (isAdmin(principal))
-            		return;
-            	
-            	Entity group = (Entity)pm.get(pluginPLUS.etGroup, ParserUtils.idFromObject((entityId)));
-            	assertOwnershipGroup(group, principal);
-			} 
-		});
 
     }
 
@@ -296,7 +235,7 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
 
     @Override
     public TableImpGroups as(Name alias) {
-        return new TableImpGroups(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+        return new TableImpGroups(alias, this, pluginPLUS, pluginCoreModel, pluginMultiDatastream).initCustomFields();
     }
 
     @Override
@@ -304,65 +243,4 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
         return this;
     }
 
-    private void assertPrincipal(Principal principal)
-    {    	
-    	if (principal == null)
-    		throw new UnauthorizedException("No Principal");
-    }
-    
-    private boolean isAdmin(Principal principal)
-    {    	
-    	if (principal == null)
-    		throw new UnauthorizedException("Cannot create Party - no user identified");
-    	
-		
-    	return ((principal instanceof PrincipalExtended) && ((PrincipalExtended)principal).isAdmin());
-    }
-
-    private void assertOwnershipGroup(Entity group, Principal principal)
-    {
-    	assertPrincipal(principal);
-    	
-    	if (group == null)
-    		throw new IllegalArgumentException("Group does not exist");
-
-    	if (!group.getEntityType().equals(pluginPLUS.etGroup))
-    		throw new IllegalArgumentException("Entity not of type Group");
-    		
-    	// We can get the username from the Principal
-		String userId = principal.getName();
-
-    	// Ensure Ownership for Group
-    	Entity party = null;
-    	
-    	if (group != null)
-    		party = group.getProperty(pluginPLUS.npPartyGroup);
-    	
-    	if (party == null)
-    		throw new ForbiddenException("Group not linked to a Party");
-    	
-    	if (!party.getId().toString().equalsIgnoreCase(userId))
-    		throw new ForbiddenException("Group not linked to acting Party"); 
-    	
-    }
-
-    private void assertOwnershipParty(Entity party, Principal principal)
-    {
-    	assertPrincipal(principal);
-    	
-    	if (party == null)
-    		throw new IllegalArgumentException("Party does not exist");
-
-    	if (!party.getEntityType().equals(pluginPLUS.etParty))
-    		throw new IllegalArgumentException("Entity not of type Party");
-    		
-    	// We can get the username from the Principal
-		String userId = principal.getName();
-		if ((party.isSetProperty(pluginPLUS.epAuthId)) && (!userId.equalsIgnoreCase(party.getProperty(pluginPLUS.epAuthId))))
-    	{
-    		// The authId is set by the plugin - it cannot be changed via a PATCH
-    		throw new ForbiddenException("Party not representing acting user");
-    	}
-    }
-    
 }
