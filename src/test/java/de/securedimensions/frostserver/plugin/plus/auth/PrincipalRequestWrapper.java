@@ -6,7 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
-import de.securedimensions.frostserver.plugin.plus.PartyCRUDTests;
+import de.securedimensions.frostserver.plugin.plus.PartyTests;
 
 public class PrincipalRequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
 
@@ -21,7 +21,7 @@ public class PrincipalRequestWrapper extends javax.servlet.http.HttpServletReque
 
 	@Override
 	public boolean isUserInRole(String role) {
-		if (role.equalsIgnoreCase(PartyCRUDTests.ADMIN) && user.equalsIgnoreCase(PartyCRUDTests.ADMIN)) 
+		if (role.equalsIgnoreCase(PartyTests.ADMIN) && user.equalsIgnoreCase(PartyTests.ADMIN)) 
 			return true;
 		
 		return false;
@@ -33,7 +33,7 @@ public class PrincipalRequestWrapper extends javax.servlet.http.HttpServletReque
 			return null;
 		}
 
-		if (user.equalsIgnoreCase(PartyCRUDTests.ADMIN))
+		if (user.equalsIgnoreCase(PartyTests.ADMIN))
 		{
 			// Admin principal 
 			return new PrincipalExtended(user, true);
