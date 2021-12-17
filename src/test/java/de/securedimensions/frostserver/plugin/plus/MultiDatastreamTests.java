@@ -56,32 +56,32 @@ import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.plus.auth.PrincipalAuthProvider;
 
 /**
- * Tests for the Datastream class properties. According to the ownership concept, a
- * Datastream's properties can only be changed by the user that 'owns' the Datastream
+ * Tests for the MultiDatastream class properties. According to the ownership concept, a
+ * MultiDatastream's properties can only be changed by the user that 'owns' the MultiDatastream
  * instance. 
  *
  * @author Andreas Matheus
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class DatastreamTests extends AbstractTestClass{
+public class MultiDatastreamTests extends AbstractTestClass {
 
 	/**
 	 * The logger for this class.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(DatastreamTests.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MultiDatastreamTests.class);
 
     private static final long serialVersionUID = 1639739965;
 
-	private static final String DATASTREAM_MUST_HAVE_A_PARTY = "Datastream must have a Party.";
+	private static final String MULTIDATASTREAM_MUST_HAVE_A_PARTY = "MultiDatastream must have a Party.";
 	
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE = "Admin should be able to create.";
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE = "Admin should be able to update.";
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE = "Admin should be able to delete.";
-	private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE = "Same user should be able to create Datastream associated to own Party.";
+	private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE = "Same user should be able to create MultiDatastream associated to own Party.";
 	private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE = "Same user should be able to update.";
 	private static final String SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY = "Same user should be able to update Party.";
 	private static final String SAME_USER_SHOULD_BE_ABLE_TO_DELETE = "Same User should NOT be able to delete.";
-	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create Datastream associated to other Party.";
+	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create MultiDatastream associated to other Party.";
 	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE = "Other user should NOT be able to update.";
 	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE = "Other user should NOT be able to delete.";
 	private static final String ANON_SHOULD_NOT_BE_ABLE_TO_CREATE = "anon should NOT be able to create.";
@@ -94,7 +94,7 @@ public class DatastreamTests extends AbstractTestClass{
 	private static final String ANON_SHOULD_NOT_BE_ABLE_TO_ADD_OBSERVATION = "anon should NOT be able to add Observation.";
 	
 	private static final String SAME_USER_SHOULD_BE_ABLE_TO_DELETE_OBSERVATION = "Same user should be able to delete Observation.";
-	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_OBSERVATION = "Other user should NOT be delete to add Observation.";
+	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_OBSERVATION = "Other user should NOT be able to delete Observation.";
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE_OBSERVATION = "Admin should be able to delete Observation.";
 	private static final String ANON_SHOULD_NOT_BE_ABLE_TO_DELETE_OBSERVATION = "anon should NOT be able to delete Observation.";
 	
@@ -109,97 +109,175 @@ public class DatastreamTests extends AbstractTestClass{
 	public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
 	public static final String ADMIN = "admin";
 
-	private static final String  DATASTREAM = "{\n"
-			+ "    \"unitOfMeasurement\": {\n"
-			+ "        \"name\": \"n/a\",\n"
-			+ "        \"symbol\": \"\",\n"
-			+ "        \"definition\": \"https://www.merriam-webster.com/dictionary/picture\"\n"
+	private static final String  MULTIDATASTREAM = "{\n"
+			+ "    \"name\": \"Environmental Datastream from Camera Trap\",\n"
+			+ "    \"description\": \"Environment data for air temperature, humidity, pressure\",\n"
+			+ "    \"multiObservationDataTypes\": [\n"
+			+ "        \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
+			+ "        \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
+			+ "        \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\"\n"
+			+ "    ],\n"
+			+ "    \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_ComplexObservation\",\n"
+			+ "    \"observedArea\": {\n"
+			+ "        \"type\": \"Point\",\n"
+			+ "        \"coordinates\": [\n"
+			+ "            0,\n"
+			+ "            1\n"
+			+ "        ]\n"
 			+ "    },\n"
-			+ "    \"name\": \"photo datastream\",\n"
-			+ "    \"description\": \"this datastream is about pictures\",\n"
-			+ "    \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
-			+ "    \"ObservedProperty\": {\n"
-			+ "        \"name\": \"Picture\",\n"
-			+ "        \"definition\": \"https://www.merriam-webster.com/dictionary/picture\",\n"
-			+ "        \"description\": \"The image taken by the camera (the sensor)\"\n"
+			+ "    \"properties\": {\n"
+			+ "        \"fieldOne\": \"Temperature\",\n"
+			+ "        \"fieldTwo\": \"Humidity\",\n"
+			+ "        \"fieldThree\": \"Preasure\"\n"
 			+ "    },\n"
-			+ "    \"Sensor\": {\n"
-			+ "        \"name\": \"Pi NoIR - Raspberry Pi Infrared Camera Module\",\n"
-			+ "        \"description\": \"Sony IMX 219 PQ CMOS image sensor in a fixed-focus module with IR blocking filter removed\",\n"
-			+ "        \"encodingType\": \"application/pdf\",\n"
-			+ "        \"metadata\": \"https://cdn-reichelt.de/documents/datenblatt/A300/RASP_CAN_2.pdf\"\n"
-			+ "    },\n"
-			+ "    \"License\": {\n"
-			+ "        \"name\": \"CC0\",\n"
-			+ "        \"definition\": \"https://creativecommons.org/publicdomain/zero/1.0/\",\n"
-			+ "        \"description\": \"CC0 1.0 Universal (CC0 1.0) Public Domain Dedication\",\n"
-			+ "        \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/cc-zero.png\"\n"
-			+ "    },\n"
-			+ "    \"Thing\": {\n"
-			+ "         \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
-			+ "        \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
-			+ "        \"properties\": {\n"
-			+ "            \"CPU\": \"1.4GHz\",\n"
-			+ "            \"RAM\": \"4GB\"\n"
+			+ "    \"unitOfMeasurements\": [\n"
+			+ "        {\n"
+			+ "            \"name\": \"Temperature\",\n"
+			+ "            \"symbol\": \"C\",\n"
+			+ "            \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/qudt/index.html#TemperatureUnit\"\n"
+			+ "        },\n"
+			+ "        {\n"
+			+ "            \"name\": \"Humidity\",\n"
+			+ "            \"symbol\": \"RH\",\n"
+			+ "            \"definition\": \"https://byjus.com/physics/unit-of-humidity/\"\n"
+			+ "        },\n"
+			+ "        {\n"
+			+ "            \"name\": \"Pressure\",\n"
+			+ "            \"symbol\": \"mbar\",\n"
+			+ "            \"definition\": \"https://en.wikipedia.org/wiki/Atmospheric_pressure\"\n"
 			+ "        }\n"
-			+ "    }\n"
-			+ "}";
-	
-	private static String PARTY_ALICE = String.format("{\"name\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
-	private static String PARTY_LJS = String.format("{\"name\": \"Long John Silver Citizen Scientist\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
-	
-	private static String DATASTREAM_PARTY = "{\n"
-			+ "    \"unitOfMeasurement\": {\n"
-			+ "        \"name\": \"n/a\",\n"
-			+ "        \"symbol\": \"\",\n"
-			+ "        \"definition\": \"https://www.merriam-webster.com/dictionary/picture\"\n"
-			+ "    },\n"
-			+ "    \"name\": \"photo datastream\",\n"
-			+ "    \"description\": \"this datastream is about pictures\",\n"
-			+ "    \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
-			+ "    \"ObservedProperty\": {\n"
-			+ "        \"name\": \"Picture\",\n"
-			+ "        \"definition\": \"https://www.merriam-webster.com/dictionary/picture\",\n"
-			+ "        \"description\": \"The image taken by the camera (the sensor)\"\n"
-			+ "    },\n"
-			+ "    \"Sensor\": {\n"
-			+ "        \"name\": \"Pi NoIR - Raspberry Pi Infrared Camera Module\",\n"
-			+ "        \"description\": \"Sony IMX 219 PQ CMOS image sensor in a fixed-focus module with IR blocking filter removed\",\n"
-			+ "        \"encodingType\": \"application/pdf\",\n"
-			+ "        \"metadata\": \"https://cdn-reichelt.de/documents/datenblatt/A300/RASP_CAN_2.pdf\"\n"
-			+ "    },\n"
-			+ "    \"License\": {\n"
-			+ "        \"name\": \"CC0\",\n"
-			+ "        \"definition\": \"https://creativecommons.org/publicdomain/zero/1.0/\",\n"
-			+ "        \"description\": \"CC0 1.0 Universal (CC0 1.0) Public Domain Dedication\",\n"
-			+ "        \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/cc-zero.png\"\n"
-			+ "    },\n"
-			+ "    \"Party\": {\n"
-			+ "        \"name\": \"Long John Silver Citizen Scientist\",\n"
-			+ "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
-			+ "        \"role\": \"individual\",\n"
-			+ "        \"authId\": \"%s\"\n"
-			+ "    },\n"
+			+ "    ],\n"
 			+ "    \"Thing\": {\n"
-			+ "         \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
+			+ "        \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
 			+ "        \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
 			+ "        \"properties\": {\n"
 			+ "            \"CPU\": \"1.4GHz\",\n"
 			+ "            \"RAM\": \"4GB\"\n"
 			+ "        },\n"
+			+ "        \"Party\": {\n"
+			+ "            \"name\": \"Long John Silver Citizen Scientist\",\n"
+			+ "            \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
+			+ "            \"role\": \"individual\",\n"
+			+ "            \"authId\": \"a00d3f14-a085-38cf-86a0-e234b9d5b84c\"\n"
+			+ "        }\n"
+			+ "    },\n"
+			+ "    \"Sensor\": {\n"
+			+ "        \"name\": \"Environment Sensor\",\n"
+			+ "        \"description\": \"This sensor produces temperature, humidity and pressure\",\n"
+			+ "        \"encodingType\": \"text/html\",\n"
+			+ "        \"metadata\": \"https://google.de\",\n"
+			+ "        \"properties\": {\"calibrated\": \"DATE_TIME_NOW\"}\n"
+			+ "    },\n"
+			+ "    \"ObservedProperties\": [\n"
+			+ "        {\n"
+			+ "            \"name\": \"DegC\",\n"
+			+ "            \"definition\": \"https://en.wikipedia.org/wiki/Temperature\",\n"
+			+ "            \"description\": \"Air Temperature in Celcius\"\n"
+			+ "        },\n"
+			+ "        {\n"
+			+ "            \"name\": \"Relative Air Humidity\",\n"
+			+ "            \"definition\": \"https://en.wikipedia.org/wiki/Humidity\",\n"
+			+ "            \"description\": \"Air Humidity\"\n"
+			+ "        },\n"
+			+ "        {\n"
+			+ "            \"description\": \"Atmospheric pressure\",\n"
+			+ "            \"definition\": \"https://en.wikipedia.org/wiki/Atmospheric_pressure\",\n"
+			+ "            \"name\": \"Atmospheric pressure\"\n"
+			+ "        }\n"
+			+ "    ]\n"
+			+ "}";
+	
+	private static String PARTY_ALICE = String.format("{\"name\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
+	private static String PARTY_LJS = String.format("{\"name\": \"Long John Silver Citizen Scientist\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
+	
+	private static String MULTIDATASTREAM_PARTY = "{\n"
+			+ "    \"name\": \"Environmental Datastream from Camera Trap\",\n"
+			+ "    \"description\": \"Environment data for air temperature, humidity, pressure\",\n"
+			+ "    \"multiObservationDataTypes\": [\n"
+			+ "        \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
+			+ "        \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
+			+ "        \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\"\n"
+			+ "    ],\n"
+			+ "    \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_ComplexObservation\",\n"
+			+ "    \"observedArea\": {\n"
+			+ "        \"type\": \"Point\",\n"
+			+ "        \"coordinates\": [\n"
+			+ "            0,\n"
+			+ "            1\n"
+			+ "        ]\n"
+			+ "    },\n"
 			+ "    \"Party\": {\n"
 			+ "        \"name\": \"Long John Silver Citizen Scientist\",\n"
 			+ "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
 			+ "        \"role\": \"individual\",\n"
 			+ "        \"authId\": \"%s\"\n"
-			+ "    }\n"
-			+ "    }\n"
+			+ "    },\n"
+			+ "    \"properties\": {\n"
+			+ "        \"fieldOne\": \"Temperature\",\n"
+			+ "        \"fieldTwo\": \"Humidity\",\n"
+			+ "        \"fieldThree\": \"Preasure\"\n"
+			+ "    },\n"
+			+ "    \"unitOfMeasurements\": [\n"
+			+ "        {\n"
+			+ "            \"name\": \"Temperature\",\n"
+			+ "            \"symbol\": \"C\",\n"
+			+ "            \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/qudt/index.html#TemperatureUnit\"\n"
+			+ "        },\n"
+			+ "        {\n"
+			+ "            \"name\": \"Humidity\",\n"
+			+ "            \"symbol\": \"RH\",\n"
+			+ "            \"definition\": \"https://byjus.com/physics/unit-of-humidity/\"\n"
+			+ "        },\n"
+			+ "        {\n"
+			+ "            \"name\": \"Pressure\",\n"
+			+ "            \"symbol\": \"mbar\",\n"
+			+ "            \"definition\": \"https://en.wikipedia.org/wiki/Atmospheric_pressure\"\n"
+			+ "        }\n"
+			+ "    ],\n"
+			+ "    \"Thing\": {\n"
+			+ "        \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
+			+ "        \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
+			+ "        \"properties\": {\n"
+			+ "            \"CPU\": \"1.4GHz\",\n"
+			+ "            \"RAM\": \"4GB\"\n"
+			+ "        },\n"
+			+ "        \"Party\": {\n"
+			+ "            \"name\": \"Long John Silver Citizen Scientist\",\n"
+			+ "            \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
+			+ "            \"role\": \"individual\",\n"
+			+ "            \"authId\": \"%s\"\n"
+			+ "        }\n"
+			+ "    },\n"
+			+ "    \"Sensor\": {\n"
+			+ "        \"name\": \"Environment Sensor\",\n"
+			+ "        \"description\": \"This sensor produces temperature, humidity and pressure\",\n"
+			+ "        \"encodingType\": \"text/html\",\n"
+			+ "        \"metadata\": \"https://google.de\",\n"
+			+ "        \"properties\": {\"calibrated\": \"DATE_TIME_NOW\"}\n"
+			+ "    },\n"
+			+ "    \"ObservedProperties\": [\n"
+			+ "        {\n"
+			+ "            \"name\": \"DegC\",\n"
+			+ "            \"definition\": \"https://en.wikipedia.org/wiki/Temperature\",\n"
+			+ "            \"description\": \"Air Temperature in Celcius\"\n"
+			+ "        },\n"
+			+ "        {\n"
+			+ "            \"name\": \"Relative Air Humidity\",\n"
+			+ "            \"definition\": \"https://en.wikipedia.org/wiki/Humidity\",\n"
+			+ "            \"description\": \"Air Humidity\"\n"
+			+ "        },\n"
+			+ "        {\n"
+			+ "            \"description\": \"Atmospheric pressure\",\n"
+			+ "            \"definition\": \"https://en.wikipedia.org/wiki/Atmospheric_pressure\",\n"
+			+ "            \"name\": \"Atmospheric pressure\"\n"
+			+ "        }\n"
+			+ "    ]\n"
 			+ "}";
 	
 	private static final String OBSERVATION = "{\n"
 			+ "    \"phenomenonTime\": \"2021-04-20T02:00:00Z\",\n"
 			+ "    \"resultTime\": \"2021-04-21T15:43:00Z\",\n"
-			+ "    \"result\": \"\",\n"
+			+ "    \"result\": [14.7, 60.8, 1020],\n"
 			+ "    \"parameters\": {\n"
 			+ "        \"tilt_angle\": \"30\",\n"
 			+ "        \"distance\": \"5\",\n"
@@ -227,7 +305,7 @@ public class DatastreamTests extends AbstractTestClass{
 			+ "    \"@iot.id\": %s,\n"
 			+ "    \"phenomenonTime\": \"2021-04-20T02:00:00Z\",\n"
 			+ "    \"resultTime\": \"2021-04-21T15:43:00Z\",\n"
-			+ "    \"result\": \"\",\n"
+			+ "    \"result\": [14.7, 60.8, 1020],\n"
 			+ "    \"parameters\": {\n"
 			+ "        \"tilt_angle\": \"30\",\n"
 			+ "        \"distance\": \"5\",\n"
@@ -259,10 +337,7 @@ public class DatastreamTests extends AbstractTestClass{
 	private static final int HTTP_CODE_401 = 401;
 	private static final int HTTP_CODE_403 = 403;
 	
-	private static int observationId = 1000;
-	
-	private URL endpoint;
-	
+
 	private static final Properties SERVER_PROPERTIES = new Properties();
 
 	static {
@@ -270,20 +345,20 @@ public class DatastreamTests extends AbstractTestClass{
 		SERVER_PROPERTIES.put("plugins.plus.enable", true);
 		SERVER_PROPERTIES.put("plugins.plus.enable.enforceOwnsership", true);
 		SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
-		// For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entitype
+		// For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
 		SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
 		SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
 		SERVER_PROPERTIES.put("plugins.coreModel.idType","LONG");
 		SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
+		
 	}
 
 	//private static SensorThingsService service;
+
+	private static int observationId = 2000;
 	
-	
-	
-	public DatastreamTests(ServerVersion version) throws ServiceFailureException, IOException, URISyntaxException {
+	public MultiDatastreamTests(ServerVersion version) throws ServiceFailureException, IOException, URISyntaxException {
 		super(version, SERVER_PROPERTIES);
-		endpoint = service.getEndpoint();
 	}
 
 	@Override
@@ -312,20 +387,19 @@ public class DatastreamTests extends AbstractTestClass{
 	private static void cleanup() throws ServiceFailureException {
 		//EntityUtils.deleteAll(version, serverSettings, service);
 	}
-	
 
 	/*
 	 * CREATE Tests
 	 */
 
 	/*
-	 * DATASTREAM_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
+	 * MULTIDATASTREAM_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
 	 */
 	@Test
-	public void test00DatastreamMustHaveAParty() throws ClientProtocolException, IOException {
-		String request = DATASTREAM;
+	public void test00MultiDatastreamMustHaveAParty() throws ClientProtocolException, IOException {
+		String request = MULTIDATASTREAM;
 		
-		HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, ALICE, "");
@@ -333,9 +407,9 @@ public class DatastreamTests extends AbstractTestClass{
 
 		if (response.getStatusLine().getStatusCode() == HTTP_CODE_400)
 		{
-			Assert.assertTrue(DATASTREAM_MUST_HAVE_A_PARTY, Boolean.TRUE);
+			Assert.assertTrue(MULTIDATASTREAM_MUST_HAVE_A_PARTY, Boolean.TRUE);
 		} else {
-			fail(response, DATASTREAM_MUST_HAVE_A_PARTY);
+			fail(response, MULTIDATASTREAM_MUST_HAVE_A_PARTY);
 		}
 	}
 
@@ -344,10 +418,10 @@ public class DatastreamTests extends AbstractTestClass{
 	 * SAME_USER_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
 	 */
 	@Test
-	public void test01SameUserCreateDatastream() throws ClientProtocolException, IOException {
-		String request = String.format(DATASTREAM_PARTY,LJS,LJS);
+	public void test01SameUserCreateMultiDatastream() throws ClientProtocolException, IOException {
+		String request = String.format(MULTIDATASTREAM_PARTY,LJS,LJS);
 		
-		HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, LJS, "");
@@ -372,10 +446,10 @@ public class DatastreamTests extends AbstractTestClass{
 	 * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 403 Fail: 201
 	 */
 	@Test
-	public void test02OtherUserCreateDatastream() throws ClientProtocolException, IOException {
-		String request = String.format(DATASTREAM_PARTY,LJS,LJS);
+	public void test02OtherUserCreateMultiDatastream() throws ClientProtocolException, IOException {
+		String request = String.format(MULTIDATASTREAM_PARTY,LJS,LJS);
 		
-		HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, ALICE, "");
@@ -394,17 +468,17 @@ public class DatastreamTests extends AbstractTestClass{
 	 * ADMIN_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
 	 */
 	@Test
-	public void test03AdminCreateDatastream() throws ClientProtocolException, IOException {
-		String request = String.format(DATASTREAM_PARTY,ALICE,ALICE);
+	public void test03AdminCreateMultiDatastream() throws ClientProtocolException, IOException {
+		String request = String.format(MULTIDATASTREAM_PARTY,ALICE,ALICE);
 		
-		HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, ADMIN, "");
 		CloseableHttpResponse response = service.execute(httpPost);
 
 		if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
-			// we need to make sure that the Datastream is associated with Alice
+			// we need to make sure that the MultiDatastream is associated with Alice
 			String location = response.getFirstHeader("Location").getValue();
 			HttpGet httpGet = new HttpGet(location + "/Party");
 			response = service.execute(httpGet);
@@ -422,10 +496,10 @@ public class DatastreamTests extends AbstractTestClass{
 	 * ANON_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 401 Fail: 201
 	 */
 	@Test
-	public void test02AnonCreateDatastream() throws ClientProtocolException, IOException {
-		String request = String.format(DATASTREAM_PARTY,LJS,LJS);
+	public void test02AnonCreateMultiDatastream() throws ClientProtocolException, IOException {
+		String request = String.format(MULTIDATASTREAM_PARTY,LJS,LJS);
 		
-		HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 
@@ -445,10 +519,10 @@ public class DatastreamTests extends AbstractTestClass{
 	 * UPDATE Tests
 	 */
 
-	private String createDatastreamForParty(String userId) throws IOException
+	private String createMultiDatastreamForParty(String userId) throws IOException
 	{
-		String request = String.format(DATASTREAM_PARTY,userId, userId);
-		HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+		String request = String.format(MULTIDATASTREAM_PARTY,userId, userId);
+		HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPost.setEntity(stringEntity);
 		setAuth(service, userId, "");
@@ -461,8 +535,8 @@ public class DatastreamTests extends AbstractTestClass{
 	 * SAME_USER_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
 	 */
 	@Test
-	public void test10SameUserUpdateDatastream() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+	public void test10SameUserUpdateMultiDatastream() throws ClientProtocolException, IOException {
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = "{\"name\": \"foo bar\"}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl);
@@ -482,8 +556,8 @@ public class DatastreamTests extends AbstractTestClass{
 	 * SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 403 Fail: n/a
 	 */
 	@Test
-	public void test10SameUserUpdateDatastreamParty() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+	public void test10SameUserUpdateMultiDatastreamParty() throws ClientProtocolException, IOException {
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = "{\"Party\":" + PARTY_ALICE + "}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl);
@@ -504,8 +578,8 @@ public class DatastreamTests extends AbstractTestClass{
 	 * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE Success: 403 Fail: n/a
 	 */
 	@Test
-	public void test12OtherUserUpdateDatastream() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+	public void test12OtherUserUpdateMultiDatastream() throws ClientProtocolException, IOException {
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = "{\"name\": \"foo bar\"}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl);
@@ -526,8 +600,8 @@ public class DatastreamTests extends AbstractTestClass{
 	 * ADMIN_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
 	 */
 	@Test
-	public void test13AdminUpdateDatastream() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+	public void test13AdminUpdateMultiDatastream() throws ClientProtocolException, IOException {
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = "{\"name\": \"foo bar\"}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl);
@@ -548,7 +622,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test14AnonUpdateParty() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = "{\"name\": \"foo bar\"}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl);
@@ -573,7 +647,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test20SameUserDeleteParty() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		HttpDelete httpDelete = new HttpDelete(datastreamUrl);
 		setAuth(service, LJS, "");
@@ -592,7 +666,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test21OtherUserDeleteParty() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		HttpDelete httpDelete = new HttpDelete(datastreamUrl);
 		setAuth(service, ALICE, "");
@@ -611,7 +685,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test22AdminDeleteParty() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		HttpDelete httpDelete = new HttpDelete(datastreamUrl);
 		setAuth(service, ADMIN, "");
@@ -630,7 +704,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test23AnonDeleteParty() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		HttpDelete httpDelete = new HttpDelete(datastreamUrl);
 		unsetAuth(service);
@@ -652,7 +726,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test30SameUserAddObservation() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = OBSERVATION;
 		HttpPost httpPost = new HttpPost(datastreamUrl + "/Observations");
@@ -673,7 +747,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test31OtherUserAddObservation() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = OBSERVATION;
 		HttpPost httpPost = new HttpPost(datastreamUrl + "/Observations");
@@ -694,7 +768,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test32AdminAddObservation() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = OBSERVATION;
 		HttpPost httpPost = new HttpPost(datastreamUrl + "/Observations");
@@ -715,7 +789,7 @@ public class DatastreamTests extends AbstractTestClass{
 	 */
 	@Test
 	public void test33AnonAddObservation() throws ClientProtocolException, IOException {
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		
 		String request = OBSERVATION;
 		HttpPost httpPost = new HttpPost(datastreamUrl + "/Observations");
@@ -748,7 +822,7 @@ public class DatastreamTests extends AbstractTestClass{
 	@Test
 	public void test40SameUserDeleteObservation() throws ClientProtocolException, IOException {
 		
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		addObservation(datastreamUrl, LJS, ++observationId);
 		
 		HttpDelete httpDelete = new HttpDelete(datastreamUrl + "/Observations(" + observationId + ")");
@@ -768,7 +842,7 @@ public class DatastreamTests extends AbstractTestClass{
 	@Test
 	public void test41OtherUserDeleteObservation() throws ClientProtocolException, IOException {
 		
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		addObservation(datastreamUrl, LJS, ++observationId);
 		
 		HttpDelete httpDelete = new HttpDelete(datastreamUrl + "/Observations(" + observationId + ")");
@@ -788,7 +862,7 @@ public class DatastreamTests extends AbstractTestClass{
 	@Test
 	public void test42AdminDeleteObservation() throws ClientProtocolException, IOException {
 		
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		addObservation(datastreamUrl, LJS, ++observationId);
 		
 		HttpDelete httpDelete = new HttpDelete(datastreamUrl + "/Observations(" + observationId + ")");
@@ -808,7 +882,7 @@ public class DatastreamTests extends AbstractTestClass{
 	@Test
 	public void test43AnonDeleteObservation() throws ClientProtocolException, IOException {
 		
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		addObservation(datastreamUrl, LJS, ++observationId);
 		
 		HttpDelete httpDelete = new HttpDelete(datastreamUrl + "/Observations(" + observationId + ")");
@@ -828,10 +902,10 @@ public class DatastreamTests extends AbstractTestClass{
 	@Test
 	public void test50SameUserUpdateObservation() throws ClientProtocolException, IOException {
 		
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		addObservation(datastreamUrl, LJS, ++observationId);
 		
-		String request = "{\"result\": \"foo bar\"}";
+		String request = "{\"result\": [0, 0, 0]}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl + "/Observations(" + observationId + ")");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
@@ -852,10 +926,10 @@ public class DatastreamTests extends AbstractTestClass{
 	@Test
 	public void test51OtherUserUpdateObservation() throws ClientProtocolException, IOException {
 		
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		addObservation(datastreamUrl, LJS, ++observationId);
 		
-		String request = "{\"result\": \"foo bar\"}";
+		String request = "{\"result\": [0, 0, 0]}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl + "/Observations(" + observationId + ")");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
@@ -876,10 +950,10 @@ public class DatastreamTests extends AbstractTestClass{
 	@Test
 	public void test52AdminUpdateObservation() throws ClientProtocolException, IOException {
 		
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		addObservation(datastreamUrl, LJS, ++observationId);
 		
-		String request = "{\"result\": \"foo bar\"}";
+		String request = "{\"result\": [0, 0, 0]}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl + "/Observations(" + observationId + ")");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
@@ -888,9 +962,9 @@ public class DatastreamTests extends AbstractTestClass{
 		CloseableHttpResponse response = service.execute(httpPatch);
 
 		if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
-			Assert.assertTrue(ADMIN_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION, Boolean.TRUE);
+			Assert.assertTrue(ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE_OBSERVATION, Boolean.TRUE);
 		} else {
-			fail(response, ADMIN_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION);
+			fail(response, ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE_OBSERVATION);
 		}
 	}
 
@@ -900,10 +974,10 @@ public class DatastreamTests extends AbstractTestClass{
 	@Test
 	public void test53AnonUpdateObservation() throws ClientProtocolException, IOException {
 		
-		String datastreamUrl = createDatastreamForParty(LJS);
+		String datastreamUrl = createMultiDatastreamForParty(LJS);
 		addObservation(datastreamUrl, LJS, ++observationId);
 		
-		String request = "{\"result\": \"foo bar\"}";
+		String request = "{\"result\": [0, 0, 0]}";
 		HttpPatch httpPatch = new HttpPatch(datastreamUrl + "/Observations(" + observationId + ")");
 		HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
 		httpPatch.setEntity(stringEntity);
@@ -917,7 +991,6 @@ public class DatastreamTests extends AbstractTestClass{
 			fail(response, ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE_OBSERVATION);
 		}
 	}
-
 
 	
 	private static void unsetAuth(SensorThingsService service) {

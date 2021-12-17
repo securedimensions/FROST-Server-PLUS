@@ -18,7 +18,7 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.Settings;
 import de.fraunhofer.iosb.ilt.frostserver.util.AuthProvider;
 import de.fraunhofer.iosb.ilt.frostserver.util.AuthUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
-import de.securedimensions.frostserver.plugin.plus.PartyCRUDTests;
+import de.securedimensions.frostserver.plugin.plus.PartyTests;
 
 public class PrincipalAuthProvider implements AuthProvider, ConfigDefaults {
 
@@ -63,7 +63,7 @@ public class PrincipalAuthProvider implements AuthProvider, ConfigDefaults {
 	@Override
 	public boolean userHasRole(String clientId, String userName, String roleName) {
 
-		if (userName.equalsIgnoreCase(PartyCRUDTests.ADMIN))
+		if (userName.equalsIgnoreCase(PartyTests.ADMIN))
 			return true;
 		else
 			return false;

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2021 Secure Dimensions GmbH, D-81377
+ * Munich, Germany.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.securedimensions.frostserver.plugin.plus;
 
 import java.io.IOException;
@@ -32,10 +49,7 @@ import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
-import de.fraunhofer.iosb.ilt.statests.util.EntityUtils;
-
 import de.securedimensions.frostserver.plugin.plus.auth.PrincipalAuthProvider;
-import de.securedimensions.frostserver.plugin.plus.PluginPLUS;
 
 /**
  * Tests for the Party class properties. According to the ownership concept, a
@@ -51,6 +65,8 @@ public class PartyTests extends AbstractTestClass {
 	 * The logger for this class.
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(PartyTests.class);
+
+    private static final long serialVersionUID = 1639739965;
 
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE = "Admin should be able to create.";
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE = "Admin should be able to update.";
@@ -89,9 +105,11 @@ public class PartyTests extends AbstractTestClass {
 		// For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
 		SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
 		SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
+		SERVER_PROPERTIES.put("plugins.coreModel.idType","LONG");
+		SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
 	}
 
-	private static SensorThingsService service;
+	//private static SensorThingsService service;
 
 	private String partyLJSUrl, partyALICEUrl;
 
