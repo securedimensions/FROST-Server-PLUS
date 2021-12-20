@@ -8,33 +8,39 @@ Work on this project is funded by the European Commission under Grant Agreement 
 
 The following figures illustrate the extension in an UML diagram.
 
-![Sensor Things Datamodel (Datastream) with PLUS extension](doc/2021-12-01-DataModel-Datastream.png "Sensor Things Datamodel (Datastream) with PLUS extension")
+![Sensor Things Datamodel (Datastream) with PLUS extension](doc/STAplus%20Sensing%20Entities.png "Sensor Things Datamodel (Datastream) with PLUS extension")
 
-![Sensor Things Datamodel (MultiDatastream) with PLUS extension](doc/2021-12-01-DataModel-MultiDatastream.png "Sensor Things Datamodel (MultiDatastream) with PLUS extension")
+![Sensor Things Datamodel (MultiDatastream) with PLUS extension](doc/STAplus%20MultiDatastream%20Extension%20Entities.png "Sensor Things Datamodel (MultiDatastream) with PLUS extension")
 
 ## Settings
 
 * **plugins.plus.enable:**  
-  Toggle indicating the Actuation plugin should be enabled. Default: `false`.
+  Toggle indicating the PLUD plugin should be enabled. Default: `false`.
 * **plugins.plus.idType.groups:**  
   The type of the primary key column of the Groups table. Defaults to the value of **plugins.coreModel.idType**.
 * **plugins.plus.idType.license:**  
   The type of the primary key column of the Licenses table. Defaults to the value of **plugins.coreModel.idType**.
-* **plugins.plus.idType.party:**  
-  The type of the primary key column of the Parties table. Defaults to the value of **plugins.coreModel.idType**.
 * **plugins.plus.idType.project:**  
   The type of the primary key column of the Projects table. Defaults to the value of **plugins.coreModel.idType**.
 * **plugins.plus.idType.relation:**  
   The type of the primary key column of the Relations table. Defaults to the value of **plugins.coreModel.idType**.
 
-## Party
-This implementation enforces the following conditions on the Party class:
+**_NOTE:_** `plugins.plus.idType.party` is set to UUID by the implementation. This setting cannot be changed!
 
-* **POST:**
-  POSTing a request that involves creating a Party instance, the `authId` will be set by the plugin either to `00000000-0000-0000-0000-000000000000` if anonymous posting is allowed. Otherwise the `authid` will be set to the UUID that represents the user. If the `REMOTE_USER` is a UUID, then that value will be used; otherwise, a UUID will be generated from the value of the `REMOTE_USER`.
-  If the POSTed Party includes the `authId` property, the plugin will throw an IllegalArgumentException resulting in HTTP 400.
-* **PATCH:**
-  PATCHing an existing Party instance, must not involve the `authId` property. This property is read-only. The plugin throws an IllegalArgumentException (HTTP 400) in the attempt to change the `authId` value (the value of the `authId` property for the existing Party is different from the posted `authId`). A PATCH is permitted, if the `authId` is included in the request and the value is identical to the one for the existing Party instance (as this does not change the `authId` value).
-* **DELETE:**
-  DELETEing an existing Party instance results in an IllegalArgumentException (HTTP 400).
-  
+## Enforcement of Ownership
+The activation of the `Enforcement of Ownership` allows to operate the STAplus endpoint in multi-user-write mode. However, it requires to enable Authentication.
+
+Each acting user is identified via a unique UUID, represented by a `Party` object.
+
+The classes `Thing`, `MultiDatastream`, `Datastream` and `Group` are directly associated to a Party. Objects of class `Observation` are linked to the owning Party object via the `(Multi)Datastream`.
+
+It is important to note that the multiplicty is `[1]` when activating the Concept of Ownership. So, creating objects for class `Thing`, `MultiDatastream`, `Datastream` or `Group` require to be associated with the Party object that represensts he acting user.
+
+A user can `update` or `delete` any own object. However, the user *cannot* delete the own Party. This requires admin access.
+
+Anonymous read is possible.
+
+### Settings
+
+**plugins.plus.enable.enforceOwnsership:**  
+  Toggle indicating the enforcement of ownsership. Default: `false`.
