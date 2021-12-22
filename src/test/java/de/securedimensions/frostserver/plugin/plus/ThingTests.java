@@ -306,6 +306,7 @@ public class ThingTests extends AbstractTestClass {
 		SERVER_PROPERTIES.put("plugins.coreModel.idType","LONG");
 		SERVER_PROPERTIES.put("auth.allowAnonymousRead", true);
 		SERVER_PROPERTIES.put("plugins.coreModel.idType","LONG");
+		SERVER_PROPERTIES.put("plugins.plus.idType.license", "String");
 		SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
 	}
 

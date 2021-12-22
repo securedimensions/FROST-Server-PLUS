@@ -199,6 +199,7 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
             groupsTable.getPropertyFieldRegistry()
                     .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, ?>) table.field(licenseGroupsIdIdx), entityFactories);
         }
+        
     }
 
     @Override

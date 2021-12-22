@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;;
  * @author Andreas Matheus
  */
 @RunWith(Suite.class)
-@SuiteClasses({PartyTests.class, DatastreamTests.class, MultiDatastreamTests.class, GroupTests.class, ThingTests.class, ObservationTests.class})
+@SuiteClasses({PartyTests.class, DatastreamTests.class, MultiDatastreamTests.class, GroupTests.class, ThingTests.class, ObservationTests.class, LicenseTests.class})
 public class TestSuite {
 
     private static final long serialVersionUID = 1639739965;

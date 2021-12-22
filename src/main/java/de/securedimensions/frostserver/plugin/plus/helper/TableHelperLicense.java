@@ -22,9 +22,6 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
@@ -33,96 +30,80 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreIn
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import de.securedimensions.frostserver.plugin.plus.TableImpGroups;
-import de.securedimensions.frostserver.plugin.plus.TableImpParty;
+import de.securedimensions.frostserver.plugin.plus.TableImpLicense;
 
-public class TableHelperGroup extends TableHelper {
+public class TableHelperLicense extends TableHelper {
 
-	private TableImpGroups tableGroups;
+	private TableImpLicense tableLicenses;
 	
-	public TableHelperGroup(CoreSettings settings, PostgresPersistenceManager ppm) 
-	{
+	public TableHelperLicense(CoreSettings settings, PostgresPersistenceManager ppm) {
 		super(settings, ppm);
 
-		this.tableGroups = tables.getTableForClass(TableImpGroups.class);
+		this.tableLicenses = tables.getTableForClass(TableImpLicense.class);
 		
-        final int partyGroupsIdIdx = tableGroups.registerField(DSL.name("PARTY_ID"), tables.getTableForClass(TableImpParty.class).getIdType());
-        tableGroups.getPropertyFieldRegistry()
-        .addEntry(pluginPlus.npPartyGroup, table -> (TableField<Record, ?>) table.field(partyGroupsIdIdx), entityFactories);
-
 	}
 
 	@Override
 	public void registerPreHooks() {
 
-		tableGroups.registerHookPreInsert(-10.0, new HookPreInsert() {
+		tableLicenses.registerHookPreInsert(-10.0, new HookPreInsert() {
 
 			@Override
 			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
 					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
-            	if (pluginPlus.isEnforceOwnershipEnabled() != true)
+            	if (pluginPlus.isEnforceLicensingEnabled() == false)
             		return true;
             	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+            	Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
             	if (isAdmin(principal))
-            		return true;
-            	
-            	assertOwnershipGroup(entity, principal);       
-            	
-             	if (pluginPlus.isEnforceLicensingEnabled())
-             		assertGroupLicense(entity);
-
-            	return true;
+            	{
+            		return (pm.get(pluginPlus.etLicense, entity.getId()) == null);
+            	}
+            	throw new IllegalArgumentException("License cannot be created - please use one of the existing License objects.");
 			}
-        });
-        
-		tableGroups.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+		});
+		
+		tableLicenses.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
 			@Override
 			public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
 					throws NoSuchEntityException, IncompleteEntityException {
-				
-            	if (pluginPlus.isEnforceOwnershipEnabled() != true)
+
+            	if (pluginPlus.isEnforceLicensingEnabled() == false)
             		return;
             	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+            	Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
             	if (isAdmin(principal))
             		return;
-            	           	
-             	Entity group = (Entity)pm.get(pluginPlus.etGroup, ParserUtils.idFromObject((entityId)));
-	            assertOwnershipGroup(group, principal);            		            	
 
-             	if (pluginPlus.isEnforceLicensingEnabled())
-             		assertGroupLicense(group);
+            	throw new IllegalArgumentException("License cannot be updated - please use one of the existing License objects.");
 
-			} 
+
+			}
 		});
-
-		tableGroups.registerHookPreDelete(-10.0, new HookPreDelete() {
+		
+		tableLicenses.registerHookPreDelete(-10.0, new HookPreDelete() {
 
 			@Override
 			public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
 
-            	if (pluginPlus.isEnforceOwnershipEnabled() != true)
+            	if (pluginPlus.isEnforceLicensingEnabled() == false)
             		return;
-            	
-        		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+ 
+            	Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
             	if (isAdmin(principal))
             		return;
-            	
-             	Entity group = (Entity)pm.get(pluginPlus.etGroup, ParserUtils.idFromObject((entityId)));
-	            assertOwnershipGroup(group, principal);            		            	
-			} 
+
+            	throw new IllegalArgumentException("License cannot be deleted.");
+
+			}
 		});
-
 	}
-
 
 }

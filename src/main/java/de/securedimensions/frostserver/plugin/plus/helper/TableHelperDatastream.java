@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2021 Secure Dimensions GmbH, D-81377
+ * Munich, Germany.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.securedimensions.frostserver.plugin.plus.helper;
 
 import java.security.Principal;
@@ -59,6 +76,9 @@ public class TableHelperDatastream extends TableHelper {
 			public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
 					Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
+             	if (pluginPlus.isEnforceOwnershipEnabled() != true)
+             		return true;
+
          		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
              	if (isAdmin(principal))
@@ -66,6 +86,9 @@ public class TableHelperDatastream extends TableHelper {
               		
              	assertOwnershipDatastream(entity, principal);          
 				
+             	if (pluginPlus.isEnforceLicensingEnabled())
+             		assertDatastreamLicense(entity);
+             	
              	return true;
 			}
         });
@@ -82,7 +105,11 @@ public class TableHelperDatastream extends TableHelper {
              		return;
               		
             	Entity datastream = (Entity)pm.get(pluginCoreModel.etDatastream, ParserUtils.idFromObject((entityId)));
-             	assertOwnershipDatastream(datastream, principal);          
+             	assertOwnershipDatastream(datastream, principal);        
+             	
+             	if (pluginPlus.isEnforceLicensingEnabled())
+             		assertDatastreamLicense(datastream);
+
  			} 
  		});
 
@@ -100,8 +127,9 @@ public class TableHelperDatastream extends TableHelper {
              	if (isAdmin(principal))
              		return;
              	
-            	Entity datastream =  (Entity)pm.get(pluginCoreModel.etDatastream, ParserUtils.idFromObject((entityId)));//(Entity) pm.get(rp, query);
+            	Entity datastream =  (Entity)pm.get(pluginCoreModel.etDatastream, ParserUtils.idFromObject((entityId)));
             	assertOwnershipDatastream(datastream, principal);
+            	
  			} 
  		});
 
