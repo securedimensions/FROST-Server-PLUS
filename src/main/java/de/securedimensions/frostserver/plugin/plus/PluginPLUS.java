@@ -53,6 +53,7 @@ import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperDatastream;
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperGroup;
+import de.securedimensions.frostserver.plugin.plus.helper.TableHelperLicense;
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperLocation;
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperMultiDatastream;
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperObservation;
@@ -198,14 +199,14 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             "https://github.com/securedimensions/FROST-Server-PLUS");
 
     private CoreSettings settings;
-    private PluginPlusSettings modelSettings;
+    private PluginPlusSettings plusSettings;
     
     private PluginCoreModel pluginCoreModel;
 	private PluginMultiDatastream pluginMultiDatastream;
 
     private boolean enabled;
     private boolean enforceOwnsership;
-    private boolean transferOwnsership;
+    private boolean enforceLicensing;
     private boolean fullyInitialised;
 
     public PluginPLUS() {
@@ -221,8 +222,16 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             return;
         }
         enforceOwnsership = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_OWNERSHIP, PluginPlusSettings.class);
-        transferOwnsership = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_TRANSFER_OWNERSHIP, PluginPlusSettings.class);
-        modelSettings = new PluginPlusSettings(settings);
+        
+        enforceLicensing = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_LICENSING, PluginPlusSettings.class);
+        
+        if (enforceLicensing)
+        {
+        	LOGGER.info("Setting plugins.plus.idType.license, using value 'String'.");
+        	pluginSettings.set(PluginPlusSettings.TAG_ID_TYPE_LICENSE, "String");
+        }
+        
+        plusSettings = new PluginPlusSettings(settings);
         settings.getPluginManager().registerPlugin(this);
 
         pluginCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
@@ -232,7 +241,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class License
          */
-        epIdLicense = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeLicense), "id");
+        epIdLicense = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeLicense), "id");
         etLicense
                 .registerProperty(epIdLicense, false)
                 .registerProperty(ModelRegistry.EP_SELFLINK, false)
@@ -252,7 +261,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class Party
          */
-        epIdParty = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeParty), "id");
+        epIdParty = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeParty), "id");
         etParty
                 .registerProperty(epIdParty, false)
                 .registerProperty(ModelRegistry.EP_SELFLINK, false)
@@ -410,7 +419,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class Project
          */
-        epIdProject = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeProject), "id");
+        epIdProject = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeProject), "id");
         etProject
                 .registerProperty(epIdProject, false)
                 .registerProperty(ModelRegistry.EP_SELFLINK, false)
@@ -432,7 +441,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class Group
          */
-        epIdGroup = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeGroup), "id");
+        epIdGroup = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeGroup), "id");
         etGroup
                 .registerProperty(epIdGroup, false)
                 .registerProperty(ModelRegistry.EP_SELFLINK, false)
@@ -482,7 +491,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class Relation
          */
-        epIdRelation = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(modelSettings.idTypeRelation), "id");
+        epIdRelation = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeRelation), "id");
         etRelation
                 .registerProperty(epIdRelation, false)
                 .registerProperty(ModelRegistry.EP_SELFLINK, false)
@@ -634,11 +643,11 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         if (pm instanceof PostgresPersistenceManager) {
             PostgresPersistenceManager ppm = (PostgresPersistenceManager) pm;
             TableCollection tableCollection = ppm.getTableCollection();
-            final DataType dataTypeLicense = ppm.getDataTypeFor(modelSettings.idTypeLicense);
-            final DataType dataTypeGroup = ppm.getDataTypeFor(modelSettings.idTypeGroup);
-            final DataType dataTypeRelation = ppm.getDataTypeFor(modelSettings.idTypeRelation);
-            final DataType dataTypeParty = ppm.getDataTypeFor(modelSettings.idTypeParty);
-            final DataType dataTypeProject = ppm.getDataTypeFor(modelSettings.idTypeProject);
+            final DataType dataTypeLicense = ppm.getDataTypeFor(plusSettings.idTypeLicense);
+            final DataType dataTypeGroup = ppm.getDataTypeFor(plusSettings.idTypeGroup);
+            final DataType dataTypeRelation = ppm.getDataTypeFor(plusSettings.idTypeRelation);
+            final DataType dataTypeParty = ppm.getDataTypeFor(plusSettings.idTypeParty);
+            final DataType dataTypeProject = ppm.getDataTypeFor(plusSettings.idTypeProject);
             final DataType dataTypeObservation = tableCollection.getTableForType(pluginCoreModel.etObservation).getId().getDataType();
             /**
              * Class License
@@ -678,6 +687,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             new TableHelperGroup(settings, ppm).registerPreHooks();
             new TableHelperObservation(settings, ppm).registerPreHooks();
             new TableHelperLocation(settings, ppm).registerPreHooks();
+            new TableHelperLicense(settings, ppm).registerPreHooks();
 
             
         }
@@ -692,15 +702,15 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         pluginCoreModel.createLiqibaseParams(ppm, target);
         if (pluginMultiDatastream == null) {
             // Create placeholder variables, otherwise Liquibase complains.
-            ppm.generateLiquibaseVariables(target, "MultiDatastream", modelSettings.idTypeDefault);
+            ppm.generateLiquibaseVariables(target, "MultiDatastream", plusSettings.idTypeDefault);
         } else {
         	pluginMultiDatastream.createLiqibaseParams(ppm, target);
         }
-        ppm.generateLiquibaseVariables(target, "Group", modelSettings.idTypeGroup);
-        ppm.generateLiquibaseVariables(target, "License", modelSettings.idTypeLicense);
-        ppm.generateLiquibaseVariables(target, "Party", modelSettings.idTypeParty);
-        ppm.generateLiquibaseVariables(target, "Project", modelSettings.idTypeProject);
-        ppm.generateLiquibaseVariables(target, "Relation", modelSettings.idTypeRelation);
+        ppm.generateLiquibaseVariables(target, "Group", plusSettings.idTypeGroup);
+        ppm.generateLiquibaseVariables(target, "License", plusSettings.idTypeLicense);
+        ppm.generateLiquibaseVariables(target, "Party", plusSettings.idTypeParty);
+        ppm.generateLiquibaseVariables(target, "Project", plusSettings.idTypeProject);
+        ppm.generateLiquibaseVariables(target, "Relation", plusSettings.idTypeRelation);
 
         return target;
     }
@@ -730,9 +740,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     {
     	return enforceOwnsership;
     }
-    public boolean isTransferOwnershipEnabled()
+    public boolean isEnforceLicensingEnabled()
     {
-    	return transferOwnsership;
+    	return enforceLicensing;
     }
     
     private boolean isAdmin(Principal principal)

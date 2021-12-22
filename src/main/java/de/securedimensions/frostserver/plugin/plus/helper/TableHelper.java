@@ -1,29 +1,33 @@
+/*
+ * Copyright (C) 2021 Secure Dimensions GmbH, D-81377
+ * Munich, Germany.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.securedimensions.frostserver.plugin.plus.helper;
 
-import java.io.IOException;
 import java.security.Principal;
-
-import org.jooq.DataType;
-import org.jooq.Record;
-import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
-import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
 import de.securedimensions.frostserver.plugin.plus.PluginPLUS;
 
@@ -216,5 +220,54 @@ public abstract class TableHelper {
 		}
     }
     
+    protected void assertGroupLicense(Entity group)
+    {
+    	if (group == null)
+    		throw new IllegalArgumentException("Group does not exist");
+
+    	if (!group.getEntityType().equals(pluginPlus.etGroup))
+    		throw new IllegalArgumentException("Entity not of type Group");
+    		
+    	// Ensure License for Group
+    	Entity license = group.getProperty(pluginPlus.npLicenseGroup);
+    	
+    	if (license == null)
+    		throw new IllegalArgumentException("Group not linked to a License");
+    	    	
+    }
+
+    protected void assertDatastreamLicense(Entity datastream)
+    {
+    	if (datastream == null)
+    		throw new IllegalArgumentException("Datastream does not exist");
+
+    	if (!datastream.getEntityType().equals(pluginCoreModel.etDatastream))
+    		throw new IllegalArgumentException("Entity not of type Datastream");
+    		
+    	// Ensure License for Datastream
+    	Entity license = datastream.getProperty(pluginPlus.npLicenseDatastream);
+    	
+    	if (license == null)
+    		throw new IllegalArgumentException("Datastream not linked to a License");
+    	    	
+    }
+
+    protected void assertMultiDatastreamLicense(Entity multiDatastream)
+    {
+    	if (multiDatastream == null)
+    		throw new IllegalArgumentException("MultiDatastream does not exist");
+
+    	if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled() && !multiDatastream.getEntityType().equals(pluginMultiDatastream.etMultiDatastream))
+    		throw new IllegalArgumentException("Entity not of type MultiDatastream");
+    		
+    	// Ensure License for MultiDatastream
+    	Entity license = multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream);
+    	
+    	if (license == null)
+    		throw new IllegalArgumentException("MultiDatastream not linked to a License");
+    	    	
+    }
+
+
     
 }
