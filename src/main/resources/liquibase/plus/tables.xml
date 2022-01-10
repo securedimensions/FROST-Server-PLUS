@@ -31,5 +31,6 @@
     <include relativeToChangelogFile="true" file="tableGroupsObservations.xml" />
     <include relativeToChangelogFile="true" file="tableGroupsRelations.xml" />
     <include relativeToChangelogFile="true" file="foreignKeys.xml" />
+    <include relativeToChangelogFile="true" file="insertCCLicenes.xml" />
 
 </databaseChangeLog>
