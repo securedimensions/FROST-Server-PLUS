@@ -43,4 +43,19 @@ Anonymous read is possible.
 ### Settings
 
 **plugins.plus.enable.enforceOwnsership:**  
-  Toggle indicating the enforcement of ownsership. Default: `false`.
+  Toggle indicating the enforcement of ownership. Default: `false`.
+
+## Enforcement of Licensing
+According to the STAplus Data Model, a `Datastream` and a `Group` both may have a `License` associated. When adding (an) `Observation(s)` to a `Group`, the `Enforcement of Licensing` ensures that the `License`, associated to (an)  `Observation(s)` is compatible to the `License` associated to a `Group`.
+
+When activating the `Enforcement of Licensing`, the plugin enforces licenses compatibility based on the Creative Commons v3 licensing model an the license compatibility according to the official cart. 
+
+![License Compatibility Chart](doc/CC_License_Compatibility_Chart.png) See https://wiki.creativecommons.org/wiki/Wiki/cc_license_compatibility for more information.
+
+The plugin creates the different Creative Commons Licenses in read-only mode as "system-wide" globals. An application cannot create new `License` objects nor can it update or delete the existing ones. An application can obtain a list of the "system-wide" licenses via the `/Licenses` path.
+
+### Settings
+
+**plugins.plus.enable.enforceLicensing:**  
+  Toggle indicating the enforcement of licensing. Default: `false`. 
+  
