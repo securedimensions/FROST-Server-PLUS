@@ -196,7 +196,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public EntityPropertyMain<?> epIdRelation;
 
     private static final List<String> REQUIREMENTS_PLUS = Arrays.asList(
-            "https://github.com/securedimensions/FROST-Server-PLUS");
+            "https://www.secure-dimensions.eu/staplus#FROST-Server-PLUS");
+
+    private static final String REQUIREMENT_ENFORCE_OWNERSHIP = "https://www.secure-dimensions.de/staplus#FROST-Server-EnforceOwnership";
+    private static final String REQUIREMENT_ENFORCE_LICENSING = "https://www.secure-dimensions.de/staplus#FROST-Server-EnforceLicensing";
 
     private CoreSettings settings;
     private PluginPlusSettings plusSettings;
@@ -619,6 +622,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         }
         Set<String> extensionList = (Set<String>) serverSettings.get(Service.KEY_CONFORMANCE_LIST);
         extensionList.addAll(REQUIREMENTS_PLUS);
+        
+        if (this.enforceOwnsership)
+        	extensionList.add(REQUIREMENT_ENFORCE_OWNERSHIP);
+        
+        if (this.enforceLicensing)
+        	extensionList.add(REQUIREMENT_ENFORCE_LICENSING);
     }
 
     @Override
