@@ -129,11 +129,14 @@ public class TableHelperLocation extends TableHelper {
     private void assertOwnershipLocation(PostgresPersistenceManager pm, Entity location, Principal principal) throws IllegalArgumentException
     {
     	EntitySet things = (EntitySet)location.getProperty(pluginCoreModel.npThingsLocation);
-    	if ((things == null) || (things.getCount() > 1))
+    	if ((things != null) && (things.getCount() > 1))
     		throw new IllegalArgumentException("Cannot check ownership of Location for more than one Thing");
-    		
+
+    	if (things != null)
+    	{
     	Entity thing = (Entity)pm.get(pluginCoreModel.etThing, things.iterator().next().getId());
     	assertOwnershipThing(thing, principal);
+    	}
     }
 
 }
