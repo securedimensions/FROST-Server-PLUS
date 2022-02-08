@@ -47,7 +47,7 @@ public final class PluginPlusSettings implements ConfigDefaults {
  
     public final String idTypeDefault;
     public final String idTypeGroup;
-    public final String idTypeLicense;
+    public final String idTypeLicense = "UUID"; /* fixed */
     public final String idTypeParty = "UUID"; /* fixed */
     public final String idTypeProject;
     public final String idTypeRelation;
@@ -56,7 +56,6 @@ public final class PluginPlusSettings implements ConfigDefaults {
         Settings pluginSettings = settings.getPluginSettings();
         idTypeDefault = pluginSettings.get(CoreModelSettings.TAG_ID_TYPE_DEFAULT, PluginPlusSettings.class).toUpperCase();
         idTypeGroup = pluginSettings.get(TAG_ID_TYPE_GROUP, idTypeDefault).toUpperCase();
-        idTypeLicense = pluginSettings.get(TAG_ID_TYPE_LICENSE, idTypeDefault).toUpperCase();
         idTypeProject = pluginSettings.get(TAG_ID_TYPE_PROJECT, idTypeDefault).toUpperCase();
         idTypeRelation = pluginSettings.get(TAG_ID_TYPE_RELATION, idTypeDefault).toUpperCase();
     }
