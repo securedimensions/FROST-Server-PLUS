@@ -22,23 +22,21 @@ import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
 import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInstant;
 import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInterval;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManagerFactory;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.property.EntityPropertyMain;
 import de.fraunhofer.iosb.ilt.frostserver.property.NavigationPropertyMain.NavigationPropertyEntity;
 import de.fraunhofer.iosb.ilt.frostserver.property.NavigationPropertyMain.NavigationPropertyEntitySet;
 import static de.fraunhofer.iosb.ilt.frostserver.property.SpecialNames.AT_IOT_ID;
-
 import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeComplex;
-import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeSimpleCustom;
+import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeEnumeration;
 import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeSimplePrimitive;
 import de.fraunhofer.iosb.ilt.frostserver.service.PluginModel;
 import de.fraunhofer.iosb.ilt.frostserver.service.PluginRootDocument;
@@ -59,23 +57,15 @@ import de.securedimensions.frostserver.plugin.plus.helper.TableHelperMultiDatast
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperObservation;
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperParty;
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperThing;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.NetworkInterface;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.UUID;
-
 import org.jooq.DataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,7 +140,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public static final TypeReference<Role> TYPE_REFERENCE_ROLE = new TypeReference<Role>() {
         // Empty on purpose.
     };
-    public static final TypeSimpleCustom propertyTypeRole = new TypeSimpleCustom("Plus.Role", "The Party Role", TypeSimplePrimitive.EDM_STRING, TYPE_REFERENCE_ROLE);
+    public static final TypeEnumeration propertyTypeRole = new TypeEnumeration("Plus.Role", "The Party Role", Role.class, TYPE_REFERENCE_ROLE);
     public final EntityPropertyMain<Role> epPartyRole = new EntityPropertyMain<>("role", propertyTypeRole);
 
     public final EntityPropertyMain<String> epAuthId = new EntityPropertyMain<>("authId", TypeSimplePrimitive.EDM_STRING);
@@ -241,13 +231,13 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         pluginMultiDatastream = settings.getPluginManager().getPlugin(PluginMultiDatastream.class);
         
         final ModelRegistry mr = settings.getModelRegistry();
+        mr.registerPropertyType(propertyTypeRole);
         /**
          * Class License
          */
         epIdLicense = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeLicense), "id");
         etLicense
                 .registerProperty(epIdLicense, false)
-                .registerProperty(ModelRegistry.EP_SELFLINK, false)
                 .registerProperty(pluginCoreModel.epName, false)
                 .registerProperty(pluginCoreModel.epDescription, false)
                 .registerProperty(ModelRegistry.EP_PROPERTIES, false)
@@ -267,7 +257,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         epIdParty = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeParty), "id");
         etParty
                 .registerProperty(epIdParty, false)
-                .registerProperty(ModelRegistry.EP_SELFLINK, false)
                 .registerProperty(pluginCoreModel.epName, false)
                 .registerProperty(pluginCoreModel.epDescription, false)
                 .registerProperty(epAuthId, false)
@@ -425,7 +414,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         epIdProject = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeProject), "id");
         etProject
                 .registerProperty(epIdProject, false)
-                .registerProperty(ModelRegistry.EP_SELFLINK, false)
                 .registerProperty(pluginCoreModel.epName, false)
                 .registerProperty(pluginCoreModel.epDescription, false)
                 .registerProperty(ModelRegistry.EP_PROPERTIES, false)
@@ -447,7 +435,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         epIdGroup = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeGroup), "id");
         etGroup
                 .registerProperty(epIdGroup, false)
-                .registerProperty(ModelRegistry.EP_SELFLINK, false)
                 .registerProperty(pluginCoreModel.epName, false)
                 .registerProperty(pluginCoreModel.epDescription, false)
                 .registerProperty(ModelRegistry.EP_PROPERTIES, false)
@@ -497,7 +484,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         epIdRelation = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeRelation), "id");
         etRelation
                 .registerProperty(epIdRelation, false)
-                .registerProperty(ModelRegistry.EP_SELFLINK, false)
                 .registerProperty(pluginCoreModel.epName, false)
                 .registerProperty(pluginCoreModel.epDescription, false)
                 .registerProperty(ModelRegistry.EP_PROPERTIES, false)
