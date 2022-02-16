@@ -30,6 +30,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreIn
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.plus.TableImpLicense;
@@ -63,7 +64,7 @@ public class TableHelperLicense extends TableHelper {
             	{
             		return (pm.get(pluginPlus.etLicense, entity.getId()) == null);
             	}
-            	throw new IllegalArgumentException("License cannot be created - please use one of the existing License objects.");
+            	throw new ForbiddenException("License cannot be created - please use one of the existing License entities.");
 			}
 		});
 		
@@ -81,7 +82,7 @@ public class TableHelperLicense extends TableHelper {
             	if (isAdmin(principal))
             		return;
 
-            	throw new IllegalArgumentException("License cannot be updated - please use one of the existing License objects.");
+            	throw new ForbiddenException("License cannot be updated - please use one of the existing License entities.");
 
 
 			}
@@ -100,7 +101,7 @@ public class TableHelperLicense extends TableHelper {
             	if (isAdmin(principal))
             		return;
 
-            	throw new IllegalArgumentException("License cannot be deleted.");
+            	throw new ForbiddenException("License cannot be deleted.");
 
 			}
 		});
