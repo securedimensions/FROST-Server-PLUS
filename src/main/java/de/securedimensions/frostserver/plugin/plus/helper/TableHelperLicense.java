@@ -17,6 +17,8 @@
  */
 package de.securedimensions.frostserver.plugin.plus.helper;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
@@ -33,16 +35,19 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
+import de.securedimensions.frostserver.plugin.plus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.plus.TableImpLicense;
 
 public class TableHelperLicense extends TableHelper {
 
 	private TableImpLicense tableLicenses;
+	private final PluginPLUS pluginPlus;
 	
 	public TableHelperLicense(CoreSettings settings, PostgresPersistenceManager ppm) {
 		super(settings, ppm);
 
 		this.tableLicenses = tables.getTableForClass(TableImpLicense.class);
+		this.pluginPlus = settings.getPluginManager().getPlugin(PluginPLUS.class);
 		
 	}
 
@@ -57,6 +62,17 @@ public class TableHelperLicense extends TableHelper {
 
             	if (pluginPlus.isEnforceLicensingEnabled() == false)
             		return true;
+            	
+            	try {
+                	String definition = (String)entity.getProperty(pluginPlus.etLicense.getProperty("definition"));
+					String domain = (new URL(definition)).getHost();
+					if (domain.contains(pluginPlus.getLicenseDomain().getHost()))
+					{
+						return true;
+					}
+				} catch (MalformedURLException e) {
+					throw new IllegalArgumentException("cannot create URI from property 'definition'");
+				}
             	
             	Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
