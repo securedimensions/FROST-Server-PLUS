@@ -59,6 +59,8 @@ import de.securedimensions.frostserver.plugin.plus.helper.TableHelperParty;
 import de.securedimensions.frostserver.plugin.plus.helper.TableHelperThing;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -201,6 +203,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     private boolean enforceOwnsership;
     private boolean enforceLicensing;
     private boolean fullyInitialised;
+    
+    private URL licenseDomain;
 
     public PluginPLUS() {
         LOGGER.info("Creating new PLUS Plugin.");
@@ -218,10 +222,16 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         
         enforceLicensing = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_LICENSING, PluginPlusSettings.class);
         
+        
         if (enforceLicensing)
         {
         	LOGGER.info("Setting plugins.plus.idType.license, using value 'String'.");
         	pluginSettings.set(PluginPlusSettings.TAG_ID_TYPE_LICENSE, "String");
+            try {
+				licenseDomain = new URL(pluginSettings.get(PluginPlusSettings.TAG_ENABLE_LICENSE_DOMAIN, PluginPlusSettings.class));
+			} catch (MalformedURLException e) {
+				LOGGER.error("value for '" + PluginPlusSettings.TAG_ENABLE_LICENSE_DOMAIN + "' not a valid URL");
+			}
         }
         
         plusSettings = new PluginPlusSettings(settings);
@@ -738,6 +748,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public boolean isEnforceLicensingEnabled()
     {
     	return enforceLicensing;
+    }
+    public URL getLicenseDomain()
+    {
+    	return licenseDomain;
     }
     
     private boolean isAdmin(Principal principal)
