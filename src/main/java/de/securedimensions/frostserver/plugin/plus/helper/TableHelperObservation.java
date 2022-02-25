@@ -207,14 +207,14 @@ public class TableHelperObservation extends TableHelper {
 		Entity datastream = null;
 		Entity multiDatastream = null;
 
+		// Test if the Observation is inline and linked to a Datastream or MultiDatastream
 		if (entity.isSetProperty(pluginCoreModel.npDatastreamObservation))
 			datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
 		else if ((pluginMultiDatastream != null) && (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation)))
 			multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
 		
-		/*
-		
-		
+		// Test if Observation needs to be loaded - first from Datastream
+		if ((datastream == null) && (multiDatastream == null))
 		{
 			Entity observation = (Entity) pm.get(pluginCoreModel.etObservation, entity.getId());
 			if ((observation != null) && observation.isSetProperty(pluginCoreModel.npDatastreamObservation))
@@ -223,14 +223,27 @@ public class TableHelperObservation extends TableHelper {
 			else
 				datastream = null;
 		}
-		 */
+
+		// Test if Observation needs to be loaded - now from MultiDatastream
+		if ((datastream == null) && (multiDatastream == null))
+		{
+			Entity observation = (Entity) pm.get(pluginCoreModel.etObservation, entity.getId());
+			if ((observation != null)
+					&& observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
+				multiDatastream = (Entity) pm.get(pluginMultiDatastream.etMultiDatastream,
+						observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
+			else
+				multiDatastream = null;
+		}
 		
+		// If the Observation is linked to a Datastream...
 		if (datastream != null)
 			if (datastream.isSetProperty(pluginPlus.npPartyDatastream))
 				assertOwnershipDatastream(datastream, principal);
 			else
 				assertOwnershipDatastream((Entity) pm.get(pluginCoreModel.etDatastream, datastream.getId()), principal);
 
+		// If the Observation is linked to a MultiDatastream...
 		if (multiDatastream != null)
 			if (multiDatastream.isSetProperty(pluginPlus.npPartyMultiDatastream))
 				assertOwnershipMultiDatastream(multiDatastream, principal);
@@ -239,31 +252,6 @@ public class TableHelperObservation extends TableHelper {
 						(Entity) pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId()),
 						principal);
 
-		/*
-		if (pluginMultiDatastream != null) {
-
-			if (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
-				multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
-			else {
-				Entity observation = (Entity) pm.get(pluginCoreModel.etObservation, entity.getId());
-				if ((observation != null)
-						&& observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
-					multiDatastream = (Entity) pm.get(pluginMultiDatastream.etMultiDatastream,
-							observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
-				else
-					multiDatastream = null;
-			}
-
-			if (multiDatastream != null)
-				if (multiDatastream.isSetProperty(pluginPlus.npPartyMultiDatastream))
-					assertOwnershipMultiDatastream(multiDatastream, principal);
-				else
-					assertOwnershipMultiDatastream(
-							(Entity) pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId()),
-							principal);
-
-		}
-		 */
 	}
 
 	protected void assertLicenseCompatibilty(PostgresPersistenceManager pm, Entity entity) {
@@ -302,9 +290,15 @@ public class TableHelperObservation extends TableHelper {
 				String groupLicenseId = groupLicense.getProperty(pluginPlus.epIdLicense).toString();
 				
 				Entity datastream = null;
+				Entity multiDatastream = null;
+
 				if (entity.isSetProperty(pluginCoreModel.npDatastreamObservation))
 					datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
-				else {
+				else if ((pluginMultiDatastream != null) && (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation)))
+					multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
+				
+				if ((datastream == null) && (multiDatastream == null))
+				{
 					Entity observation = (Entity) pm.get(pluginCoreModel.etObservation, entity.getId());
 					if ((observation != null) && observation.isSetProperty(pluginCoreModel.npDatastreamObservation))
 						datastream = (Entity) pm.get(pluginCoreModel.etDatastream,
@@ -313,6 +307,17 @@ public class TableHelperObservation extends TableHelper {
 						datastream = null;
 				}
 
+				if ((datastream == null) && (multiDatastream == null))
+				{
+					Entity observation = (Entity) pm.get(pluginCoreModel.etObservation, entity.getId());
+					if ((observation != null)
+							&& observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
+						multiDatastream = (Entity) pm.get(pluginMultiDatastream.etMultiDatastream,
+								observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
+					else
+						multiDatastream = null;
+				}
+				
 				if (datastream != null)
 					if (datastream.isSetProperty(pluginPlus.npLicenseDatastream))
 					{
@@ -324,34 +329,17 @@ public class TableHelperObservation extends TableHelper {
 						assertLicenseCompatibilty(datastream.getProperty(pluginPlus.npLicenseDatastream).getId().toString(), groupLicenseId);
 					}
 				
-				if (pluginMultiDatastream != null) {
-
-					Entity multiDatastream = null;
-					if (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
-						multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
-					else {
-						Entity observation = (Entity) pm.get(pluginCoreModel.etObservation, entity.getId());
-						if ((observation != null)
-								&& observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
-							multiDatastream = (Entity) pm.get(pluginMultiDatastream.etMultiDatastream,
-									observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
-						else
-							multiDatastream = null;
+				if (multiDatastream != null)
+					if (multiDatastream.isSetProperty(pluginPlus.npLicenseMultiDatastream))
+					{	
+						assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getId().toString(), groupLicenseId);
 					}
-
-					if (multiDatastream != null)
-						if (multiDatastream.isSetProperty(pluginPlus.npLicenseMultiDatastream))
-						{	
-							assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getId().toString(), groupLicenseId);
-						}
-						else
-						{
-							multiDatastream = (Entity) pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
-							assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getId().toString(), groupLicenseId);
-							
-						}
-				}
-
+					else
+					{
+						multiDatastream = (Entity) pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
+						assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getId().toString(), groupLicenseId);
+						
+					}
 			}
 		}
 	}
