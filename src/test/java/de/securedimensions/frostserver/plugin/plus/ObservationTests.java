@@ -93,11 +93,11 @@ public class ObservationTests extends AbstractTestClass {
 
 	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_INLINE_DATASTREAM_INLINE_PARTY = "Other user should NOT be able to update Observation with Datastream and Party inline.";
 	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_INLINE_DATASTREAM_EXISTING_PARTY = "Other user should NOT be able to update Observation with Datastream and existing Party.";
-	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_EXISTING_DATASTREAM = "Other user should be able to update Observation with existing Datastream.";
+	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_EXISTING_DATASTREAM = "Other user should NOT be able to update Observation with existing Datastream.";
 
 	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_INLINE_DATASTREAM_INLINE_PARTY = "Other user should NOT be able to delete Observation with Datastream and Party inline.";
 	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_INLINE_DATASTREAM_EXISTING_PARTY = "Other user should NOT be able to delete Observation with Datastream and existing Party.";
-	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_EXISTING_DATASTREAM = "Other user should be able to update Observation with existing Datastream.";
+	private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_EXISTING_DATASTREAM = "Other user should NOT be able to update Observation with existing Datastream.";
 
 	
 	private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE_INLINE_DATASTREAM_INLINE_PARTY = "Admin should be able to create Observation with Datastream and Party inline.";
