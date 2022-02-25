@@ -57,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.shaded.org.yaml.snakeyaml.DumperOptions.Version;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
@@ -298,7 +299,8 @@ public class LicenseTests extends AbstractTestClass {
 			
 			for (String k : TableHelperObservation.LICENSES.keySet())
 			{
-				createEntity("/Licenses", TableHelperObservation.LICENSES.get(k));
+				if (! existLicense(k))
+					createEntity("/Licenses", TableHelperObservation.LICENSES.get(k));
 			}
 
 			
@@ -462,6 +464,29 @@ public class LicenseTests extends AbstractTestClass {
 			LOGGER.error(org.apache.http.util.EntityUtils.toString(response.getEntity()));
 		
 		return response.getStatusLine().getStatusCode();
+
+	}
+	
+	private boolean existLicense(String id) throws IOException
+	{
+		String filter = "$filter=@iot.id%20eq%20%27" + id + "%27&$select=@iot.id";
+		HttpGet httpGet = new HttpGet(serverSettings.getServiceUrl(version) + "/Licenses?" + filter);
+		setAuth(service, ALICE, "");
+
+		CloseableHttpResponse response = service.execute(httpGet);
+		
+		if (response.getStatusLine().getStatusCode() != 200)
+		{
+			LOGGER.error(org.apache.http.util.EntityUtils.toString(response.getEntity()));
+			return false;
+		}
+		else
+		{
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonNode = objectMapper.readTree(response.getEntity().getContent());
+			
+			return (jsonNode.get("value").get(0).get("@iot.id").textValue().equalsIgnoreCase(id));
+		}
 
 	}
 	
