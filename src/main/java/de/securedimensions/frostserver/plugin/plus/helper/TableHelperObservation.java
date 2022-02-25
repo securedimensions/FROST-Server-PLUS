@@ -205,9 +205,17 @@ public class TableHelperObservation extends TableHelper {
 	private void assertOwnershipObservation(PostgresPersistenceManager pm, Entity entity, Principal principal) {
 
 		Entity datastream = null;
+		Entity multiDatastream = null;
+
 		if (entity.isSetProperty(pluginCoreModel.npDatastreamObservation))
 			datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
-		else {
+		else if ((pluginMultiDatastream != null) && (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation)))
+			multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
+		
+		/*
+		
+		
+		{
 			Entity observation = (Entity) pm.get(pluginCoreModel.etObservation, entity.getId());
 			if ((observation != null) && observation.isSetProperty(pluginCoreModel.npDatastreamObservation))
 				datastream = (Entity) pm.get(pluginCoreModel.etDatastream,
@@ -215,16 +223,25 @@ public class TableHelperObservation extends TableHelper {
 			else
 				datastream = null;
 		}
-
+		 */
+		
 		if (datastream != null)
 			if (datastream.isSetProperty(pluginPlus.npPartyDatastream))
 				assertOwnershipDatastream(datastream, principal);
 			else
 				assertOwnershipDatastream((Entity) pm.get(pluginCoreModel.etDatastream, datastream.getId()), principal);
 
+		if (multiDatastream != null)
+			if (multiDatastream.isSetProperty(pluginPlus.npPartyMultiDatastream))
+				assertOwnershipMultiDatastream(multiDatastream, principal);
+			else
+				assertOwnershipMultiDatastream(
+						(Entity) pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId()),
+						principal);
+
+		/*
 		if (pluginMultiDatastream != null) {
 
-			Entity multiDatastream = null;
 			if (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
 				multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
 			else {
@@ -246,7 +263,7 @@ public class TableHelperObservation extends TableHelper {
 							principal);
 
 		}
-
+		 */
 	}
 
 	protected void assertLicenseCompatibilty(PostgresPersistenceManager pm, Entity entity) {
