@@ -17,31 +17,44 @@
  */
 package de.securedimensions.frostserver.plugin.plus;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;;
+import org.slf4j.LoggerFactory;
 
 /**
- * TestSuite for the executing all tests regarding the ownership concept. 
+ * TestSuite for the executing all tests regarding the ownership concept.
  *
  * @author Andreas Matheus
  */
-@RunWith(Suite.class)
-@SuiteClasses({PartyTests.class, DatastreamTests.class, MultiDatastreamTests.class, GroupTests.class, ThingTests.class, ObservationTests.class, LicenseTests.class})
+@Suite
+@SelectClasses({
+    PartyTests.Imp10Tests.class,
+    PartyTests.Imp11Tests.class,
+    DatastreamTests.Imp10Tests.class,
+    DatastreamTests.Imp11Tests.class,
+    MultiDatastreamTests.Imp10Tests.class,
+    MultiDatastreamTests.Imp11Tests.class,
+    GroupTests.Imp10Tests.class,
+    GroupTests.Imp11Tests.class,
+    ThingTests.Imp10Tests.class,
+    ThingTests.Imp11Tests.class,
+    ObservationTests.Imp10Tests.class,
+    ObservationTests.Imp11Tests.class,
+    LicenseTests.Imp10Tests.class,
+    LicenseTests.Imp11Tests.class
+})
 public class TestSuite {
 
     private static final long serialVersionUID = 1639739965;
 
-	/**
-	 * The logger for this class.
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestSuite.class);
+    /**
+     * The logger for this class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestSuite.class);
 
-	public TestSuite()
-	{
-		LOGGER.info("Running all tests for the PLUS plugin");
-	}
+    public TestSuite() {
+        LOGGER.info("Running all tests for the PLUS plugin");
+    }
 
 }
