@@ -168,7 +168,7 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
     @Override
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
-        pfReg.addEntryId(entityFactories, TableImpLicense::getId);
+        pfReg.addEntryId(TableImpLicense::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
@@ -176,28 +176,28 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
         pfReg.addEntryString(pluginPLUS.epLicenseLogo, table -> table.colLogo);
 
         // We register a navigationProperty on the Datastreams table.
-        pfReg.addEntry(pluginPLUS.npDatastreamsLicense, TableImpLicense::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npDatastreamsLicense, TableImpLicense::getId);
 
         // We register a navigationProperty on the Groups table.
-        pfReg.addEntry(pluginPLUS.npGroupsLicense, TableImpLicense::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npGroupsLicense, TableImpLicense::getId);
 
         TableImpDatastreams datastreamsTable = tables.getTableForClass(TableImpDatastreams.class);
         final int licenseDatastreamsIdIdx = datastreamsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
         datastreamsTable.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npLicenseDatastream, table -> (TableField<Record, ?>) table.field(licenseDatastreamsIdIdx), entityFactories);
+                .addEntry(pluginPLUS.npLicenseDatastream, table -> (TableField<Record, ?>) table.field(licenseDatastreamsIdIdx));
 
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {
             final int licenseMDIdIdx = tableMultiDatastreams.registerField(DSL.name("LICENSE_ID"), getIdType());
             tableMultiDatastreams.getPropertyFieldRegistry()
-                    .addEntry(pluginPLUS.npLicenseMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(licenseMDIdIdx), entityFactories);
+                    .addEntry(pluginPLUS.npLicenseMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(licenseMDIdIdx));
         }
 
         TableImpGroups groupsTable = tables.getTableForClass(TableImpGroups.class);
         if (groupsTable != null) {
             final int licenseGroupsIdIdx = groupsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
             groupsTable.getPropertyFieldRegistry()
-                    .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, ?>) table.field(licenseGroupsIdIdx), entityFactories);
+                    .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, ?>) table.field(licenseGroupsIdIdx));
         }
         
     }

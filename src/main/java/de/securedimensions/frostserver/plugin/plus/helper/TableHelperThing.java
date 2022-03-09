@@ -58,7 +58,7 @@ public class TableHelperThing extends TableHelper {
 		
         final int partyThingsIdIdx = tableThings.registerField(DSL.name("PARTY_ID"), tables.getTableForClass(TableImpParty.class).getIdType());
         tableThings.getPropertyFieldRegistry()
-        	.addEntry(pluginPlus.npPartyThing, table -> (TableField<Record, ?>) table.field(partyThingsIdIdx), entityFactories);
+        	.addEntry(pluginPlus.npPartyThing, table -> (TableField<Record, ?>) table.field(partyThingsIdIdx));
 
 	}
 

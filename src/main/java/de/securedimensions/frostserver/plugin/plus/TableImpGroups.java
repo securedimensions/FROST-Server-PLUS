@@ -193,7 +193,7 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
     @Override
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
-        pfReg.addEntryId(entityFactories, TableImpGroups::getId);
+        pfReg.addEntryId(TableImpGroups::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
@@ -207,18 +207,18 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
                 new NFP<>(KEY_TIME_INTERVAL_END, table -> table.colRuntimeTimeEnd));
 
         // Register with Observations
-        pfReg.addEntry(pluginPLUS.npObservations, TableImpGroups::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npObservations, TableImpGroups::getId);
 
         TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
         tableObservations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npObservationGroups, TableImpObservations::getId, entityFactories);
+                .addEntry(pluginPLUS.npObservationGroups, TableImpObservations::getId);
 
         // Register with Relations
-        pfReg.addEntry(pluginPLUS.npRelations, TableImpGroups::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npRelations, TableImpGroups::getId);
 
         TableImpRelations tableRelations = tables.getTableForClass(TableImpRelations.class);
         tableRelations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId, entityFactories);
+                .addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId);
         
 
     }

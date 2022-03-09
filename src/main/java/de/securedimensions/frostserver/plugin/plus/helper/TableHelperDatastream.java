@@ -63,7 +63,7 @@ public class TableHelperDatastream extends TableHelper {
 		
 		final int partyDatastreamsIdIdx = tableDatastreams.registerField(DSL.name("PARTY_ID"), tables.getTableForClass(TableImpParty.class).getIdType());
         tableDatastreams.getPropertyFieldRegistry()
-        	.addEntry(pluginPlus.npPartyDatastream, table -> (TableField<Record, ?>) table.field(partyDatastreamsIdIdx), entityFactories);
+        	.addEntry(pluginPlus.npPartyDatastream, table -> (TableField<Record, ?>) table.field(partyDatastreamsIdIdx));
 
 	}
 
