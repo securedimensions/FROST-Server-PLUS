@@ -172,7 +172,7 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     @Override
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
-        pfReg.addEntryId(entityFactories, TableImpProject::getId);
+        pfReg.addEntryId(TableImpProject::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
@@ -188,20 +188,20 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
                 new NFP<>(KEY_TIME_INTERVAL_START, table -> table.colRuntimeTimeStart),
                 new NFP<>(KEY_TIME_INTERVAL_END, table -> table.colRuntimeTimeEnd));
 
-        pfReg.addEntry(pluginPLUS.npDatastreamsProject, TableImpProject::getId, entityFactories);
-        pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npDatastreamsProject, TableImpProject::getId);
+        pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId);
 
         // We register a navigationProperty on the Datastreams table.
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int projectIdIdx = tableDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
         tableDatastreams.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npProjectDatastream, table -> (TableField<Record, ?>) table.field(projectIdIdx), entityFactories);
+                .addEntry(pluginPLUS.npProjectDatastream, table -> (TableField<Record, ?>) table.field(projectIdIdx));
 
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {
             final int projectMDIdIdx = tableMultiDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
             tableMultiDatastreams.getPropertyFieldRegistry()
-                    .addEntry(pluginPLUS.npProjectMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(projectMDIdIdx), entityFactories);
+                    .addEntry(pluginPLUS.npProjectMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(projectMDIdIdx));
         }
 
     }

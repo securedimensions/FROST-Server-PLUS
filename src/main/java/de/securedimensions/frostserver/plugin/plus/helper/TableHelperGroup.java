@@ -51,7 +51,7 @@ public class TableHelperGroup extends TableHelper {
 		
         final int partyGroupsIdIdx = tableGroups.registerField(DSL.name("PARTY_ID"), tables.getTableForClass(TableImpParty.class).getIdType());
         tableGroups.getPropertyFieldRegistry()
-        .addEntry(pluginPlus.npPartyGroup, table -> (TableField<Record, ?>) table.field(partyGroupsIdIdx), entityFactories);
+        .addEntry(pluginPlus.npPartyGroup, table -> (TableField<Record, ?>) table.field(partyGroupsIdIdx));
 
 	}
 

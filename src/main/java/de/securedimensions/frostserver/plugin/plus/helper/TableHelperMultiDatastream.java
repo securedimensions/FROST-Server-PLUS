@@ -63,7 +63,7 @@ public class TableHelperMultiDatastream extends TableHelper {
         if (tableMultiDatastreams != null) {
             final int partyMDIdIdx = tableMultiDatastreams.registerField(DSL.name("PARTY_ID"), tables.getTableForClass(TableImpParty.class).getIdType());
             tableMultiDatastreams.getPropertyFieldRegistry()
-                    .addEntry(pluginPlus.npPartyMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(partyMDIdIdx), entityFactories);
+                    .addEntry(pluginPlus.npPartyMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(partyMDIdIdx));
             
             tableMultiDatastreams.registerHookPreInsert(-10.0, new HookPreInsert() {
 

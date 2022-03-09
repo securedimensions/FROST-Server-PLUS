@@ -156,7 +156,7 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
         final TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
-        pfReg.addEntryId(entityFactories, TableImpRelations::getId);
+        pfReg.addEntryId(TableImpRelations::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
@@ -164,15 +164,15 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
         pfReg.addEntryString(pluginPLUS.epRelationRole, table -> table.colRole);
         pfReg.addEntryString(pluginPLUS.epExternalObject, table -> table.colExternalObject);
 
-        pfReg.addEntry(pluginPLUS.npSubjectRelation, TableImpRelations::getSubjectId, entityFactories);
-        pfReg.addEntry(pluginPLUS.npObjectRelation, TableImpRelations::getObjectId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npSubjectRelation, TableImpRelations::getSubjectId);
+        pfReg.addEntry(pluginPLUS.npObjectRelation, TableImpRelations::getObjectId);
 
         // We register a navigationProperty for Subject on the Observations table.
         tableObservations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId, entityFactories);
+                .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId);
         // We register a navigationProperty for Object on the Observations table.
         tableObservations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npObjectsObservation, TableImpObservations::getId, entityFactories);
+                .addEntry(pluginPLUS.npObjectsObservation, TableImpObservations::getId);
 
     }
 

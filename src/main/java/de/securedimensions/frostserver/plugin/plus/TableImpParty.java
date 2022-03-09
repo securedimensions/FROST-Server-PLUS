@@ -196,7 +196,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
 	@Override
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
-        pfReg.addEntryId(entityFactories, TableImpParty::getId);
+        pfReg.addEntryId(TableImpParty::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryString(pluginPLUS.epAuthId, table -> table.colAuthId);
@@ -204,16 +204,16 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         pfReg.addEntrySimple(pluginPLUS.epPartyRole, table -> table.colRole);
 
         // We register a navigationProperty on the Things table.
-        pfReg.addEntry(pluginPLUS.npThingsParty, TableImpParty::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npThingsParty, TableImpParty::getId);
 
         // We register a navigationProperty on the Groups table.
-        pfReg.addEntry(pluginPLUS.npGroupsParty, TableImpParty::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npGroupsParty, TableImpParty::getId);
 
         // We register a navigationProperty on the Datastreams table.
-        pfReg.addEntry(pluginPLUS.npDatastreamsParty, TableImpParty::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npDatastreamsParty, TableImpParty::getId);
 
         // We register a navigationProperty on the MultiDatastreams table.
-        pfReg.addEntry(pluginPLUS.npMultiDatastreamsParty, TableImpParty::getId, entityFactories);
+        pfReg.addEntry(pluginPLUS.npMultiDatastreamsParty, TableImpParty::getId);
                 
     }
     
