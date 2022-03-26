@@ -19,15 +19,10 @@ package de.securedimensions.frostserver.plugin.plus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.MomentBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
-
 import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.fieldwrapper.StaTimeIntervalWrapper.KEY_TIME_INTERVAL_END;
 import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.fieldwrapper.StaTimeIntervalWrapper.KEY_TIME_INTERVAL_START;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationManyToMany;
@@ -37,25 +32,10 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyField
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInterval;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.NFP;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpLocations;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
-import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
-import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
-import de.securedimensions.frostserver.plugin.plus.helper.TableHelperGroup;
-import de.securedimensions.frostserver.plugin.plus.helper.TableHelperLocation;
-
-import java.security.Principal;
-import java.time.OffsetDateTime;
-import java.util.Map;
-
+import net.time4j.Moment;
 import org.jooq.DataType;
-import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.TableField;
@@ -99,17 +79,17 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
     /**
      * The column <code>public.GROUPS.RUNTIME_START</code>.
      */
-    public final TableField<Record, OffsetDateTime> colRuntimeTimeStart = createField(DSL.name("RUNTIME_START"), SQLDataType.TIMESTAMPWITHTIMEZONE, this);
+    public final TableField<Record, Moment> colRuntimeTimeStart = createField(DSL.name("RUNTIME_START"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
      * The column <code>public.GROUPS.RUNTIME_END</code>.
      */
-    public final TableField<Record, OffsetDateTime> colRuntimeTimeEnd = createField(DSL.name("RUNTIME_END"), SQLDataType.TIMESTAMPWITHTIMEZONE, this);
+    public final TableField<Record, Moment> colRuntimeTimeEnd = createField(DSL.name("RUNTIME_END"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
      * The column <code>public.GROUPS.CREATED_TIME</code>.
      */
-    public final TableField<Record, OffsetDateTime> colCreatedTime = createField(DSL.name("CREATED"), SQLDataType.TIMESTAMPWITHTIMEZONE, this);
+    public final TableField<Record, Moment> colCreatedTime = createField(DSL.name("CREATED"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
      * The column <code>public.GROUPS.EP_ID</code>.
@@ -219,7 +199,7 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
         TableImpRelations tableRelations = tables.getTableForClass(TableImpRelations.class);
         tableRelations.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId);
-        
+
 
     }
 
