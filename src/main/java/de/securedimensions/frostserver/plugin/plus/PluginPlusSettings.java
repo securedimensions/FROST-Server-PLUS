@@ -50,7 +50,7 @@ public final class PluginPlusSettings implements ConfigDefaults {
     public final String idTypeDefault;
     public final String idTypeGroup;
     public final String idTypeLicense = "STRING"; /* fixed */
-    public final String idTypeParty = "UUID"; /* fixed */
+    public final String idTypeParty = "STRING"; /* fixed */
     public final String idTypeProject;
     public final String idTypeRelation;
 

@@ -19,17 +19,15 @@ package de.securedimensions.frostserver.plugin.plus.helper;
 
 import java.security.Principal;
 import java.util.Map;
-import java.util.UUID;
 
 import org.jooq.Field;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.IdString;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
@@ -63,7 +61,8 @@ public class TableHelperParty extends TableHelper {
 	            			return true;
 	            		
 	            		// make sure that the Party's iot.id is equal to the authId
-	            		entity.setId(new IdUuid(entity.getProperty(pluginPlus.epAuthId)));
+	            		String authID = entity.getProperty(pluginPlus.epAuthId);
+	            		entity.setId(new IdString(authID));
 	            		// If the Party already exist, we can skip processing
 	            		if (pm.get(pluginPlus.etParty, entity.getId()) == null)
 	            			return true;
@@ -76,8 +75,9 @@ public class TableHelperParty extends TableHelper {
 	            	if (isAdmin(principal))
 	            	{
 	            		// The admin has extra rights
-	                	entity.setId(new IdUuid(entity.getProperty(pluginPlus.epAuthId)));
-	                	Entity party = (Entity)pm.get(pluginPlus.etParty, entity.getId());
+	            		String authID = entity.getProperty(pluginPlus.epAuthId);
+	            		entity.setId(new IdString(authID));
+	            		Entity party = (Entity)pm.get(pluginPlus.etParty, entity.getId());
 	    				if (party != null)
 	    				{
 	    					// No need to insert the entity as it already exists. Just return the Id of the existing Party
@@ -90,17 +90,6 @@ public class TableHelperParty extends TableHelper {
 	        		assertPrincipal(principal);
 	        		String userId = principal.getName();
 	             		
-	            	try
-	        		{
-	        		    // This throws exception if userId is not in UUID format
-	        			UUID.fromString(userId);
-	        		} 
-	            	catch (IllegalArgumentException exception)
-	        		{
-	            		// generate the UUID from the userId
-	        			userId = UUID.nameUUIDFromBytes(userId.getBytes()).toString();
-	        		}
-	            	
 	            	if ((entity.isSetProperty(pluginPlus.epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty((pluginPlus.epAuthId)))))
 	            	{
 	            		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
@@ -108,7 +97,7 @@ public class TableHelperParty extends TableHelper {
 	        		}
 	            	
 	            	entity.setProperty(pluginPlus.epAuthId, userId);
-	        		entity.setId(new IdUuid(userId));
+	        		entity.setId(new IdString(userId));
 	        		Entity party = (Entity)pm.get(pluginPlus.etParty, entity.getId());
 					if (party != null)
 					{
@@ -141,17 +130,6 @@ public class TableHelperParty extends TableHelper {
 	        		assertPrincipal(principal);
 	            	String userId = principal.getName();
 	             		
-	            	try
-	        		{
-	        		    // This throws exception if userId is not in UUID format
-	        			UUID.fromString(userId);
-	        		} 
-	            	catch (IllegalArgumentException exception)
-	        		{
-	            		// generate the UUID from the userId
-	        			userId = UUID.nameUUIDFromBytes(userId.getBytes()).toString();
-	        		}
-	            	
 	            	if (!userId.equalsIgnoreCase(entity.getId().toString()))
 	            	{
 	            		// The authId is set by this plugin - it cannot be set via POSTed Party property authId
@@ -159,7 +137,7 @@ public class TableHelperParty extends TableHelper {
 	        		}
 
 	            	entity.setProperty(pluginPlus.epAuthId, userId);
-	        		entity.setId(new IdUuid(userId));
+	        		entity.setId(new IdString(userId));
 				} 
 			});
 	        
