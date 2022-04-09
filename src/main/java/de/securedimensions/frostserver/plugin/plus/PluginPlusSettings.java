@@ -33,7 +33,7 @@ public final class PluginPlusSettings implements ConfigDefaults {
     @DefaultValueBoolean(false)
     public static final String TAG_ENABLE_PLUS = "plus.enable";
     @DefaultValueBoolean(false)
-    public static final String TAG_ENABLE_ENFORCE_OWNERSHIP = "plus.enable.enforceOwnsership";
+    public static final String TAG_ENABLE_ENFORCE_OWNERSHIP = "plus.enable.enforceOwnership";
     @DefaultValueBoolean(false)
     public static final String TAG_ENABLE_ENFORCE_LICENSING = "plus.enable.enforceLicensing";
     @DefaultValue("https://creativecommons.org")
