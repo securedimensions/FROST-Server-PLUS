@@ -200,7 +200,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 	private PluginMultiDatastream pluginMultiDatastream;
 
     private boolean enabled;
-    private boolean enforceOwnsership;
+    private boolean enforceOwnership;
     private boolean enforceLicensing;
     private boolean fullyInitialised;
     
@@ -218,7 +218,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         if (!enabled) {
             return;
         }
-        enforceOwnsership = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_OWNERSHIP, PluginPlusSettings.class);
+        enforceOwnership = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_OWNERSHIP, PluginPlusSettings.class);
         
         enforceLicensing = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_LICENSING, PluginPlusSettings.class);
         
@@ -277,7 +277,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 		        .registerProperty(npDatastreamsParty, false)
                 .addValidator((entity, entityPropertiesOnly) -> {
                 	
-                	if (enforceOwnsership == false)
+                	if (enforceOwnership == false)
                 		return;
                 	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -308,7 +308,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 })
                 .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
                 	
-                	if (enforceOwnsership == false)
+                	if (enforceOwnership == false)
                 		return;
                 	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -342,7 +342,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 	        .registerProperty(npPartyThing, false)
 	        .addValidator((entity, entityPropertiesOnly) -> {
 	        	
-	        	if (enforceOwnsership == false)
+	        	if (enforceOwnership == false)
 	        		return;
 	        	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -357,7 +357,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 	        })
 	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
 	        	
-	        	if (enforceOwnsership == false)
+	        	if (enforceOwnership == false)
 	        		return;
 	        	
         		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -387,7 +387,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         	.registerProperty(npPartyDatastream, false)
         	 .addValidator((entity, entityPropertiesOnly) -> {
  	        	
- 	        	if (enforceOwnsership == false)
+ 	        	if (enforceOwnership == false)
  	        		return;
  	        	
          		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -402,7 +402,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
  	        })
  	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
  	        	
- 	        	if (enforceOwnsership == false)
+ 	        	if (enforceOwnership == false)
  	        		return;
  	        	
          		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -460,7 +460,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(npPartyGroup, false)
                 .addValidator((entity, entityPropertiesOnly) -> {
     	        	
-    	        	if (enforceOwnsership == false)
+    	        	if (enforceOwnership == false)
     	        		return;
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -473,7 +473,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     	        })
     	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
     	        	
-    	        	if (enforceOwnsership == false)
+    	        	if (enforceOwnership == false)
     	        		return;
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -522,7 +522,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         		.registerProperty(npObjectsObservation, false)
      	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
     	        	
-    	        	if (enforceOwnsership == false)
+    	        	if (enforceOwnership == false)
     	        		return;
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -562,7 +562,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             	.registerProperty(npPartyMultiDatastream, false)
     	        .addValidator((entity, entityPropertiesOnly) -> {
     	        	
-    	        	if (enforceOwnsership == false)
+    	        	if (enforceOwnership == false)
     	        		return;
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -575,7 +575,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
      	        })
     	        .addValidatorForUpdate((entity, entityPropertiesOnly) -> {
     	        	
-    	        	if (enforceOwnsership == false)
+    	        	if (enforceOwnership == false)
     	        		return;
     	        	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
@@ -622,7 +622,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         Set<String> extensionList = (Set<String>) serverSettings.get(Service.KEY_CONFORMANCE_LIST);
         extensionList.addAll(REQUIREMENTS_PLUS);
         
-        if (this.enforceOwnsership)
+        if (this.enforceOwnership)
         	extensionList.add(REQUIREMENT_ENFORCE_OWNERSHIP);
         
         if (this.enforceLicensing)
@@ -746,7 +746,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
     public boolean isEnforceOwnershipEnabled()
     {
-    	return enforceOwnsership;
+    	return enforceOwnership;
     }
     public boolean isEnforceLicensingEnabled()
     {

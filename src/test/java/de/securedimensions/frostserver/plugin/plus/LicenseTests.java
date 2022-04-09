@@ -278,7 +278,7 @@ public abstract class LicenseTests extends AbstractTestClass {
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
         SERVER_PROPERTIES.put("plugins.plus.enable", true);
-        SERVER_PROPERTIES.put("plugins.plus.enable.enforceOwnsership", true);
+        SERVER_PROPERTIES.put("plugins.plus.enable.enforceOwnership", true);
         SERVER_PROPERTIES.put("plugins.plus.enable.enforceLicensing", true);
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
