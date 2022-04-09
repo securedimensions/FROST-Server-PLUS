@@ -282,6 +282,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 	
             		Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
 
+            		if (principal == null)
+            			throw new UnauthorizedException("Authorization required");
+            		
                 	if (isAdmin(principal))
                 		return;
 
