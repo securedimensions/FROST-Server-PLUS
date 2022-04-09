@@ -42,7 +42,7 @@ Anonymous read is possible.
 
 ### Settings
 
-**plugins.plus.enable.enforceOwnsership:**  
+**plugins.plus.enable.enforceOwnership:**  
   Toggle indicating the enforcement of ownership. Default: `false`.
 
 ## Enforcement of Licensing
