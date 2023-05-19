@@ -168,6 +168,65 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${version.maven.plugin.spotless}</version>
+                <configuration>
+                    <formats>
+                        <format>
+                            <includes>
+                                <include>scripts/codestyle/*.xml</include>
+                            </includes>
+                            <eclipseWtp>
+                                <type>XML</type>
+                                <files>
+                                    <file>${root.basedir}/scripts/codestyle/xml.prefs</file>
+                                </files>
+                            </eclipseWtp>
+                        </format>
+                        <format>
+                            <includes>
+                                <include>.gitignore</include>
+                            </includes>
+                            <trimTrailingWhitespace/>
+                            <endWithNewline/>
+                        </format>
+                    </formats>
+                    <pom>
+                        <includes>
+                            <include>**/pom.xml</include>
+                        </includes>
+                        <sortPom>
+                            <keepBlankLines>true</keepBlankLines>
+                            <nrOfIndentSpace>4</nrOfIndentSpace>
+                            <sortDependencies>groupId,artifactId</sortDependencies>
+                            <sortProperties>true</sortProperties>
+                            <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
+                            <expandEmptyElements>false</expandEmptyElements>
+                        </sortPom>
+                    </pom>
+                    <java>
+                        <eclipse>
+                            <version>4.21</version>
+                            <file>${root.basedir}/scripts/codestyle/formatter.xml</file>
+                        </eclipse>
+                        <importOrder/>
+                        <removeUnusedImports/>
+                        <licenseHeader>
+                            <file>${project.basedir}/license-header</file>
+                        </licenseHeader>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>17</source>
@@ -175,6 +234,5 @@
                 </configuration>
             </plugin>
         </plugins>
-        <!--outputDirectory>/Users/andreasmatheus/Projects/CitiObs/Development/FROST-Server/FROST-Server.STAplus/target/FROST-Server.STAplus-2.2.0-SNAPSHOT/WEB-INF/classes</outputDirectory-->
     </build>
 </project>

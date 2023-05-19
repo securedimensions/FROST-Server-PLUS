@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2023 Fraunhofer Institut IOSB, Fraunhoferstr. 1, D 76131
- * Karlsruhe, Germany.
+ * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -21,11 +21,7 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.settings.Settings;
 import java.io.IOException;
 import java.util.Base64;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -35,7 +31,7 @@ public class PrincipalFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PrincipalFilter.class);
 
-    private Boolean anonRead;
+    private final Boolean anonRead;
 
     public PrincipalFilter(CoreSettings coreSettings) {
         Settings auth = coreSettings.getAuthSettings();
