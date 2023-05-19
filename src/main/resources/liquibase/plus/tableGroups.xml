@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <!--
-     Copyright (C) 2021 Secure Dimensions GmbH, D-81377
+     Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
      Munich, Germany.
 
      This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-07-23-PLUS-GROUPS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-05-15-PLUS-GROUPS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
                 <or>
@@ -34,9 +34,11 @@
             <column name="DESCRIPTION" type="TEXT"/>
             <column name="PROPERTIES" type="JSONB"/>
             <column name="PURPOSE" type="TEXT"/>
-            <column name="CREATED" type="TIMESTAMP WITH TIME ZONE"/>
-            <column name="RUNTIME_START" type="TIMESTAMP WITH TIME ZONE"/>
-            <column name="RUNTIME_END" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="CREATION_TIME" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="END_TIME" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="DATA_QUALITY" type="JSONB"/>
+            <column name="TERMS_OF_USE" type="TEXT"/>
+            <column name="PRIVACY_POLICY" type="TEXT"/>
             <column name="LICENSE_ID" type="${idType-License}">
                 <constraints nullable="true"/>
             </column>
@@ -54,7 +56,7 @@
             </not>
         </preConditions>
         <addColumn tableName="GROUPS">
-            <column name="ID" type="${idTypeLong}" autoIncrement="true" position="1">
+            <column name="ID" type="${idTypeLong}" autoIncrement="true" >
                 <constraints primaryKey="true" primaryKeyName="GROUPS_PKEY" />
             </column>
         </addColumn>
@@ -71,7 +73,7 @@
             </not>
         </preConditions>
         <addColumn tableName="GROUPS">
-            <column name="ID" type="${idType-Group}" defaultValueComputed="${defaultValueComputed-Group}" position="1">
+            <column name="ID" type="${idType-Group}" defaultValueComputed="${defaultValueComputed-Group}" >
                 <constraints primaryKey="true" primaryKeyName="GROUPS_PKEY"/>
             </column>
         </addColumn>

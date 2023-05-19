@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <!--
-     Copyright (C) 2021 Secure Dimensions GmbH, D-81377
+     Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
      Munich, Germany.
 
      This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-12-14-PLUS-RELATIONS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-05-15-PLUS-RELATIONS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
                 <or>
@@ -29,7 +29,6 @@
             </not>
         </preConditions>
         <createTable tableName="RELATIONS">
-            <column name="NAME" type="TEXT"/>
             <column name="DESCRIPTION" type="TEXT"/>
             <column name="PROPERTIES" type="JSONB"/>
             <column name="ROLE" type="TEXT"/>
@@ -54,7 +53,7 @@
             </not>
         </preConditions>
         <addColumn tableName="RELATIONS">
-            <column name="ID" type="${idTypeLong}" autoIncrement="true" position="1">
+            <column name="ID" type="${idTypeLong}" autoIncrement="true" >
                 <constraints primaryKey="true" primaryKeyName="RELATIONS_PKEY" />
             </column>
         </addColumn>
@@ -71,7 +70,7 @@
             </not>
         </preConditions>
         <addColumn tableName="RELATIONS">
-            <column name="ID" type="${idType-Relation}" defaultValueComputed="${defaultValueComputed-Relation}" position="1">
+            <column name="ID" type="${idType-Relation}" defaultValueComputed="${defaultValueComputed-Relation}" >
                 <constraints primaryKey="true" primaryKeyName="RELATIONS_PKEY"/>
             </column>
         </addColumn>
