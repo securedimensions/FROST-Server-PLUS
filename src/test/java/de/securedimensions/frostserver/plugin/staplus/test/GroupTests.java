@@ -216,6 +216,7 @@ public abstract class GroupTests extends AbstractTestClass {
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
 
+    private static SensorThingsService serviceSTAplus;
     private static final Properties SERVER_PROPERTIES = new Properties();
 
     static {
@@ -246,15 +247,19 @@ public abstract class GroupTests extends AbstractTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            service = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
     }
 
     @Override
-    protected void tearDownVersion() throws ServiceFailureException {
-        cleanup();
+    protected void tearDownVersion() {
+        try {
+            cleanup();
+        } catch (ServiceFailureException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @AfterAll
@@ -289,7 +294,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
                 Assertions.assertTrue(Boolean.TRUE, GROUP_MUST_HAVE_A_PARTY);
             } else {
@@ -309,11 +314,11 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String location = response.getFirstHeader("Location").getValue();
                 HttpGet httpGet = new HttpGet(location + "/Party");
-                try (CloseableHttpResponse response2 = service.execute(httpGet)) {
+                try (CloseableHttpResponse response2 = serviceSTAplus.execute(httpGet)) {
                     ObjectMapper mapper = new ObjectMapper();
                     Map<String, String> map = mapper.readValue(response2.getEntity().getContent(), Map.class);
 
@@ -338,11 +343,11 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String location = response.getFirstHeader("Location").getValue();
                 HttpGet httpGet = new HttpGet(location + "/Party");
-                try (CloseableHttpResponse response2 = service.execute(httpGet)) {
+                try (CloseableHttpResponse response2 = serviceSTAplus.execute(httpGet)) {
                     ObjectMapper mapper = new ObjectMapper();
                     Map<String, String> map = mapper.readValue(response2.getEntity().getContent(), Map.class);
 
@@ -365,7 +370,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE);
             } else {
@@ -385,12 +390,12 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 // we need to make sure that the Group is associated with Alice
                 String location = response.getFirstHeader("Location").getValue();
                 HttpGet httpGet = new HttpGet(location + "/Party");
-                try (CloseableHttpResponse response2 = service.execute(httpGet)) {
+                try (CloseableHttpResponse response2 = serviceSTAplus.execute(httpGet)) {
                     ObjectMapper mapper = new ObjectMapper();
                     Map<String, String> map = mapper.readValue(response2.getEntity().getContent(), Map.class);
 
@@ -412,7 +417,7 @@ public abstract class GroupTests extends AbstractTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE);
             } else if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
@@ -436,7 +441,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ANY_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION);
             } else {
@@ -455,7 +460,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, userId, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             return response.getFirstHeader("Location").getValue();
         }
     }
@@ -473,7 +478,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_UPDATE);
@@ -497,7 +502,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY);
             } else {
@@ -519,7 +524,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE);
             } else {
@@ -543,7 +548,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY);
             } else {
@@ -565,7 +570,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_UPDATE);
             } else {
@@ -589,7 +594,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_UPDATE_PARTY);
             } else {
@@ -610,7 +615,7 @@ public abstract class GroupTests extends AbstractTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPatch.setEntity(stringEntity);
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE);
             } else {
@@ -632,7 +637,7 @@ public abstract class GroupTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_DELETE);
             } else {
@@ -650,7 +655,7 @@ public abstract class GroupTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE);
             } else {
@@ -668,7 +673,7 @@ public abstract class GroupTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 LOGGER.info(ADMIN_SHOULD_BE_ABLE_TO_DELETE);
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_DELETE);
@@ -685,7 +690,7 @@ public abstract class GroupTests extends AbstractTestClass {
     public void test23AnonDeleteParty() throws ClientProtocolException, IOException {
         HttpDelete httpDelete = new HttpDelete(partyALICE);
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_DELETE);
             } else {
@@ -711,7 +716,7 @@ public abstract class GroupTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, userId, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             return response.getFirstHeader("Location").getValue();
         }
     }

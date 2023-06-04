@@ -261,6 +261,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
     private static int observationId = 1000;
 
     private URL endpoint;
+    private static SensorThingsService serviceSTAplus;
 
     private static final Properties SERVER_PROPERTIES = new Properties();
 
@@ -279,7 +280,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
 
     public DatastreamTests(ServerVersion version) {
         super(version, SERVER_PROPERTIES);
-        endpoint = service.getEndpoint();
+        endpoint = serviceSTAplus.getEndpoint();
     }
 
     @Override
@@ -287,7 +288,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         LOGGER.info("Setting up for version {}.", version.urlPart);
 
         try {
-            service = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
@@ -295,8 +296,12 @@ public abstract class DatastreamTests extends AbstractTestClass {
     }
 
     @Override
-    protected void tearDownVersion() throws ServiceFailureException {
-        cleanup();
+    protected void tearDownVersion() {
+        try {
+            cleanup();
+        } catch (ServiceFailureException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @AfterAll
@@ -331,7 +336,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
                 Assertions.assertTrue(Boolean.TRUE, DATASTREAM_MUST_HAVE_A_PARTY);
             } else {
@@ -352,11 +357,11 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String location = response.getFirstHeader("Location").getValue();
                 HttpGet httpGet = new HttpGet(location + "/Party");
-                try (CloseableHttpResponse response2 = service.execute(httpGet)) {
+                try (CloseableHttpResponse response2 = serviceSTAplus.execute(httpGet)) {
                     ObjectMapper mapper = new ObjectMapper();
                     Map<String, String> map = mapper.readValue(response2.getEntity().getContent(), Map.class);
 
@@ -380,7 +385,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE);
             } else {
@@ -401,12 +406,12 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 // we need to make sure that the Datastream is associated with Alice
                 String location = response.getFirstHeader("Location").getValue();
                 HttpGet httpGet = new HttpGet(location + "/Party");
-                try (CloseableHttpResponse response2 = service.execute(httpGet)) {
+                try (CloseableHttpResponse response2 = serviceSTAplus.execute(httpGet)) {
                     ObjectMapper mapper = new ObjectMapper();
                     Map<String, String> map = mapper.readValue(response2.getEntity().getContent(), Map.class);
 
@@ -429,7 +434,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE);
@@ -451,7 +456,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, userId, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             return response.getFirstHeader("Location").getValue();
         }
 
@@ -470,7 +475,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_UPDATE);
             } else {
@@ -492,7 +497,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY);
             } else {
@@ -514,7 +519,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE);
             } else {
@@ -536,7 +541,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_UPDATE);
             } else {
@@ -557,7 +562,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPatch.setEntity(stringEntity);
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE);
             } else {
@@ -580,7 +585,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(datastreamUrl);
         setAuth(httpDelete, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_DELETE);
             } else {
@@ -599,7 +604,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(datastreamUrl);
         setAuth(httpDelete, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE);
             } else {
@@ -618,7 +623,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(datastreamUrl);
         setAuth(httpDelete, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 LOGGER.info(ADMIN_SHOULD_BE_ABLE_TO_DELETE);
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_DELETE);
@@ -637,7 +642,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
 
         HttpDelete httpDelete = new HttpDelete(datastreamUrl);
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_DELETE);
@@ -663,7 +668,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION);
             } else {
@@ -685,7 +690,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_ADD_OBSERVATION);
             } else {
@@ -707,7 +712,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_ADD_OBSERVATION);
             } else {
@@ -728,7 +733,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_ADD_OBSERVATION);
             } else {
@@ -744,7 +749,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, userId, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
 
         }
     }
@@ -761,7 +766,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(datastreamUrl + "/Observations(" + observationId + ")");
         setAuth(httpDelete, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_DELETE_OBSERVATION);
             } else {
@@ -782,7 +787,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(datastreamUrl + "/Observations(" + observationId + ")");
         setAuth(httpDelete, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_OBSERVATION);
             } else {
@@ -803,7 +808,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(datastreamUrl + "/Observations(" + observationId + ")");
         setAuth(httpDelete, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_DELETE_OBSERVATION);
             } else {
@@ -823,7 +828,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
 
         HttpDelete httpDelete = new HttpDelete(datastreamUrl + "/Observations(" + observationId + ")");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_DELETE_OBSERVATION);
             } else {
@@ -847,7 +852,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION);
             } else {
@@ -871,7 +876,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_OBSERVATION);
             } else {
@@ -895,7 +900,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION);
             } else {
@@ -918,7 +923,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPatch.setEntity(stringEntity);
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE_OBSERVATION);
             } else {

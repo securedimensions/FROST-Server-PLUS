@@ -27,6 +27,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.MomentBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInstant;
@@ -120,13 +121,13 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
      * to.
      */
     public TableImpProject(DataType<?> idType, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
-        super(idType, DSL.name("PROJECTS"), null);
+        super(idType, DSL.name("PROJECTS"), null, null);
         this.pluginPLUS = pluginProject;
         this.pluginCoreModel = pluginCoreModel;
     }
 
     private TableImpProject(Name alias, TableImpProject aliased, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
-        super(aliased.getIdType(), alias, aliased);
+        super(aliased.getIdType(), alias, aliased, null);
         this.pluginPLUS = pluginProject;
         this.pluginCoreModel = pluginCoreModel;
     }
@@ -214,6 +215,11 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     @Override
     public TableImpProject as(Name alias) {
         return new TableImpProject(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    }
+
+    @Override
+    public StaMainTable<TableImpProject> asSecure(String s) {
+        return as(s);
     }
 
     @Override

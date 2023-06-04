@@ -20,6 +20,7 @@ package de.securedimensions.frostserver.plugin.staplus;
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
@@ -80,14 +81,14 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
      * to.
      */
     public TableImpParty(DataType<?> idType, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
-        super(idType, DSL.name("PARTIES"), null);
+        super(idType, DSL.name("PARTIES"), null, null);
         this.pluginPLUS = pluginParty;
         this.pluginCoreModel = pluginCoreModel;
         this.pluginMultiDatastream = pluginMultiDatastream;
     }
 
     private TableImpParty(Name alias, TableImpParty aliased, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
-        super(aliased.getIdType(), alias, aliased);
+        super(aliased.getIdType(), alias, aliased, null);
         this.pluginPLUS = pluginParty;
         this.pluginCoreModel = pluginCoreModel;
         this.pluginMultiDatastream = pluginMultiDatastream;
@@ -181,6 +182,11 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
     @Override
     public TableImpParty as(Name alias) {
         return new TableImpParty(alias, this, pluginPLUS, pluginCoreModel, pluginMultiDatastream).initCustomFields();
+    }
+
+    @Override
+    public StaMainTable<TableImpParty> asSecure(String s) {
+        return as(s);
     }
 
     @Override

@@ -24,9 +24,9 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollect
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
+import de.fraunhofer.iosb.ilt.frostserver.util.user.PrincipalExtended;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import java.security.Principal;
 

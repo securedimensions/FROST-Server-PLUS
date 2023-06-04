@@ -17,7 +17,7 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.test.auth;
 
-import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
+import de.fraunhofer.iosb.ilt.frostserver.util.user.PrincipalExtended;
 import de.securedimensions.frostserver.plugin.staplus.test.PartyTests;
 import java.security.Principal;
 import java.util.List;
@@ -49,7 +49,7 @@ public class PrincipalRequestWrapper extends javax.servlet.http.HttpServletReque
 
         if (user.equalsIgnoreCase(PartyTests.ADMIN)) {
             // Admin principal 
-            return new PrincipalExtended(user, true);
+            return new PrincipalExtended(user, true, null);
 
         } else {
             // Principal that returns our user

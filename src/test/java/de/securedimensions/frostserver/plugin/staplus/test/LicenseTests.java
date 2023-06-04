@@ -271,6 +271,7 @@ public abstract class LicenseTests extends AbstractTestClass {
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
 
+    private static SensorThingsService serviceSTAplus;
     private static final Properties SERVER_PROPERTIES = new Properties();
 
     static {
@@ -300,7 +301,7 @@ public abstract class LicenseTests extends AbstractTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            service = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
 
             for (String k : TableHelperObservation.LICENSES.keySet()) {
                 if (!existLicense(k)) {
@@ -314,8 +315,12 @@ public abstract class LicenseTests extends AbstractTestClass {
     }
 
     @Override
-    protected void tearDownVersion() throws ServiceFailureException {
-        cleanup();
+    protected void tearDownVersion() {
+        try {
+            cleanup();
+        } catch (ServiceFailureException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @AfterAll
@@ -334,7 +339,7 @@ public abstract class LicenseTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() != 201) {
                 LOGGER.error(org.apache.http.util.EntityUtils.toString(response.getEntity()));
             }
@@ -444,7 +449,7 @@ public abstract class LicenseTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() != 201) {
                 LOGGER.error(org.apache.http.util.EntityUtils.toString(response.getEntity()));
             }
@@ -458,7 +463,7 @@ public abstract class LicenseTests extends AbstractTestClass {
         HttpGet httpGet = new HttpGet(serverSettings.getServiceUrl(version) + "/Licenses?" + filter);
         setAuth(httpGet, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpGet)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpGet)) {
             if (response.getStatusLine().getStatusCode() != 200) {
                 LOGGER.error(org.apache.http.util.EntityUtils.toString(response.getEntity()));
                 return false;

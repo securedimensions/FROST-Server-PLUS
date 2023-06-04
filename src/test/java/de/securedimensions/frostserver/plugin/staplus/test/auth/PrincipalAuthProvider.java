@@ -21,6 +21,7 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.ConfigDefaults;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.AuthProvider;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
+import de.fraunhofer.iosb.ilt.frostserver.util.user.PrincipalExtended;
 import de.securedimensions.frostserver.plugin.staplus.test.PartyTests;
 import java.io.IOException;
 import java.io.Writer;
@@ -78,6 +79,11 @@ public class PrincipalAuthProvider implements AuthProvider, ConfigDefaults {
             return true;
         else
             return false;
+    }
+
+    @Override
+    public PrincipalExtended getUserPrincipal(String s) {
+        return null;
     }
 
 }

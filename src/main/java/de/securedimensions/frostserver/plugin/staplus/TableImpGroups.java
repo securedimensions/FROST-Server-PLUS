@@ -24,6 +24,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.MomentBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationManyToMany;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInstant;
@@ -108,14 +109,15 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
      * to.
      */
     public TableImpGroups(DataType<?> idType, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
-        super(idType, DSL.name("GROUPS"), null);
+        //StaTableAbstract(DataType<?> idType, Name alias, StaTableAbstract<T> aliasedBase, Table updatedSql)
+        super(idType, DSL.name("GROUPS"), null, null);
         this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
         this.pluginMultiDatastream = pluginMultiDatastream;
     }
 
     private TableImpGroups(Name alias, TableImpGroups aliased, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
-        super(aliased.getIdType(), alias, aliased);
+        super(aliased.getIdType(), alias, aliased, null);
         this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
         this.pluginMultiDatastream = pluginMultiDatastream;
@@ -216,6 +218,14 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
     @Override
     public TableImpGroups as(Name alias) {
         return new TableImpGroups(alias, this, pluginPLUS, pluginCoreModel, pluginMultiDatastream).initCustomFields();
+    }
+
+    @Override
+    public StaMainTable<TableImpGroups> asSecure(String s) {
+        /*
+         * Example TableImpThings ...
+         */
+        return as(s);
     }
 
     @Override

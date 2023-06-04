@@ -73,10 +73,11 @@ public abstract class PartyTests extends AbstractTestClass {
     private static final int HTTP_CODE_400 = 400;
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
-    private static final Properties SERVER_PROPERTIES = new Properties();
     private static final String PARTY_ALICE = String.format("{\"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"displayName\": \"Alice in Wonderland\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
     private static final String PARTY_LJS = String.format("{\"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"displayName\": \"Long John Silver Citizen Scientist\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
 
+    private static SensorThingsService serviceSTAplus;
+    private static final Properties SERVER_PROPERTIES = new Properties();
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
         SERVER_PROPERTIES.put("plugins.staplus.enable", true);
@@ -122,15 +123,19 @@ public abstract class PartyTests extends AbstractTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            service = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
     }
 
     @Override
-    protected void tearDownVersion() throws ServiceFailureException {
-        cleanup();
+    protected void tearDownVersion() {
+        try {
+            cleanup();
+        } catch (ServiceFailureException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /*
@@ -148,7 +153,7 @@ public abstract class PartyTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String location = response.getFirstHeader("Location").getValue();
@@ -171,7 +176,7 @@ public abstract class PartyTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE);
             } else if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
@@ -193,7 +198,7 @@ public abstract class PartyTests extends AbstractTestClass {
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 // we need to make sure that Alice was created
@@ -214,7 +219,7 @@ public abstract class PartyTests extends AbstractTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE);
@@ -241,7 +246,7 @@ public abstract class PartyTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_UPDATE);
@@ -262,7 +267,7 @@ public abstract class PartyTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_AUTHID);
@@ -283,7 +288,7 @@ public abstract class PartyTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ALICE, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE);
@@ -304,7 +309,7 @@ public abstract class PartyTests extends AbstractTestClass {
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ADMIN, "");
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_UPDATE);
@@ -324,7 +329,7 @@ public abstract class PartyTests extends AbstractTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPatch.setEntity(stringEntity);
 
-        try (CloseableHttpResponse response = service.execute(httpPatch)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE);
@@ -346,7 +351,7 @@ public abstract class PartyTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(partyLJSUrl);
         setAuth(httpDelete, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_NOT_BE_ABLE_TO_DELETE);
@@ -364,7 +369,7 @@ public abstract class PartyTests extends AbstractTestClass {
         HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
         setAuth(httpDelete, LJS, "");
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE);
@@ -382,7 +387,7 @@ public abstract class PartyTests extends AbstractTestClass {
         // Party Alice created by Admin in a previous test
         HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
         setAuth(httpDelete, ADMIN, "");
-        CloseableHttpResponse response = service.execute(httpDelete);
+        CloseableHttpResponse response = serviceSTAplus.execute(httpDelete);
 
         if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
             LOGGER.info(ADMIN_SHOULD_BE_ABLE_TO_DELETE);
@@ -399,7 +404,7 @@ public abstract class PartyTests extends AbstractTestClass {
     public void test23AnonDeleteParty() throws IOException {
         HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
 
-        try (CloseableHttpResponse response = service.execute(httpDelete)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_DELETE);

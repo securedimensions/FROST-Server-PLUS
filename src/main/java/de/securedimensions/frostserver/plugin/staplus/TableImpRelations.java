@@ -26,6 +26,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBindin
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
@@ -98,7 +99,7 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
      * to.
      */
     public TableImpRelations(DataType<?> idType, DataType<?> idTypeObs, DataType<?> idTypeGroup, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
-        super(idType, DSL.name("RELATIONS"), null);
+        super(idType, DSL.name("RELATIONS"), null, null);
         this.pluginPLUS = pluginGrouping;
         this.pluginCoreModel = pluginCoreModel;
         colSubjectId = createField(DSL.name("SUBJECT_ID"), idTypeObs);
@@ -107,7 +108,7 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     }
 
     private TableImpRelations(Name alias, TableImpRelations aliased, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
-        super(aliased.getIdType(), alias, aliased);
+        super(aliased.getIdType(), alias, aliased, null);
         this.pluginPLUS = pluginGrouping;
         this.pluginCoreModel = pluginCoreModel;
         colSubjectId = createField(DSL.name("SUBJECT_ID"), aliased.colSubjectId.getDataType());
@@ -192,6 +193,11 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     @Override
     public TableImpRelations as(Name alias) {
         return new TableImpRelations(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    }
+
+    @Override
+    public StaMainTable<TableImpRelations> asSecure(String s) {
+        return as(s);
     }
 
     @Override

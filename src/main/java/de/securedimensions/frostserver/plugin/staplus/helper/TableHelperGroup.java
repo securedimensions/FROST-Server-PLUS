@@ -18,13 +18,13 @@
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpGroups;
@@ -56,13 +56,19 @@ public class TableHelperGroup extends TableHelper {
         tableGroups.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+
+                /*
+                 * Select Phase
+                 */
+                if (phase == Phase.PRE_RELATIONS)
+                    return true;
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return true;
 
-                Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal))
                     return true;
@@ -79,18 +85,18 @@ public class TableHelperGroup extends TableHelper {
         tableGroups.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
+            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return;
 
-                Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal))
                     return;
 
-                Entity group = pm.get(pluginPlus.etGroup, ParserUtils.idFromObject((entityId)));
+                Entity group = pm.get(pluginPlus.etGroup, entityId);
                 assertOwnershipGroup(group, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
@@ -102,17 +108,17 @@ public class TableHelperGroup extends TableHelper {
         tableGroups.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
-            public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
+            public void delete(PostgresPersistenceManager pm, Id entityId) throws NoSuchEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return;
 
-                Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal))
                     return;
 
-                Entity group = pm.get(pluginPlus.etGroup, ParserUtils.idFromObject((entityId)));
+                Entity group = pm.get(pluginPlus.etGroup, entityId);
                 assertOwnershipGroup(group, principal);
             }
         });

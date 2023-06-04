@@ -20,6 +20,7 @@ package de.securedimensions.frostserver.plugin.staplus;
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
@@ -83,13 +84,13 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
      * to.
      */
     public TableImpLicense(DataType<?> idType, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel) {
-        super(idType, DSL.name("LICENSES"), null);
+        super(idType, DSL.name("LICENSES"), null, null);
         this.pluginPLUS = pluginParty;
         this.pluginCoreModel = pluginCoreModel;
     }
 
     private TableImpLicense(Name alias, TableImpLicense aliased, PluginPLUS pluginLicense, PluginCoreModel pluginCoreModel) {
-        super(aliased.getIdType(), alias, aliased);
+        super(aliased.getIdType(), alias, aliased, null);
         this.pluginPLUS = pluginLicense;
         this.pluginCoreModel = pluginCoreModel;
     }
@@ -199,6 +200,11 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
     @Override
     public TableImpLicense as(Name alias) {
         return new TableImpLicense(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    }
+
+    @Override
+    public StaMainTable<TableImpLicense> asSecure(String s) {
+        return as(s);
     }
 
     @Override

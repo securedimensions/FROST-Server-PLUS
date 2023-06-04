@@ -46,10 +46,10 @@ import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.settings.Settings;
 import de.fraunhofer.iosb.ilt.frostserver.util.LiquibaseUser;
-import de.fraunhofer.iosb.ilt.frostserver.util.PrincipalExtended;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UpgradeFailedException;
+import de.fraunhofer.iosb.ilt.frostserver.util.user.PrincipalExtended;
 import de.securedimensions.frostserver.plugin.staplus.helper.*;
 import java.io.IOException;
 import java.io.Writer;
@@ -231,12 +231,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(npThingsParty)
                 .registerProperty(npGroupsParty)
                 .registerProperty(npDatastreamsParty)
-                .addCreateValidator(etParty.entityName + ".createValidator", (entity, entityPropertiesOnly) -> {
+                .addCreateValidator(etParty.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (principal == null)
                         throw new UnauthorizedException("Authentication required. Please configure 'auth.provider'");
@@ -259,12 +259,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     }
 
                 })
-                .addUpdateValidator(etParty.entityName + ".updateValidator", (entity, entityPropertiesOnly) -> {
+                .addUpdateValidator(etParty.entityName + ".updateValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (isAdmin(principal)) {
                         // An admin can override the authId of any Party
@@ -291,12 +291,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         npPartyThing.setEntityType(etParty);
         pluginCoreModel.etThing
                 .registerProperty(npPartyThing)
-                .addCreateValidator(pluginCoreModel.etThing.entityName + ".createValidator", (entity, entityPropertiesOnly) -> {
+                .addCreateValidator(pluginCoreModel.etThing.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (isAdmin(principal))
                         return;
@@ -306,12 +306,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                         assertOwnership(entity, party, principal);
 
                 })
-                .addUpdateValidator(pluginCoreModel.etThing.entityName + ".updateValidator", (entity, entityPropertiesOnly) -> {
+                .addUpdateValidator(pluginCoreModel.etThing.entityName + ".updateValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (isAdmin(principal))
                         return;
@@ -336,12 +336,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         npPartyDatastream.setEntityType(etParty);
         pluginCoreModel.etDatastream
                 .registerProperty(npPartyDatastream)
-                .addCreateValidator(pluginCoreModel.etDatastream.entityName + ".createValidator", (entity, entityPropertiesOnly) -> {
+                .addCreateValidator(pluginCoreModel.etDatastream.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (isAdmin(principal))
                         return;
@@ -351,12 +351,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                         assertOwnership(entity, party, principal);
 
                 })
-                .addUpdateValidator(pluginCoreModel.etDatastream.entityName + "updateValidator", (entity, entityPropertiesOnly) -> {
+                .addUpdateValidator(pluginCoreModel.etDatastream.entityName + "updateValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (isAdmin(principal))
                         return;
@@ -412,12 +412,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(npRelations)
                 .registerProperty(npLicenseGroup)
                 .registerProperty(npPartyGroup)
-                .addCreateValidator(etGroup.entityName + ".createValidator", (entity, entityPropertiesOnly) -> {
+                .addCreateValidator(etGroup.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (isAdmin(principal))
                         return;
@@ -425,12 +425,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     assertOwnership(entity, entity.getProperty(npPartyGroup), principal);
 
                 })
-                .addUpdateValidator(etGroup.entityName + ".updateValidator", (entity, entityPropertiesOnly) -> {
+                .addUpdateValidator(etGroup.entityName + ".updateValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (isAdmin(principal))
                         return;
@@ -473,12 +473,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         pluginCoreModel.etObservation
                 .registerProperty(npSubjectsObservation)
                 .registerProperty(npObjectsObservation)
-                .addUpdateValidator(pluginCoreModel.etObservation.entityName + ".createValidator", (entity, entityPropertiesOnly) -> {
+                .addUpdateValidator(pluginCoreModel.etObservation.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
 
-                    Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                     if (isAdmin(principal))
                         return;
@@ -512,12 +512,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             npMultiDatastreamsParty.setEntityType(pluginMultiDatastream.etMultiDatastream);
             pluginMultiDatastream.etMultiDatastream
                     .registerProperty(npPartyMultiDatastream)
-                    .addCreateValidator(pluginMultiDatastream.etMultiDatastream.entityName + ".createValidator", (entity, entityPropertiesOnly) -> {
+                    .addCreateValidator(pluginMultiDatastream.etMultiDatastream.entityName + ".createValidator", (entity) -> {
 
                         if (!enforceOwnership)
                             return;
 
-                        Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                        Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                         if (isAdmin(principal))
                             return;
@@ -525,12 +525,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                         assertOwnership(entity, entity.getProperty(npPartyMultiDatastream), principal);
 
                     })
-                    .addUpdateValidator(pluginMultiDatastream.etMultiDatastream.entityName + ".createValidator", (entity, entityPropertiesOnly) -> {
+                    .addUpdateValidator(pluginMultiDatastream.etMultiDatastream.entityName + ".createValidator", (entity) -> {
 
                         if (!enforceOwnership)
                             return;
 
-                        Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                        Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                         if (isAdmin(principal))
                             return;
@@ -725,13 +725,19 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
     private void assertOwnership(Entity entity, Entity party, Principal principal) {
         assertPrincipal(principal);
+        String principalId = principal.getName();
 
         if (party != null) {
             Id partyId = party.getId();
             String authId = party.getProperty(epAuthId);
 
-            if ((partyId == null) && (authId == null))
-                throw new IllegalArgumentException("Party not idenified");
+            if ((partyId == null) && (authId == null) && (principalId == null))
+                throw new IllegalArgumentException("Party not identified");
+
+            if ((partyId == null) && (authId == null) && (principalId != null)) {
+                party.setId(new IdUuid(principalId));
+                return;
+            }
 
             if ((authId != null) && (partyId != null)) {
                 LOGGER.warn("Party identified by @iot.id and authId - using authId");

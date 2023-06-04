@@ -277,8 +277,12 @@ public abstract class ObservationTests extends AbstractTestClass {
     }
 
     @Override
-    protected void tearDownVersion() throws ServiceFailureException {
-        cleanup();
+    protected void tearDownVersion() {
+        try {
+            cleanup();
+        } catch (ServiceFailureException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private CloseableHttpResponse createObservation(String request, String userId) throws IOException {

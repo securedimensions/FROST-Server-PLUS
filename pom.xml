@@ -17,6 +17,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <root.basedir>${project.parent.parent.basedir}</root.basedir>
+        <version.FROST-Client>0.44</version.FROST-Client>
     </properties>
 
     <dependencies>
@@ -78,6 +79,11 @@
             <groupId>de.fraunhofer.iosb.ilt</groupId>
             <artifactId>FROST-Client</artifactId>
             <version>${version.FROST-Client}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.fraunhofer.iosb.ilt</groupId>
+            <artifactId>FROST-Client-Dynamic</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

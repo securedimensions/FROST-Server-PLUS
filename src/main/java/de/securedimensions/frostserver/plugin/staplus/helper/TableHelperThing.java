@@ -18,6 +18,7 @@
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
@@ -25,7 +26,6 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUp
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
@@ -55,13 +55,25 @@ public class TableHelperThing extends TableHelper {
         tableThings.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+
+                /*
+                 * Select Phase
+                 */
+                if (phase == Phase.PRE_RELATIONS)
+                    return true;
+
+                /*
+                 * Select Phase
+                 */
+                if (phase == Phase.PRE_RELATIONS)
+                    return true;
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return true;
 
-                Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal))
                     return true;
@@ -75,18 +87,18 @@ public class TableHelperThing extends TableHelper {
         tableThings.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Object entityId)
+            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return;
 
-                Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal))
                     return;
 
-                Entity thing = pm.get(pluginCoreModel.etThing, ParserUtils.idFromObject((entityId)));
+                Entity thing = pm.get(pluginCoreModel.etThing, entityId);
                 assertOwnershipThing(thing, principal);
 
             }
@@ -95,17 +107,17 @@ public class TableHelperThing extends TableHelper {
         tableThings.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
-            public void delete(PostgresPersistenceManager pm, Object entityId) throws NoSuchEntityException {
+            public void delete(PostgresPersistenceManager pm, Id entityId) throws NoSuchEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return;
 
-                Principal principal = ServiceRequest.LOCAL_REQUEST.get().getUserPrincipal();
+                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal))
                     return;
 
-                Entity thing = pm.get(pluginCoreModel.etThing, ParserUtils.idFromObject((entityId)));
+                Entity thing = pm.get(pluginCoreModel.etThing, entityId);
                 assertOwnershipThing(thing, principal);
             }
         });
