@@ -23,12 +23,14 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationO
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.validator.SecurityTableWrapper;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 import org.jooq.DataType;
 import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
@@ -90,7 +92,11 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
     }
 
     private TableImpLicense(Name alias, TableImpLicense aliased, PluginPLUS pluginLicense, PluginCoreModel pluginCoreModel) {
-        super(aliased.getIdType(), alias, aliased, null);
+        this(alias, aliased, aliased, pluginLicense, pluginCoreModel);
+    }
+
+    private TableImpLicense(Name alias, TableImpLicense aliased, Table updatedSql, PluginPLUS pluginLicense, PluginCoreModel pluginCoreModel) {
+        super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginLicense;
         this.pluginCoreModel = pluginCoreModel;
     }
@@ -203,8 +209,13 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
     }
 
     @Override
-    public StaMainTable<TableImpLicense> asSecure(String s) {
-        return as(s);
+    public StaMainTable<TableImpLicense> asSecure(String name) {
+        final SecurityTableWrapper securityWrapper = getSecurityWrapper();
+        if (securityWrapper == null) {
+            return as(name);
+        }
+        final Table wrappedTable = securityWrapper.wrap(this);
+        return new TableImpLicense(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
     }
 
     @Override

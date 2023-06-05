@@ -28,6 +28,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInstant;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.validator.SecurityTableWrapper;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
@@ -35,6 +36,7 @@ import net.time4j.Moment;
 import org.jooq.DataType;
 import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
@@ -105,8 +107,10 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
      *
      * @param idType The (SQL)DataType of the Id columns used in the actual
      * database.
+     * @param pluginPLUS
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
+     * @param pluginMultiDatastream
      */
     public TableImpGroups(DataType<?> idType, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         //StaTableAbstract(DataType<?> idType, Name alias, StaTableAbstract<T> aliasedBase, Table updatedSql)
@@ -117,7 +121,11 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
     }
 
     private TableImpGroups(Name alias, TableImpGroups aliased, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
-        super(aliased.getIdType(), alias, aliased, null);
+        this(alias, aliased, aliased, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
+    }
+
+    private TableImpGroups(Name alias, TableImpGroups aliased, Table updatedSql, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+        super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
         this.pluginMultiDatastream = pluginMultiDatastream;
@@ -221,11 +229,13 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
     }
 
     @Override
-    public StaMainTable<TableImpGroups> asSecure(String s) {
-        /*
-         * Example TableImpThings ...
-         */
-        return as(s);
+    public StaMainTable<TableImpGroups> asSecure(String name) {
+        final SecurityTableWrapper securityWrapper = getSecurityWrapper();
+        if (securityWrapper == null) {
+            return as(name);
+        }
+        final Table wrappedTable = securityWrapper.wrap(this);
+        return new TableImpGroups(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
     }
 
     @Override

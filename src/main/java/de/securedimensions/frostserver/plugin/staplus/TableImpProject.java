@@ -33,6 +33,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollect
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInstant;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInterval;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.NFP;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.validator.SecurityTableWrapper;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
@@ -40,6 +41,7 @@ import net.time4j.Moment;
 import org.jooq.DataType;
 import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
@@ -127,7 +129,11 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     }
 
     private TableImpProject(Name alias, TableImpProject aliased, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
-        super(aliased.getIdType(), alias, aliased, null);
+        this(alias, aliased, aliased, pluginProject, pluginCoreModel);
+    }
+
+    private TableImpProject(Name alias, TableImpProject aliased, Table updatedSql, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
+        super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginProject;
         this.pluginCoreModel = pluginCoreModel;
     }
@@ -218,8 +224,13 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     }
 
     @Override
-    public StaMainTable<TableImpProject> asSecure(String s) {
-        return as(s);
+    public StaMainTable<TableImpProject> asSecure(String name) {
+        final SecurityTableWrapper securityWrapper = getSecurityWrapper();
+        if (securityWrapper == null) {
+            return as(name);
+        }
+        final Table wrappedTable = securityWrapper.wrap(this);
+        return new TableImpProject(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
     }
 
     @Override

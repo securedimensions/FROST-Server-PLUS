@@ -29,6 +29,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationO
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.validator.SecurityTableWrapper;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
@@ -36,6 +37,7 @@ import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import org.jooq.DataType;
 import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
@@ -108,7 +110,11 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     }
 
     private TableImpRelations(Name alias, TableImpRelations aliased, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
-        super(aliased.getIdType(), alias, aliased, null);
+        this(alias, aliased, aliased, pluginGrouping, pluginCoreModel);
+    }
+
+    private TableImpRelations(Name alias, TableImpRelations aliased, Table updatedSql, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
+        super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginGrouping;
         this.pluginCoreModel = pluginCoreModel;
         colSubjectId = createField(DSL.name("SUBJECT_ID"), aliased.colSubjectId.getDataType());
@@ -196,8 +202,13 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     }
 
     @Override
-    public StaMainTable<TableImpRelations> asSecure(String s) {
-        return as(s);
+    public StaMainTable<TableImpRelations> asSecure(String name) {
+        final SecurityTableWrapper securityWrapper = getSecurityWrapper();
+        if (securityWrapper == null) {
+            return as(name);
+        }
+        final Table wrappedTable = securityWrapper.wrap(this);
+        return new TableImpRelations(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
     }
 
     @Override

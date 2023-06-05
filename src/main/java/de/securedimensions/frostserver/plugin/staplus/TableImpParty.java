@@ -23,6 +23,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationO
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.validator.SecurityTableWrapper;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
@@ -31,6 +32,7 @@ import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDa
 import org.jooq.DataType;
 import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -88,7 +90,11 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
     }
 
     private TableImpParty(Name alias, TableImpParty aliased, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
-        super(aliased.getIdType(), alias, aliased, null);
+        this(alias, aliased, aliased, pluginParty, pluginCoreModel, pluginMultiDatastream);
+    }
+
+    private TableImpParty(Name alias, TableImpParty aliased, Table updatedSql, PluginPLUS pluginParty, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+        super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginParty;
         this.pluginCoreModel = pluginCoreModel;
         this.pluginMultiDatastream = pluginMultiDatastream;
@@ -185,8 +191,13 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
     }
 
     @Override
-    public StaMainTable<TableImpParty> asSecure(String s) {
-        return as(s);
+    public StaMainTable<TableImpParty> asSecure(String name) {
+        final SecurityTableWrapper securityWrapper = getSecurityWrapper();
+        if (securityWrapper == null) {
+            return as(name);
+        }
+        final Table wrappedTable = securityWrapper.wrap(this);
+        return new TableImpParty(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
     }
 
     @Override

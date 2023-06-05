@@ -47,6 +47,7 @@ public class TableImpGroupsObservations extends StaLinkTable<TableImpGroupsObser
      *
      * @param idTypeGroup The (SQL)DataType of the Id columns used in the actual
      * database.
+     * @param idTypeObs
      */
     public TableImpGroupsObservations(DataType<?> idTypeGroup, DataType<?> idTypeObs) {
         super(DSL.name(NAME_TABLE), null);
