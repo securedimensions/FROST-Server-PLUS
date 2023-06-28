@@ -108,6 +108,7 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
         initDatastreams(tables);
         initMultiDatastreams(tables);
         initGroups(tables);
+        initProject(tables);
     }
 
     private void initDatastreams(TableCollection tables) {
@@ -156,6 +157,21 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
 
     }
 
+    private void initProject(TableCollection tables) {
+        TableImpProject tableProject = tables.getTableForClass(TableImpProject.class);
+        final int licenseIdIdx = tableProject.indexOf("LICENSE_ID");
+
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectsLicense, this, tableProject)
+                .setSourceFieldAccessor(TableImpLicense::getId)
+                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx)));
+
+        // We add the relation to us to the Project table.
+        tableProject.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseProject, tableProject, this)
+                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
+                .setTargetFieldAccessor(TableImpLicense::getId));
+
+    }
+
     @Override
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
@@ -172,6 +188,9 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
         // We register a navigationProperty on the Groups table.
         pfReg.addEntry(pluginPLUS.npGroupsLicense, TableImpLicense::getId);
 
+        // We register a navigationProperty on the Project table.
+        pfReg.addEntry(pluginPLUS.npProjectsLicense, TableImpLicense::getId);
+
         TableImpDatastreams datastreamsTable = tables.getTableForClass(TableImpDatastreams.class);
         final int licenseDatastreamsIdIdx = datastreamsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
         datastreamsTable.getPropertyFieldRegistry()
@@ -179,6 +198,9 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
 
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {
+            // We register a navigationProperty on the MultiDatastreams table.
+            pfReg.addEntry(pluginPLUS.npMultiDatastreamsLicense, TableImpLicense::getId);
+
             final int licenseMDIdIdx = tableMultiDatastreams.registerField(DSL.name("LICENSE_ID"), getIdType());
             tableMultiDatastreams.getPropertyFieldRegistry()
                     .addEntry(pluginPLUS.npLicenseMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(licenseMDIdIdx));
@@ -191,6 +213,12 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
                     .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, ?>) table.field(licenseGroupsIdIdx));
         }
 
+        TableImpProject projectTable = tables.getTableForClass(TableImpProject.class);
+        if (projectTable != null) {
+            final int licenseProjectIdIdx = projectTable.registerField(DSL.name("LICENSE_ID"), getIdType());
+            projectTable.getPropertyFieldRegistry()
+                    .addEntry(pluginPLUS.npLicenseProject, table -> (TableField<Record, ?>) table.field(licenseProjectIdIdx));
+        }
     }
 
     @Override

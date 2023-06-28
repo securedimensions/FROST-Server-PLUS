@@ -51,32 +51,32 @@ import org.jooq.impl.SQLDataType;
 public class TableImpProject extends StaTableAbstract<TableImpProject> {
 
     /**
-     * The column <code>public.PROJECTS.EP_DESCRIPTION</code>.
-     */
-    public final TableField<Record, String> colDescription = createField(DSL.name("DESCRIPTION"), SQLDataType.CLOB, this);
-
-    /**
-     * The column <code>public.PROJECTS.EP_NAME</code>.
+     * The column <code>public.PROJECT.EP_NAME</code>.
      */
     public final TableField<Record, String> colName = createField(DSL.name("NAME"), SQLDataType.CLOB.defaultValue(DSL.field("'no name'::text", SQLDataType.CLOB)), this);
 
     /**
-     * The column <code>public.PROJECTS.EP_PROPERTIES</code>.
+     * The column <code>public.PROJECT.EP_DESCRIPTION</code>.
+     */
+    public final TableField<Record, String> colDescription = createField(DSL.name("DESCRIPTION"), SQLDataType.CLOB, this);
+
+    /**
+     * The column <code>public.PROJECT.EP_PROPERTIES</code>.
      */
     public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
 
     /**
-     * The column <code>public.PROJECTS.EP_CLASSIFICATION</code>.
+     * The column <code>public.PROJECT.EP_CLASSIFICATION</code>.
      */
     public final TableField<Record, String> colClassification = createField(DSL.name("CLASSIFICATION"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECTS.EP_TERMSOFUSE</code>.
+     * The column <code>public.PROJECT.EP_TERMSOFUSE</code>.
      */
     public final TableField<Record, String> colTermsOfUse = createField(DSL.name("TERMSOFUSE"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECTS.EP_PRIVACYPOLICY</code>.
+     * The column <code>public.PROJECT.EP_PRIVACYPOLICY</code>.
      */
     public final TableField<Record, String> colPrivacyPolicy = createField(DSL.name("PRIVACYPOLICY"), SQLDataType.CLOB, this);
 
@@ -86,22 +86,22 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     public final TableField<Record, String> colUrl = createField(DSL.name("URL"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECTS.START_TIME</code>.
+     * The column <code>public.PROJECT.START_TIME</code>.
      */
     public final TableField<Record, Moment> colStartTime = createField(DSL.name("START_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
-     * The column <code>public.PROJECTS.END_TIME</code>.
+     * The column <code>public.PROJECT.END_TIME</code>.
      */
     public final TableField<Record, Moment> colEndTime = createField(DSL.name("END_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
-     * The column <code>public.PROJECTS.CREATION_TIME</code>.
+     * The column <code>public.PROJECT.CREATION_TIME</code>.
      */
     public final TableField<Record, Moment> colCreationTime = createField(DSL.name("CREATION_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
-     * The column <code>public.PROJECTS.EP_ID</code>.
+     * The column <code>public.PROJECT.EP_ID</code>.
      */
     public final TableField<Record, ?> colId = createField(DSL.name("ID"), getIdType(), this);
 
@@ -201,6 +201,12 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
                     .addEntry(pluginPLUS.npProjectMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(projectMDIdIdx));
         }
 
+        // Register with Parties
+        pfReg.addEntry(pluginPLUS.npProjectsParty, TableImpProject::getId);
+
+        TableImpParty tableParties = tables.getTableForClass(TableImpParty.class);
+        tableParties.getPropertyFieldRegistry()
+                .addEntry(pluginPLUS.npPartyProject, TableImpParty::getId);
     }
 
     @Override

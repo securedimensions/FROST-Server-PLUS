@@ -30,7 +30,6 @@
         <createTable tableName="LICENSES">
             <column name="NAME" type="TEXT"/>
             <column name="DESCRIPTION" type="TEXT"/>
-            <column name="PROPERTIES" type="JSONB"/>
             <column name="DEFINITION" type="TEXT"/>
             <column name="ATTRIBUTION_TEXT" type="TEXT"/>
             <column name="LOGO" type="TEXT"/>

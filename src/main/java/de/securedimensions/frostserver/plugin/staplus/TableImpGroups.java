@@ -183,7 +183,7 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
         pfReg.addEntryString(pluginPLUS.epGroupPurpose, table -> table.colPurpose);
         pfReg.addEntryString(pluginPLUS.epProjectTermsOfUse, table -> table.colTermsOfUse);
         pfReg.addEntryString(pluginPLUS.epProjectPrivacyPolicy, table -> table.colPrivacyPolicy);
-        pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colDataQuality);
+        pfReg.addEntryMap(pluginPLUS.epGroupDataQuality, table -> table.colDataQuality);
 
         pfReg.addEntry(pluginPLUS.epGroupCreationTime, table -> table.colCreationTime,
                 new ConverterTimeInstant<>(pluginPLUS.epGroupCreationTime, table -> table.colCreationTime));

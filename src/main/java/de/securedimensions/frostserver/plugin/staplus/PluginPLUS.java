@@ -150,7 +150,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final NavigationPropertyEntitySet npMultiDatastreamsProject = new NavigationPropertyEntitySet("MultiDatastreams", npProjectMultiDatastream);
     public final EntityType etProject = new EntityType("Project", "Projects");
     public final NavigationPropertyEntity npPartyProject = new NavigationPropertyEntity("Party", false);
-    public final NavigationPropertyEntitySet npPartiesProject = new NavigationPropertyEntitySet("Parties", npPartyProject);
+    public final NavigationPropertyEntitySet npProjectsParty = new NavigationPropertyEntitySet("Parties", npPartyProject);
     // Type IDs
     public EntityPropertyMain<?> epIdGroup;
     public EntityPropertyMain<?> epIdLicense;
@@ -209,12 +209,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epIdLicense)
                 .registerProperty(pluginCoreModel.epName)
                 .registerProperty(epLicenseDescription)
-                .registerProperty(ModelRegistry.EP_PROPERTIES)
                 .registerProperty(epLicenseDefinition)
                 .registerProperty(epLicenseLogo)
                 .registerProperty(epLicenseAttributionText)
                 .registerProperty(npDatastreamsLicense)
-                .registerProperty(npGroupsLicense);
+                .registerProperty(npGroupsLicense)
+                .registerProperty(npProjectsLicense);
 
         npLicenseDatastream.setEntityType(etLicense);
         npDatastreamsLicense.setEntityType(pluginCoreModel.etDatastream);
@@ -394,7 +394,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(npPartyProject);
 
         npPartyProject.setEntityType(etProject);
-        npPartiesProject.setEntityType(etParty);
+        npProjectsParty.setEntityType(etParty);
         etParty.registerProperty(npPartyProject);
 
         npProjectDatastream.setEntityType(etProject);
@@ -461,7 +461,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         epIdRelation = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeRelation));
         etRelation
                 .registerProperty(epIdRelation)
-                .registerProperty(pluginCoreModel.epName)
                 .registerProperty(pluginCoreModel.epDescription)
                 .registerProperty(ModelRegistry.EP_PROPERTIES)
                 .registerProperty(epRelationRole)
