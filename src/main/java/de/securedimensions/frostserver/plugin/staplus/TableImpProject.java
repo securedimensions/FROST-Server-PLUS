@@ -17,9 +17,6 @@
  */
 package de.securedimensions.frostserver.plugin.staplus;
 
-import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.fieldwrapper.StaTimeIntervalWrapper.KEY_TIME_INTERVAL_END;
-import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.fieldwrapper.StaTimeIntervalWrapper.KEY_TIME_INTERVAL_START;
-
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
@@ -31,8 +28,6 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInstant;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.ConverterTimeInterval;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyFieldRegistry.NFP;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.validator.SecurityTableWrapper;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
@@ -91,19 +86,19 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     public final TableField<Record, String> colUrl = createField(DSL.name("URL"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECTS.RUNTIME_START</code>.
+     * The column <code>public.PROJECTS.START_TIME</code>.
      */
-    public final TableField<Record, Moment> colRuntimeTimeStart = createField(DSL.name("RUNTIME_START"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
+    public final TableField<Record, Moment> colStartTime = createField(DSL.name("START_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
-     * The column <code>public.PROJECTS.RUNTIME_END</code>.
+     * The column <code>public.PROJECTS.END_TIME</code>.
      */
-    public final TableField<Record, Moment> colRuntimeTimeEnd = createField(DSL.name("RUNTIME_END"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
+    public final TableField<Record, Moment> colEndTime = createField(DSL.name("END_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
-     * The column <code>public.PROJECTS.CREATED_TIME</code>.
+     * The column <code>public.PROJECTS.CREATION_TIME</code>.
      */
-    public final TableField<Record, Moment> colCreatedTime = createField(DSL.name("CREATED"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
+    public final TableField<Record, Moment> colCreationTime = createField(DSL.name("CREATION_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
      * The column <code>public.PROJECTS.EP_ID</code>.
@@ -183,12 +178,12 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
         pfReg.addEntryString(pluginPLUS.epProjectPrivacyPolicy, table -> table.colPrivacyPolicy);
         pfReg.addEntryString(pluginPLUS.epUrl, table -> table.colUrl);
 
-        pfReg.addEntry(pluginPLUS.epProjectCreationTime, table -> table.colCreatedTime,
-                new ConverterTimeInstant<>(pluginPLUS.epProjectCreationTime, table -> table.colCreatedTime));
-        pfReg.addEntry(pluginPLUS.epProjectStartTime,
-                new ConverterTimeInterval<>(pluginPLUS.epProjectStartTime, table -> table.colRuntimeTimeStart, table -> table.colRuntimeTimeEnd),
-                new NFP<>(KEY_TIME_INTERVAL_START, table -> table.colRuntimeTimeStart),
-                new NFP<>(KEY_TIME_INTERVAL_END, table -> table.colRuntimeTimeEnd));
+        pfReg.addEntry(pluginPLUS.epProjectCreationTime, table -> table.colCreationTime,
+                new ConverterTimeInstant<>(pluginPLUS.epProjectCreationTime, table -> table.colCreationTime));
+        pfReg.addEntry(pluginPLUS.epProjectStartTime, table -> table.colStartTime,
+                new ConverterTimeInstant<>(pluginPLUS.epProjectStartTime, table -> table.colStartTime));
+        pfReg.addEntry(pluginPLUS.epProjectEndTime, table -> table.colEndTime,
+                new ConverterTimeInstant<>(pluginPLUS.epProjectEndTime, table -> table.colEndTime));
 
         pfReg.addEntry(pluginPLUS.npDatastreamsProject, TableImpProject::getId);
         pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId);

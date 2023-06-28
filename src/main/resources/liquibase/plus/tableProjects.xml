@@ -39,6 +39,13 @@
             <column name="URL" type="TEXT"/>
             <column name="CREATION_TIME" type="TIMESTAMP WITH TIME ZONE"/>
             <column name="START_TIME" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="END_TIME" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="LICENSE_ID" type="${idType-License}">
+                <constraints nullable="true"/>
+            </column>
+            <column name="PARTY_ID" type="${idType-Party}">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
     </changeSet>
 

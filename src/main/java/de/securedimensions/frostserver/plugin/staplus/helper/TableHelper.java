@@ -151,6 +151,34 @@ public abstract class TableHelper {
 
     }
 
+    protected void assertOwnershipProject(Entity project, Principal principal) {
+        assertPrincipal(principal);
+
+        if (project == null)
+            throw new IllegalArgumentException("Project does not exist");
+
+        if (!project.getEntityType().equals(pluginPlus.etProject))
+            throw new IllegalArgumentException("Entity not of type Project");
+
+        // We can get the username from the Principal
+        String userId = principal.getName();
+
+        // Ensure Ownership for Group
+        Entity party = null;
+
+        if (project != null)
+            party = project.getProperty(pluginPlus.npPartyProject);
+
+        if (party == null)
+            throw new IllegalArgumentException("Project not linked to a Party");
+
+        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getId().toString();
+
+        if (!partyId.equalsIgnoreCase(userId))
+            throw new ForbiddenException("Project not linked to acting Party");
+
+    }
+
     protected void assertOwnershipGroup(Entity group, Principal principal) {
         assertPrincipal(principal);
 
@@ -215,6 +243,21 @@ public abstract class TableHelper {
 
         if (license == null)
             throw new IllegalArgumentException("Group not linked to a License");
+
+    }
+
+    protected void assertProjectLicense(Entity project) {
+        if (project == null)
+            throw new IllegalArgumentException("Project does not exist");
+
+        if (!project.getEntityType().equals(pluginPlus.etProject))
+            throw new IllegalArgumentException("Entity not of type Project");
+
+        // Ensure License for Project
+        Entity license = project.getProperty(pluginPlus.npLicenseProject);
+
+        if (license == null)
+            throw new IllegalArgumentException("Projet not linked to a License");
 
     }
 

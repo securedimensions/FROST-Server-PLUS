@@ -26,7 +26,6 @@ import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
 import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInstant;
-import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInterval;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManagerFactory;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
@@ -91,6 +90,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final NavigationPropertyEntitySet npMultiDatastreamsLicense = new NavigationPropertyEntitySet("MultiDatastreams", npLicenseMultiDatastream);
     public final NavigationPropertyEntity npLicenseGroup = new NavigationPropertyEntity("License", false);
     public final NavigationPropertyEntitySet npGroupsLicense = new NavigationPropertyEntitySet("Groups", npLicenseGroup);
+    public final NavigationPropertyEntity npLicenseProject = new NavigationPropertyEntity("License", false);
+    public final NavigationPropertyEntitySet npProjectsLicense = new NavigationPropertyEntitySet("Projects", npLicenseProject);
     public final EntityType etLicense = new EntityType("License", "Licenses");
     /**
      * Class Group
@@ -140,14 +141,16 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<String> epProjectTermsOfUse = new EntityPropertyMain<>("termsOfUse", TypeSimplePrimitive.EDM_STRING, true, false);
     public final EntityPropertyMain<String> epProjectPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeSimplePrimitive.EDM_STRING, false, true);
     public final EntityPropertyMain<TimeInstant> epProjectCreationTime = new EntityPropertyMain<>("creationTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, true, false);
-    public final EntityPropertyMain<TimeInterval> epProjectStartTime = new EntityPropertyMain<>("startTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
-    public final EntityPropertyMain<TimeInterval> epProjectEndTime = new EntityPropertyMain<>("endTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
+    public final EntityPropertyMain<TimeInstant> epProjectStartTime = new EntityPropertyMain<>("startTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
+    public final EntityPropertyMain<TimeInstant> epProjectEndTime = new EntityPropertyMain<>("endTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
     public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeSimplePrimitive.EDM_STRING, false, true);
     public final NavigationPropertyEntity npProjectDatastream = new NavigationPropertyEntity("Project", false);
     public final NavigationPropertyEntitySet npDatastreamsProject = new NavigationPropertyEntitySet("Datastreams", npProjectDatastream);
     public final NavigationPropertyEntity npProjectMultiDatastream = new NavigationPropertyEntity("Project", false);
     public final NavigationPropertyEntitySet npMultiDatastreamsProject = new NavigationPropertyEntitySet("MultiDatastreams", npProjectMultiDatastream);
     public final EntityType etProject = new EntityType("Project", "Projects");
+    public final NavigationPropertyEntity npPartyProject = new NavigationPropertyEntity("Party", false);
+    public final NavigationPropertyEntitySet npPartiesProject = new NavigationPropertyEntitySet("Parties", npPartyProject);
     // Type IDs
     public EntityPropertyMain<?> epIdGroup;
     public EntityPropertyMain<?> epIdLicense;
@@ -387,11 +390,18 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epProjectStartTime)
                 .registerProperty(epProjectEndTime)
                 .registerProperty(epUrl)
-                .registerProperty(npDatastreamsProject);
+                .registerProperty(npLicenseProject)
+                .registerProperty(npPartyProject);
+
+        npPartyProject.setEntityType(etProject);
+        npPartiesProject.setEntityType(etParty);
+        etParty.registerProperty(npPartyProject);
 
         npProjectDatastream.setEntityType(etProject);
         npDatastreamsProject.setEntityType(pluginCoreModel.etDatastream);
         pluginCoreModel.etDatastream.registerProperty(npProjectDatastream);
+
+        etProject.registerProperty(npDatastreamsProject);
 
         /**
          * Class Group
@@ -646,6 +656,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             new TableHelperObservation(settings, ppm).registerPreHooks();
             new TableHelperLocation(settings, ppm).registerPreHooks();
             new TableHelperLicense(settings, ppm).registerPreHooks();
+            new TableHelperProject(settings, ppm).registerPreHooks();
 
         }
         fullyInitialised = true;
