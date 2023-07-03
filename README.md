@@ -65,6 +65,20 @@ When activating the Concept of Ownership, the implementation enforces the multip
 
 A user can `update` or `delete` any object owned. However, the user *cannot* delete the own Party. This requires admin access.
 
+## Party Singleton
+This STAplus implementaiton creates a `Party` entity for the acting user if the `Authentication` conformance class is enabled. To prevent that the implementation creates a new `Party` entity for each request, it is **IMPORTANT** to allow client-side id generation. The `id` generation is controlled via this general setting:
+
+```xml
+<Parameter override="false" name="persistence.idGenerationMode" value="ServerGeneratedOnly" />
+```
+
+### Setting
+**P L E A S E make sure that you include the following configuration to ensure that a `Party` entity exists only once per user:**
+
+```xml
+<Parameter override="false" name="persistence.idGenerationMode.Party" value="ClientGeneratedOnly" />
+```
+This configuration overwrites the `id` generation for the `Party` entity only.
 
 ### Settings
 
