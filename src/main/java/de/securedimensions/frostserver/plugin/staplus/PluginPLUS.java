@@ -204,7 +204,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class License
          */
-        epIdLicense = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeLicense));
+        epIdLicense = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeLicense)).setAliases("id");
         etLicense
                 .registerProperty(epIdLicense)
                 .registerProperty(pluginCoreModel.epName)
@@ -224,7 +224,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class Party
          */
-        epIdParty = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeParty));
+        epIdParty = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeParty)).setAliases("id");
         etParty
                 .registerProperty(epIdParty)
                 .registerProperty(epPartyDescription)
@@ -377,7 +377,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class Project
          */
-        epIdProject = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeProject));
+        epIdProject = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeProject)).setAliases("id");
         etProject
                 .registerProperty(epIdProject)
                 .registerProperty(pluginCoreModel.epName)
@@ -406,7 +406,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class Group
          */
-        epIdGroup = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeGroup));
+        epIdGroup = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeGroup)).setAliases("id");
         etGroup
                 .registerProperty(epIdGroup)
                 .registerProperty(pluginCoreModel.epName)
@@ -458,7 +458,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         /**
          * Class Relation
          */
-        epIdRelation = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeRelation));
+        epIdRelation = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeRelation)).setAliases("id");
         etRelation
                 .registerProperty(epIdRelation)
                 .registerProperty(pluginCoreModel.epDescription)
