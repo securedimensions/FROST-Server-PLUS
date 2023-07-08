@@ -64,6 +64,12 @@ public class TableHelperThing extends TableHelper {
                 if (phase == Phase.PRE_RELATIONS)
                     return true;
 
+                /*
+                 * Select Phase
+                 */
+                if (phase == Phase.PRE_RELATIONS)
+                    return true;
+
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return true;
 
