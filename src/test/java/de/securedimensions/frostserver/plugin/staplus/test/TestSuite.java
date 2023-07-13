@@ -42,7 +42,9 @@ import org.slf4j.LoggerFactory;
     ObservationTests.Imp10Tests.class,
     ObservationTests.Imp11Tests.class,
     LicenseTests.Imp10Tests.class,
-    LicenseTests.Imp11Tests.class
+    LicenseTests.Imp11Tests.class,
+    RelationTests.Imp10Tests.class,
+    RelationTests.Imp11Tests.class
 })
 public class TestSuite {
 

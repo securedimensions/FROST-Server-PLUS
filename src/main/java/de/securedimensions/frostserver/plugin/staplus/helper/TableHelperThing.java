@@ -72,7 +72,7 @@ public class TableHelperThing extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                assertOwnershipThing(entity, principal);
+                assertOwnershipThing(pm, entity, principal);
 
                 return true;
             }
@@ -93,7 +93,7 @@ public class TableHelperThing extends TableHelper {
                     return;
 
                 Entity thing = pm.get(pluginCoreModel.etThing, entityId);
-                assertOwnershipThing(thing, principal);
+                assertOwnershipThing(pm, thing, principal);
 
             }
         });
@@ -112,7 +112,7 @@ public class TableHelperThing extends TableHelper {
                     return;
 
                 Entity thing = pm.get(pluginCoreModel.etThing, entityId);
-                assertOwnershipThing(thing, principal);
+                assertOwnershipThing(pm, thing, principal);
             }
         });
 

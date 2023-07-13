@@ -128,7 +128,7 @@ public class TableHelperLocation extends TableHelper {
 
         if (things != null) {
             Entity thing = pm.get(pluginCoreModel.etThing, things.iterator().next().getId());
-            assertOwnershipThing(thing, principal);
+            assertOwnershipThing(pm, thing, principal);
         }
     }
 

@@ -68,6 +68,56 @@ public abstract class TableHelper {
 
     public abstract void registerPreHooks();
 
+    protected void assertOwnershipObservation(PostgresPersistenceManager pm, Entity entity, Principal principal) {
+
+        Entity datastream = null;
+        Entity multiDatastream = null;
+
+        // Test if the Observation is inline and linked to a Datastream or MultiDatastream
+        if (entity.isSetProperty(pluginCoreModel.npDatastreamObservation))
+            datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
+        else if ((pluginMultiDatastream != null) && (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation)))
+            multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
+
+        // Test if Observation needs to be loaded - first from Datastream
+        if ((datastream == null) && (multiDatastream == null) && (entity.getId() != null)) {
+            Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
+            if ((observation != null) && observation.isSetProperty(pluginCoreModel.npDatastreamObservation))
+                datastream = pm.get(pluginCoreModel.etDatastream,
+                        observation.getProperty(pluginCoreModel.npDatastreamObservation).getId());
+            else
+                datastream = null;
+        }
+
+        // Test if Observation needs to be loaded - now from MultiDatastream
+        if ((datastream == null) && (multiDatastream == null) && (entity.getId() != null)) {
+            Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
+            if ((observation != null)
+                    && observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
+                multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream,
+                        observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
+            else
+                multiDatastream = null;
+        }
+
+        // If the Observation is linked to a Datastream...
+        if (datastream != null)
+            if (datastream.isSetProperty(pluginPlus.npPartyDatastream))
+                assertOwnershipDatastream(datastream, principal);
+            else
+                assertOwnershipDatastream(pm.get(pluginCoreModel.etDatastream, datastream.getId()), principal);
+
+        // If the Observation is linked to a MultiDatastream...
+        if (multiDatastream != null)
+            if (multiDatastream.isSetProperty(pluginPlus.npPartyMultiDatastream))
+                assertOwnershipMultiDatastream(multiDatastream, principal);
+            else
+                assertOwnershipMultiDatastream(
+                        pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId()),
+                        principal);
+
+    }
+
     protected void assertOwnershipDatastream(Entity datastream, Principal principal) {
         assertPrincipal(principal);
 
@@ -123,7 +173,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipThing(Entity thing, Principal principal) {
+    protected void assertOwnershipThing(PostgresPersistenceManager pm, Entity thing, Principal principal) {
         assertPrincipal(principal);
 
         if (thing == null)
@@ -141,6 +191,13 @@ public abstract class TableHelper {
         if (thing != null)
             party = thing.getProperty(pluginPlus.npPartyThing);
 
+        if (party == null && thing.getId() != null) {
+            thing = pm.get(pluginPlus.etGroup, thing.getId());
+            if (thing != null) {
+                party = thing.getProperty(pluginPlus.npPartyThing);
+            }
+        }
+
         if (party == null)
             throw new IllegalArgumentException("Thing not linked to a Party");
 
@@ -151,7 +208,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipProject(Entity project, Principal principal) {
+    protected void assertOwnershipProject(PostgresPersistenceManager pm, Entity project, Principal principal) {
         assertPrincipal(principal);
 
         if (project == null)
@@ -169,6 +226,13 @@ public abstract class TableHelper {
         if (project != null)
             party = project.getProperty(pluginPlus.npPartyProject);
 
+        if (party == null && project.getId() != null) {
+            project = pm.get(pluginPlus.etGroup, project.getId());
+            if (project != null) {
+                party = project.getProperty(pluginPlus.npPartyGroup);
+            }
+        }
+
         if (party == null)
             throw new IllegalArgumentException("Project not linked to a Party");
 
@@ -179,7 +243,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipGroup(Entity group, Principal principal) {
+    protected void assertOwnershipGroup(PostgresPersistenceManager pm, Entity group, Principal principal) {
         assertPrincipal(principal);
 
         if (group == null)
@@ -192,10 +256,13 @@ public abstract class TableHelper {
         String userId = principal.getName();
 
         // Ensure Ownership for Group
-        Entity party = null;
-
-        if (group != null)
-            party = group.getProperty(pluginPlus.npPartyGroup);
+        Entity party = group.getProperty(pluginPlus.npPartyGroup);
+        if (party == null && group.getId() != null) {
+            group = pm.get(pluginPlus.etGroup, group.getId());
+            if (group != null) {
+                party = group.getProperty(pluginPlus.npPartyGroup);
+            }
+        }
 
         if (party == null)
             throw new IllegalArgumentException("Group not linked to a Party");

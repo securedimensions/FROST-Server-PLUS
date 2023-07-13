@@ -196,56 +196,6 @@ public class TableHelperObservation extends TableHelper {
 
     }
 
-    private void assertOwnershipObservation(PostgresPersistenceManager pm, Entity entity, Principal principal) {
-
-        Entity datastream = null;
-        Entity multiDatastream = null;
-
-        // Test if the Observation is inline and linked to a Datastream or MultiDatastream
-        if (entity.isSetProperty(pluginCoreModel.npDatastreamObservation))
-            datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
-        else if ((pluginMultiDatastream != null) && (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation)))
-            multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
-
-        // Test if Observation needs to be loaded - first from Datastream
-        if ((datastream == null) && (multiDatastream == null)) {
-            Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
-            if ((observation != null) && observation.isSetProperty(pluginCoreModel.npDatastreamObservation))
-                datastream = pm.get(pluginCoreModel.etDatastream,
-                        observation.getProperty(pluginCoreModel.npDatastreamObservation).getId());
-            else
-                datastream = null;
-        }
-
-        // Test if Observation needs to be loaded - now from MultiDatastream
-        if ((datastream == null) && (multiDatastream == null)) {
-            Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
-            if ((observation != null)
-                    && observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
-                multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream,
-                        observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
-            else
-                multiDatastream = null;
-        }
-
-        // If the Observation is linked to a Datastream...
-        if (datastream != null)
-            if (datastream.isSetProperty(pluginPlus.npPartyDatastream))
-                assertOwnershipDatastream(datastream, principal);
-            else
-                assertOwnershipDatastream(pm.get(pluginCoreModel.etDatastream, datastream.getId()), principal);
-
-        // If the Observation is linked to a MultiDatastream...
-        if (multiDatastream != null)
-            if (multiDatastream.isSetProperty(pluginPlus.npPartyMultiDatastream))
-                assertOwnershipMultiDatastream(multiDatastream, principal);
-            else
-                assertOwnershipMultiDatastream(
-                        pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId()),
-                        principal);
-
-    }
-
     protected void assertLicenseCompatibilty(PostgresPersistenceManager pm, Entity entity) {
 
         Entity group = null;

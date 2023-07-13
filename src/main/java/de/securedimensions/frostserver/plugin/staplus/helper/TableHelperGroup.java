@@ -73,7 +73,7 @@ public class TableHelperGroup extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                assertOwnershipGroup(entity, principal);
+                assertOwnershipGroup(pm, entity, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
                     assertGroupLicense(entity);
@@ -97,7 +97,7 @@ public class TableHelperGroup extends TableHelper {
                     return;
 
                 Entity group = pm.get(pluginPlus.etGroup, entityId);
-                assertOwnershipGroup(group, principal);
+                assertOwnershipGroup(pm, group, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
                     assertGroupLicense(group);
@@ -119,7 +119,7 @@ public class TableHelperGroup extends TableHelper {
                     return;
 
                 Entity group = pm.get(pluginPlus.etGroup, entityId);
-                assertOwnershipGroup(group, principal);
+                assertOwnershipGroup(pm, group, principal);
             }
         });
 

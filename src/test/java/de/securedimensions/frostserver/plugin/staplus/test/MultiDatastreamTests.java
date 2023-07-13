@@ -191,7 +191,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
     private static String PARTY_ALICE = String.format("{\"displayName\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
     private static String PARTY_LJS = String.format("{\"displayName\": \"Long John Silver Citizen Scientist\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
 
-    private static String MULTIDATASTREAM_PARTY = "{\n"
+    public static String MULTIDATASTREAM_PARTY = "{\n"
             + "    \"name\": \"Environmental Datastream from Camera Trap\",\n"
             + "    \"description\": \"Environment data for air temperature, humidity, pressure\",\n"
             + "    \"multiObservationDataTypes\": [\n"
@@ -208,8 +208,8 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
             + "        ]\n"
             + "    },\n"
             + "    \"Party\": {\n"
-            + "        \"displayName\": \"Long John Silver Citizen Scientist\",\n"
-            + "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
+            + "        \"displayName\": \"Tester\",\n"
+            + "        \"description\": \"\",\n"
             + "        \"role\": \"individual\",\n"
             + "        \"authId\": \"%s\"\n"
             + "    },\n"
@@ -275,7 +275,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
             + "    ]\n"
             + "}";
 
-    private static final String OBSERVATION = "{\n"
+    public static final String MDS_OBSERVATION = "{\n"
             + "    \"phenomenonTime\": \"2021-04-20T02:00:00Z\",\n"
             + "    \"resultTime\": \"2021-04-21T15:43:00Z\",\n"
             + "    \"result\": [14.7, 60.8, 1020],\n"
@@ -287,7 +287,35 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
             + "    },\n"
             + "    \"FeatureOfInterest\": {\n"
             + "        \"name\": \"The observed boundary\",\n"
-            + "        \"description\": \"The actual real worl area observed\",\n"
+            + "        \"description\": \"The actual real world area observed\",\n"
+            + "        \"encodingType\": \"application/geo+json\",\n"
+            + "        \"feature\": {\n"
+            + "            \"type\": \"Feature\",\n"
+            + "            \"geometry\": {\n"
+            + "              \"type\": \"Polygon\",\n"
+            + "              \"coordinates\": [\n"
+            + "                [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],\n"
+            + "                  [100.0, 1.0], [100.0, 0.0] ]\n"
+            + "                ]\n"
+            + "            }\n"
+            + "        }\n"
+            + "    }\n"
+            + "}";
+
+    public static final String MDS_OBSERVATION_ID = "{\n"
+            + "    \"@iot.id\": %s,\n"
+            + "    \"phenomenonTime\": \"2021-04-20T02:00:00Z\",\n"
+            + "    \"resultTime\": \"2021-04-21T15:43:00Z\",\n"
+            + "    \"result\": [14.7, 60.8, 1020],\n"
+            + "    \"parameters\": {\n"
+            + "        \"tilt_angle\": \"30\",\n"
+            + "        \"distance\": \"5\",\n"
+            + "        \"shutter\": \"2.4\",\n"
+            + "        \"speed\": \"1/400\"\n"
+            + "    },\n"
+            + "    \"FeatureOfInterest\": {\n"
+            + "        \"name\": \"The observed boundary\",\n"
+            + "        \"description\": \"The actual real world area observed\",\n"
             + "        \"encodingType\": \"application/geo+json\",\n"
             + "        \"feature\": {\n"
             + "            \"type\": \"Feature\",\n"
@@ -735,7 +763,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
     public void test30SameUserAddObservation() throws ClientProtocolException, IOException {
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
-        String request = OBSERVATION;
+        String request = MDS_OBSERVATION;
         HttpPost httpPost = new HttpPost(datastreamUrl + "/Observations");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
@@ -757,7 +785,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
     public void test31OtherUserAddObservation() throws ClientProtocolException, IOException {
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
-        String request = OBSERVATION;
+        String request = MDS_OBSERVATION;
         HttpPost httpPost = new HttpPost(datastreamUrl + "/Observations");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
@@ -779,7 +807,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
     public void test32AdminAddObservation() throws ClientProtocolException, IOException {
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
-        String request = OBSERVATION;
+        String request = MDS_OBSERVATION;
         HttpPost httpPost = new HttpPost(datastreamUrl + "/Observations");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
@@ -801,7 +829,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
     public void test33AnonAddObservation() throws ClientProtocolException, IOException {
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
-        String request = OBSERVATION;
+        String request = MDS_OBSERVATION;
         HttpPost httpPost = new HttpPost(datastreamUrl + "/Observations");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);

@@ -656,7 +656,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             new TableHelperLocation(settings, ppm).registerPreHooks();
             new TableHelperLicense(settings, ppm).registerPreHooks();
             new TableHelperProject(settings, ppm).registerPreHooks();
-
+            new TableHelperRelation(settings, ppm).registerPreHooks();
         }
         fullyInitialised = true;
         return true;

@@ -18,41 +18,36 @@
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
+import de.securedimensions.frostserver.plugin.staplus.TableImpRelations;
 import java.security.Principal;
 import java.util.Map;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
-public class TableHelperThing extends TableHelper {
+public class TableHelperRelation extends TableHelper {
 
-    private final TableImpThings tableThings;
+    private final TableImpRelations tableRelations;
 
-    public TableHelperThing(CoreSettings settings, PostgresPersistenceManager ppm) {
+    public TableHelperRelation(CoreSettings settings, PostgresPersistenceManager ppm) {
         super(settings, ppm);
 
-        this.tableThings = tables.getTableForClass(TableImpThings.class);
-
-        final int partyThingsIdIdx = tableThings.registerField(DSL.name("PARTY_ID"), tables.getTableForClass(TableImpParty.class).getIdType());
-        tableThings.getPropertyFieldRegistry()
-                .addEntry(pluginPlus.npPartyThing, table -> table.field(partyThingsIdIdx));
-
+        this.tableRelations = tables.getTableForClass(TableImpRelations.class);
     }
 
     @Override
     public void registerPreHooks() {
 
-        tableThings.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableRelations.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
             public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
@@ -64,61 +59,104 @@ public class TableHelperThing extends TableHelper {
                 if (phase == Phase.PRE_RELATIONS)
                     return true;
 
-                /*
-                 * Select Phase
-                 */
-                if (phase == Phase.PRE_RELATIONS)
-                    return true;
+                Entity subject = entity.getProperty(pluginPlus.npSubjectRelation);
+                if (subject == null) {
+                    throw new IllegalArgumentException("A Relation must have a Subject.");
+                }
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
+                Entity object = entity.getProperty(pluginPlus.npObjectRelation);
+                String extObject = entity.getProperty(pluginPlus.epExternalObject);
+                if ((object == null) && (extObject == null)) {
+                    throw new IllegalArgumentException("A Relation must either have an Object or externalObject.");
+                }
+
+                if ((object != null) && (extObject != null)) {
+                    throw new IllegalArgumentException("A Relation must not have an Object and externalObject.");
+                }
+
+                if (!pluginPlus.isEnforceOwnershipEnabled()) {
                     return true;
+                }
 
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
+                if (isAdmin(principal)) {
                     return true;
+                }
 
-                assertOwnershipThing(entity, principal);
+                /*
+                 * Ownership concept: Subject must point to a Datastream owned by the acting user
+                 */
+                assertOwnershipObservation(pm, subject, principal);
+
+                /*
+                 * Ownership concept: All Group entities must be owned by the acting user
+                 */
+                EntitySet groups = entity.getProperty(pluginPlus.npRelationGroups);
+                if (groups == null) {
+                    return true;
+                }
+
+                for (Entity group : groups) {
+                    /*
+                     * we need to check for each group
+                     */
+                    assertOwnershipGroup(pm, group, principal);
+                }
 
                 return true;
             }
         });
 
-        tableThings.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+        tableRelations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
             public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
+                if (!pluginPlus.isEnforceOwnershipEnabled()) {
                     return;
+                }
 
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
+                if (isAdmin(principal)) {
                     return;
+                }
 
-                Entity thing = pm.get(pluginCoreModel.etThing, entityId);
-                assertOwnershipThing(thing, principal);
+                /*
+                 * Ownership concept: Subject must point to a Datastream owned by the acting user
+                 */
+                Entity subject = entity.getProperty(pluginPlus.npSubjectRelation);
+                assertOwnershipObservation(pm, subject, principal);
 
             }
         });
 
-        tableThings.registerHookPreDelete(-10.0, new HookPreDelete() {
+        tableRelations.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
             public void delete(PostgresPersistenceManager pm, Id entityId) throws NoSuchEntityException {
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
+                if (!pluginPlus.isEnforceOwnershipEnabled()) {
                     return;
+                }
 
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
+                if (isAdmin(principal)) {
                     return;
+                }
 
-                Entity thing = pm.get(pluginCoreModel.etThing, entityId);
-                assertOwnershipThing(thing, principal);
+                Entity subject = pm.get(pluginPlus.etRelation, entityId).getProperty(pluginPlus.npSubjectRelation);
+                Entity ds = pm.get(pluginCoreModel.etObservation, subject.getId()).getProperty(pluginCoreModel.npDatastreamObservation);
+                Entity party = pm.get(pluginCoreModel.etDatastream, ds.getId()).getProperty(pluginPlus.npPartyDatastream);
+
+                if (party == null) {
+                    throw new IllegalArgumentException("The Subject associated to the Relation must have a Datastream associated to a Party.");
+                }
+
+                if (!principal.getName().equalsIgnoreCase((String) party.getId().getValue())) {
+                    throw new ForbiddenException("A Relation can only be created to Subject associated to the acting Party.");
+                }
+
             }
         });
 

@@ -387,13 +387,14 @@ public abstract class PartyTests extends AbstractTestClass {
         // Party Alice created by Admin in a previous test
         HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
         setAuth(httpDelete, ADMIN, "");
-        CloseableHttpResponse response = serviceSTAplus.execute(httpDelete);
 
-        if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
-            LOGGER.info(ADMIN_SHOULD_BE_ABLE_TO_DELETE);
-            Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_DELETE);
-        } else {
-            fail(response, ADMIN_SHOULD_BE_ABLE_TO_DELETE);
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {
+            if (response.getStatusLine().getStatusCode() == HTTP_CODE_200) {
+                LOGGER.info(ADMIN_SHOULD_BE_ABLE_TO_DELETE);
+                Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_DELETE);
+            } else {
+                fail(response, ADMIN_SHOULD_BE_ABLE_TO_DELETE);
+            }
         }
     }
 

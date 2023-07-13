@@ -149,7 +149,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
     private static String PARTY_ALICE = String.format("{\"displayName\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
     private static String PARTY_LJS = String.format("{\"displayName\": \"Long John Silver Citizen Scientist\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
 
-    private static String DATASTREAM_PARTY = "{\n"
+    public static String DATASTREAM_PARTY = "{\n"
             + "    \"unitOfMeasurement\": {\n"
             + "        \"name\": \"n/a\",\n"
             + "        \"symbol\": \"\",\n"
@@ -224,7 +224,7 @@ public abstract class DatastreamTests extends AbstractTestClass {
             + "    }\n"
             + "}";
 
-    private static final String OBSERVATION_ID = "{\n"
+    public static final String OBSERVATION_ID = "{\n"
             + "    \"@iot.id\": %s,\n"
             + "    \"phenomenonTime\": \"2021-04-20T02:00:00Z\",\n"
             + "    \"resultTime\": \"2021-04-21T15:43:00Z\",\n"

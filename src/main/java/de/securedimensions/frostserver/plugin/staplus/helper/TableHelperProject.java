@@ -73,7 +73,7 @@ public class TableHelperProject extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                assertOwnershipProject(entity, principal);
+                assertOwnershipProject(pm, entity, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
                     assertProjectLicense(entity);
@@ -97,7 +97,7 @@ public class TableHelperProject extends TableHelper {
                     return;
 
                 Entity project = pm.get(pluginPlus.etProject, entityId);
-                assertOwnershipProject(project, principal);
+                assertOwnershipProject(pm, project, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
                     assertProjectLicense(project);
@@ -119,7 +119,7 @@ public class TableHelperProject extends TableHelper {
                     return;
 
                 Entity project = pm.get(pluginPlus.etProject, entityId);
-                assertOwnershipProject(project, principal);
+                assertOwnershipProject(pm, project, principal);
             }
         });
 
