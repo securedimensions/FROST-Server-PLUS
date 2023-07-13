@@ -74,7 +74,11 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginPLUS.class.getName());
     private static final long serialVersionUID = 1626971234;
     private static final List<String> REQUIREMENTS_PLUS = List.of(
-            "https://www.secure-dimensions.eu/staplus#FROST-Server-PLUS");
+            "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/core",
+            "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/create",
+            "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/update",
+            "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/delete",
+            "https://github.com/securedimensions/FROST-Server-PLUS/BUSINESS-LOGIC.md");
     private static final String REQUIREMENT_ENFORCE_OWNERSHIP = "https://www.secure-dimensions.de/staplus#FROST-Server-EnforceOwnership";
     private static final String REQUIREMENT_ENFORCE_LICENSING = "https://www.secure-dimensions.de/staplus#FROST-Server-EnforceLicensing";
     /**

@@ -55,6 +55,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PartyTests.class);
     private static final long serialVersionUID = 1639739965;
+    private static final String USER_SHOULD_BE_ABLE_TO_CREATE = "A user should be able to create without setting `authId`.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE = "Admin should be able to create.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE = "Admin should be able to update.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE = "Admin should be able to delete.";
@@ -73,6 +74,7 @@ public abstract class PartyTests extends AbstractTestClass {
     private static final int HTTP_CODE_400 = 400;
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
+    private static final String PARTY = "{\"description\": \"\", \"displayName\": \"me\", \"role\": \"individual\"}";
     private static final String PARTY_ALICE = String.format("{\"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"displayName\": \"Alice in Wonderland\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
     private static final String PARTY_LJS = String.format("{\"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"displayName\": \"Long John Silver Citizen Scientist\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
 
@@ -141,6 +143,45 @@ public abstract class PartyTests extends AbstractTestClass {
     /*
      * CREATE Tests
      */
+
+    @Test
+    public void test00UserCreateParty() throws IOException {
+        String request = PARTY;
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
+        HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+        setAuth(httpPost, LJS, "");
+
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+
+            if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
+                Assertions.assertTrue(true, USER_SHOULD_BE_ABLE_TO_CREATE);
+            } else {
+                fail(response, USER_SHOULD_BE_ABLE_TO_CREATE);
+            }
+        }
+    }
+
+    @Test
+    public void test100AnonCreateParty() throws IOException {
+        try {
+            String request = PARTY;
+            HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
+            HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+            httpPost.setEntity(stringEntity);
+
+            try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+
+                if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
+                    Assertions.assertTrue(true, USER_SHOULD_BE_ABLE_TO_CREATE);
+                } else {
+                    fail(response, USER_SHOULD_BE_ABLE_TO_CREATE);
+                }
+            }
+        } catch (MalformedURLException ex) {
+            LOGGER.error("Failed to create URL", ex);
+        }
+    }
 
     /*
      * SAME_USER_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
