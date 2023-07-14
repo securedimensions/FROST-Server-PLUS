@@ -54,7 +54,7 @@ public class TableHelperDatastream extends TableHelper {
         tableDatastreams.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity datastream,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -71,10 +71,12 @@ public class TableHelperDatastream extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                assertOwnershipDatastream(pm, entity, principal);
+                assertOwnershipDatastream(pm, datastream, principal);
 
-                if (pluginPlus.isEnforceLicensingEnabled())
-                    assertDatastreamLicense(pm, entity);
+                if (pluginPlus.isEnforceLicensingEnabled()) {
+                    assertLicenseDatastream(pm, datastream);
+                    assertEmptyDatastream(pm, datastream);
+                }
 
                 return true;
             }
@@ -83,7 +85,7 @@ public class TableHelperDatastream extends TableHelper {
         tableDatastreams.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+            public void updateInDatabase(PostgresPersistenceManager pm, Entity datastream, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
@@ -91,11 +93,14 @@ public class TableHelperDatastream extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                Entity datastream = pm.get(pluginCoreModel.etDatastream, entityId);
+                // We need to assert on the existing Project that is to be updated
+                datastream = pm.get(pluginCoreModel.etDatastream, datastream.getId());
                 assertOwnershipDatastream(pm, datastream, principal);
 
-                if (pluginPlus.isEnforceLicensingEnabled())
-                    assertDatastreamLicense(pm, datastream);
+                if (pluginPlus.isEnforceLicensingEnabled()) {
+                    assertLicenseDatastream(pm, datastream);
+                    assertEmptyDatastream(pm, datastream);
+                }
 
             }
         });

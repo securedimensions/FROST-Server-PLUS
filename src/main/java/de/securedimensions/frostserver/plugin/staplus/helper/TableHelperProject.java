@@ -56,7 +56,7 @@ public class TableHelperProject extends TableHelper {
         tableProject.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity project,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -73,10 +73,12 @@ public class TableHelperProject extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                assertOwnershipProject(pm, entity, principal);
+                assertOwnershipProject(pm, project, principal);
 
-                if (pluginPlus.isEnforceLicensingEnabled())
-                    assertProjectLicense(pm, entity);
+                if (pluginPlus.isEnforceLicensingEnabled()) {
+                    assertLicenseProject(pm, project);
+                    assertEmptyProject(pm, project);
+                }
 
                 return true;
             }
@@ -85,7 +87,7 @@ public class TableHelperProject extends TableHelper {
         tableProject.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+            public void updateInDatabase(PostgresPersistenceManager pm, Entity project, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
@@ -96,11 +98,14 @@ public class TableHelperProject extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                Entity project = pm.get(pluginPlus.etProject, entityId);
+                // We need to assert on the existing Project that is to be updated
+                project = pm.get(pluginPlus.etProject, project.getId());
                 assertOwnershipProject(pm, project, principal);
 
-                if (pluginPlus.isEnforceLicensingEnabled())
-                    assertProjectLicense(pm, project);
+                if (pluginPlus.isEnforceLicensingEnabled()) {
+                    assertLicenseProject(pm, project);
+                    assertEmptyProject(pm, project);
+                }
 
             }
         });

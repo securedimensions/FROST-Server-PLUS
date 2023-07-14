@@ -157,7 +157,7 @@ public class TableHelperObservation extends TableHelper {
         tableObservations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+            public void updateInDatabase(PostgresPersistenceManager pm, Entity observation, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
@@ -168,7 +168,9 @@ public class TableHelperObservation extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                assertOwnershipObservation(pm, entity, principal);
+                // We need to assert on the existing Observation that is to be updated
+                observation = pm.get(pluginCoreModel.etObservation, observation.getId());
+                assertOwnershipObservation(pm, observation, principal);
 
             }
         });

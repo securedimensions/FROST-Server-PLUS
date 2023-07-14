@@ -96,7 +96,7 @@ public class TableHelperLicense extends TableHelper {
                         throw new IllegalArgumentException("Datastreams do not exist.");
                     }
                     for (Entity d : ds) {
-                        assertDatastreamLicense(pm, d);
+                        assertLicenseDatastream(pm, d);
                         assertOwnershipDatastream(pm, d, principal);
                         assertEmptyDatastream(pm, d);
                     }
@@ -106,7 +106,7 @@ public class TableHelperLicense extends TableHelper {
                         throw new IllegalArgumentException("MultiDatastreams do not exist.");
                     }
                     for (Entity md : mds) {
-                        assertMultiDatastreamLicense(pm, md);
+                        assertLicenseMultiDatastream(pm, md);
                         assertOwnershipMultiDatastream(pm, md, principal);
                         assertEmptyMultiDatastream(pm, md);
                     }
@@ -116,7 +116,7 @@ public class TableHelperLicense extends TableHelper {
                         throw new IllegalArgumentException("Projects do not exist.");
                     }
                     for (Entity p : ps) {
-                        assertProjectLicense(pm, p);
+                        assertLicenseProject(pm, p);
                         assertOwnershipProject(pm, p, principal);
                         assertEmptyProject(pm, p);
                     }
@@ -126,7 +126,7 @@ public class TableHelperLicense extends TableHelper {
                         throw new IllegalArgumentException("Groups do not exist.");
                     }
                     for (Entity g : gs) {
-                        assertGroupLicense(pm, g);
+                        assertLicenseGroup(pm, g);
                         assertOwnershipGroup(pm, g, principal);
                         assertEmptyGroup(pm, g);
                     }
@@ -140,7 +140,7 @@ public class TableHelperLicense extends TableHelper {
         tableLicenses.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+            public void updateInDatabase(PostgresPersistenceManager pm, Entity license, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceLicensingEnabled())
@@ -151,40 +151,48 @@ public class TableHelperLicense extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                if (LICENSE_IDS.contains(entity.getId().getValue()))
+                if (LICENSE_IDS.contains(license.getId().getValue()))
                     throw new ForbiddenException("System license cannot be updated.");
 
-                if (entity.isSetProperty(pluginPlus.npDatastreamsLicense)) {
-                    EntitySet ds = entity.getProperty(pluginPlus.npDatastreamsLicense);
+                if (license.isSetProperty(pluginPlus.npDatastreamsLicense)) {
+                    EntitySet ds = license.getProperty(pluginPlus.npDatastreamsLicense);
                     if (ds == null) {
                         throw new IllegalArgumentException("Datastreams do not exist.");
                     }
                     for (Entity d : ds) {
-                        assertDatastreamLicense(pm, d);
+                        assertLicenseDatastream(pm, d);
+                        assertOwnershipDatastream(pm, d, principal);
+                        assertEmptyDatastream(pm, d);
                     }
-                } else if (entity.isSetProperty(pluginPlus.npMultiDatastreamsLicense)) {
-                    EntitySet mds = entity.getProperty(pluginPlus.npMultiDatastreamsLicense);
+                } else if (license.isSetProperty(pluginPlus.npMultiDatastreamsLicense)) {
+                    EntitySet mds = license.getProperty(pluginPlus.npMultiDatastreamsLicense);
                     if (mds == null) {
                         throw new IllegalArgumentException("MultiDatastreams do not exist.");
                     }
                     for (Entity md : mds) {
-                        assertMultiDatastreamLicense(pm, md);
+                        assertLicenseMultiDatastream(pm, md);
+                        assertOwnershipMultiDatastream(pm, md, principal);
+                        assertEmptyMultiDatastream(pm, md);
                     }
-                } else if (entity.isSetProperty(pluginPlus.npProjectsLicense)) {
-                    EntitySet ps = entity.getProperty(pluginPlus.npProjectsLicense);
+                } else if (license.isSetProperty(pluginPlus.npProjectsLicense)) {
+                    EntitySet ps = license.getProperty(pluginPlus.npProjectsLicense);
                     if (ps == null) {
                         throw new IllegalArgumentException("Projects do not exist.");
                     }
                     for (Entity p : ps) {
-                        assertProjectLicense(pm, p);
+                        assertLicenseProject(pm, p);
+                        assertOwnershipProject(pm, p, principal);
+                        assertEmptyProject(pm, p);
                     }
-                } else if (entity.isSetProperty(pluginPlus.npGroupsLicense)) {
-                    EntitySet gs = entity.getProperty(pluginPlus.npGroupsLicense);
+                } else if (license.isSetProperty(pluginPlus.npGroupsLicense)) {
+                    EntitySet gs = license.getProperty(pluginPlus.npGroupsLicense);
                     if (gs == null) {
                         throw new IllegalArgumentException("Groups do not exist.");
                     }
                     for (Entity g : gs) {
-                        assertGroupLicense(pm, g);
+                        assertLicenseGroup(pm, g);
+                        assertOwnershipGroup(pm, g, principal);
+                        assertEmptyGroup(pm, g);
                     }
                 } else
                     throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");

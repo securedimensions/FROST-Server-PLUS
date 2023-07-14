@@ -311,7 +311,7 @@ public abstract class TableHelper {
         }
     }
 
-    protected void assertGroupLicense(PostgresPersistenceManager pm, Entity group) {
+    protected void assertLicenseGroup(PostgresPersistenceManager pm, Entity group) {
         if (group == null)
             throw new IllegalArgumentException("Group does not exist");
 
@@ -336,7 +336,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertProjectLicense(PostgresPersistenceManager pm, Entity project) {
+    protected void assertLicenseProject(PostgresPersistenceManager pm, Entity project) {
         if (project == null)
             throw new IllegalArgumentException("Project does not exist");
 
@@ -361,7 +361,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertDatastreamLicense(PostgresPersistenceManager pm, Entity datastream) {
+    protected void assertLicenseDatastream(PostgresPersistenceManager pm, Entity datastream) {
         if (datastream == null)
             throw new IllegalArgumentException("Datastream does not exist");
 
@@ -387,7 +387,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertMultiDatastreamLicense(PostgresPersistenceManager pm, Entity multiDatastream) {
+    protected void assertLicenseMultiDatastream(PostgresPersistenceManager pm, Entity multiDatastream) {
         if (multiDatastream == null)
             throw new IllegalArgumentException("MultiDatastream does not exist");
 

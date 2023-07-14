@@ -56,7 +56,7 @@ public class TableHelperGroup extends TableHelper {
         tableGroups.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity group,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -73,10 +73,12 @@ public class TableHelperGroup extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                assertOwnershipGroup(pm, entity, principal);
+                assertOwnershipGroup(pm, group, principal);
 
-                if (pluginPlus.isEnforceLicensingEnabled())
-                    assertGroupLicense(pm, entity);
+                if (pluginPlus.isEnforceLicensingEnabled()) {
+                    assertLicenseGroup(pm, group);
+                    assertEmptyGroup(pm, group);
+                }
 
                 return true;
             }
@@ -85,7 +87,7 @@ public class TableHelperGroup extends TableHelper {
         tableGroups.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+            public void updateInDatabase(PostgresPersistenceManager pm, Entity group, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
@@ -96,11 +98,14 @@ public class TableHelperGroup extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                Entity group = pm.get(pluginPlus.etGroup, entityId);
+                // We need to assert on the existing Group that is to be updated
+                group = pm.get(pluginPlus.etGroup, group.getId());
                 assertOwnershipGroup(pm, group, principal);
 
-                if (pluginPlus.isEnforceLicensingEnabled())
-                    assertGroupLicense(pm, group);
+                if (pluginPlus.isEnforceLicensingEnabled()) {
+                    assertLicenseGroup(pm, group);
+                    assertEmptyGroup(pm, group);
+                }
 
             }
         });

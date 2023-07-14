@@ -84,7 +84,7 @@ public abstract class GroupTests extends AbstractTestClass {
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY = "Same user should be able to create Group associated with Party in request.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY = "Same user should be able to create Group associated with existing Party.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE = "Same user should be able to update.";
-    private static final String SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY = "Same user should be able to update Party.";
+    private static final String SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_OTHER_PARTY = "Same user should not be able to update with other existing Party.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_DELETE = "Same User should NOT be able to delete.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create Group.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE = "Other user should NOT be able to update.";
@@ -492,7 +492,7 @@ public abstract class GroupTests extends AbstractTestClass {
      * SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 403 Fail: n/a
      */
     @Test
-    public void test10SameUserUpdateGroupParty() throws ClientProtocolException, IOException {
+    public void test10SameUserUpdateGroupOtherParty() throws ClientProtocolException, IOException {
         createParty(ALICE);
         String groupUrl = createGroupParty(LJS);
 
@@ -504,9 +504,9 @@ public abstract class GroupTests extends AbstractTestClass {
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpPatch)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
-                Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY);
+                Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_OTHER_PARTY);
             } else {
-                fail(response, SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY);
+                fail(response, SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_OTHER_PARTY);
             }
         }
     }

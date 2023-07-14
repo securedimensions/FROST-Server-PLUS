@@ -26,7 +26,6 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUp
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
@@ -58,7 +57,7 @@ public class TableHelperMultiDatastream extends TableHelper {
             tableMultiDatastreams.registerHookPreInsert(-10.0, new HookPreInsert() {
 
                 @Override
-                public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
+                public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity multiDatastream,
                         Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                     /*
@@ -75,10 +74,12 @@ public class TableHelperMultiDatastream extends TableHelper {
                     if (isAdmin(principal))
                         return true;
 
-                    assertOwnershipMultiDatastream(pm, entity, principal);
+                    assertOwnershipMultiDatastream(pm, multiDatastream, principal);
 
-                    if (pluginPlus.isEnforceLicensingEnabled())
-                        assertMultiDatastreamLicense(pm, entity);
+                    if (pluginPlus.isEnforceLicensingEnabled()) {
+                        assertLicenseMultiDatastream(pm, multiDatastream);
+                        assertEmptyMultiDatastream(pm, multiDatastream);
+                    }
 
                     return true;
                 }
@@ -87,7 +88,7 @@ public class TableHelperMultiDatastream extends TableHelper {
             tableMultiDatastreams.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
                 @Override
-                public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+                public void updateInDatabase(PostgresPersistenceManager pm, Entity multiDatastream, Id entityId)
                         throws NoSuchEntityException, IncompleteEntityException {
 
                     if (!pluginPlus.isEnforceOwnershipEnabled())
@@ -98,11 +99,14 @@ public class TableHelperMultiDatastream extends TableHelper {
                     if (isAdmin(principal))
                         return;
 
-                    Entity multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, entity.getId());
+                    // We need to assert on the existing Project that is to be updated
+                    multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
                     assertOwnershipMultiDatastream(pm, multiDatastream, principal);
 
-                    if (pluginPlus.isEnforceLicensingEnabled())
-                        assertMultiDatastreamLicense(pm, entity);
+                    if (pluginPlus.isEnforceLicensingEnabled()) {
+                        assertLicenseMultiDatastream(pm, multiDatastream);
+                        assertEmptyMultiDatastream(pm, multiDatastream);
+                    }
                 }
             });
 
@@ -119,7 +123,7 @@ public class TableHelperMultiDatastream extends TableHelper {
                     if (isAdmin(principal))
                         return;
 
-                    Entity multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, ParserUtils.idFromObject((entityId)));
+                    Entity multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, entityId);
                     assertOwnershipMultiDatastream(pm, multiDatastream, principal);
                 }
             });
