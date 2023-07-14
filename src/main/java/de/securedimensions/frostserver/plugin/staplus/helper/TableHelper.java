@@ -18,12 +18,20 @@
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
+import de.fraunhofer.iosb.ilt.frostserver.parser.path.PathParser;
+import de.fraunhofer.iosb.ilt.frostserver.parser.query.QueryParser;
+import de.fraunhofer.iosb.ilt.frostserver.path.ResourcePath;
+import de.fraunhofer.iosb.ilt.frostserver.path.Version;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
+import de.fraunhofer.iosb.ilt.frostserver.query.Query;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
+import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
 import de.fraunhofer.iosb.ilt.frostserver.util.user.PrincipalExtended;
@@ -102,23 +110,14 @@ public abstract class TableHelper {
 
         // If the Observation is linked to a Datastream...
         if (datastream != null)
-            if (datastream.isSetProperty(pluginPlus.npPartyDatastream))
-                assertOwnershipDatastream(datastream, principal);
-            else
-                assertOwnershipDatastream(pm.get(pluginCoreModel.etDatastream, datastream.getId()), principal);
+            assertOwnershipDatastream(pm, datastream, principal);
 
         // If the Observation is linked to a MultiDatastream...
         if (multiDatastream != null)
-            if (multiDatastream.isSetProperty(pluginPlus.npPartyMultiDatastream))
-                assertOwnershipMultiDatastream(multiDatastream, principal);
-            else
-                assertOwnershipMultiDatastream(
-                        pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId()),
-                        principal);
-
+            assertOwnershipMultiDatastream(pm, multiDatastream, principal);
     }
 
-    protected void assertOwnershipDatastream(Entity datastream, Principal principal) {
+    protected void assertOwnershipDatastream(PostgresPersistenceManager pm, Entity datastream, Principal principal) {
         assertPrincipal(principal);
 
         if (datastream == null)
@@ -136,6 +135,13 @@ public abstract class TableHelper {
         if (datastream != null)
             party = datastream.getProperty(pluginPlus.npPartyDatastream);
 
+        if (party == null && datastream.getId() != null) {
+            datastream = pm.get(pluginCoreModel.etDatastream, datastream.getId());
+            if (datastream != null) {
+                party = datastream.getProperty(pluginPlus.npPartyDatastream);
+            }
+        }
+
         if (party == null)
             throw new IllegalArgumentException("Datastream not linked to a Party");
 
@@ -146,7 +152,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipMultiDatastream(Entity multiDatastream, Principal principal) {
+    protected void assertOwnershipMultiDatastream(PostgresPersistenceManager pm, Entity multiDatastream, Principal principal) {
         assertPrincipal(principal);
 
         if (multiDatastream == null)
@@ -163,6 +169,13 @@ public abstract class TableHelper {
 
         if (multiDatastream != null)
             party = multiDatastream.getProperty(pluginPlus.npPartyMultiDatastream);
+
+        if (party == null && multiDatastream.getId() != null) {
+            multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
+            if (multiDatastream != null) {
+                party = multiDatastream.getProperty(pluginPlus.npPartyMultiDatastream);
+            }
+        }
 
         if (party == null)
             throw new IllegalArgumentException("MultiDatastream not linked to a Party");
@@ -298,64 +311,203 @@ public abstract class TableHelper {
         }
     }
 
-    protected void assertGroupLicense(Entity group) {
+    protected void assertGroupLicense(PostgresPersistenceManager pm, Entity group) {
         if (group == null)
             throw new IllegalArgumentException("Group does not exist");
 
         if (!group.getEntityType().equals(pluginPlus.etGroup))
             throw new IllegalArgumentException("Entity not of type Group");
 
+        if (group.isSetProperty(pluginPlus.npLicenseGroup)) {
+            // The Datastream has License inline
+            return;
+        }
+
         // Ensure License for Group
         Entity license = group.getProperty(pluginPlus.npLicenseGroup);
-
+        if (license == null && group.getId() != null) {
+            group = pm.get(pluginPlus.etGroup, group.getId());
+            if (group != null) {
+                license = group.getProperty(pluginPlus.npLicenseGroup);
+            }
+        }
         if (license == null)
             throw new IllegalArgumentException("Group not linked to a License");
 
     }
 
-    protected void assertProjectLicense(Entity project) {
+    protected void assertProjectLicense(PostgresPersistenceManager pm, Entity project) {
         if (project == null)
             throw new IllegalArgumentException("Project does not exist");
 
         if (!project.getEntityType().equals(pluginPlus.etProject))
             throw new IllegalArgumentException("Entity not of type Project");
 
+        if (project.isSetProperty(pluginPlus.npLicenseProject)) {
+            // The Datastream has License inline
+            return;
+        }
+
         // Ensure License for Project
         Entity license = project.getProperty(pluginPlus.npLicenseProject);
-
+        if (license == null && project.getId() != null) {
+            project = pm.get(pluginPlus.etLicense, project.getId());
+            if (project != null) {
+                license = project.getProperty(pluginPlus.npLicenseProject);
+            }
+        }
         if (license == null)
-            throw new IllegalArgumentException("Projet not linked to a License");
+            throw new IllegalArgumentException("Project not linked to a License");
 
     }
 
-    protected void assertDatastreamLicense(Entity datastream) {
+    protected void assertDatastreamLicense(PostgresPersistenceManager pm, Entity datastream) {
         if (datastream == null)
             throw new IllegalArgumentException("Datastream does not exist");
 
         if (!datastream.getEntityType().equals(pluginCoreModel.etDatastream))
             throw new IllegalArgumentException("Entity not of type Datastream");
 
+        if (datastream.isSetProperty(pluginPlus.npLicenseDatastream)) {
+            // The Datastream has License inline
+            return;
+        }
+
         // Ensure License for Datastream
         Entity license = datastream.getProperty(pluginPlus.npLicenseDatastream);
+        if (license == null && datastream.getId() != null) {
+            datastream = pm.get(pluginCoreModel.etDatastream, datastream.getId());
+            if (datastream != null) {
+                license = datastream.getProperty(pluginPlus.npLicenseDatastream);
+            }
+        }
 
         if (license == null)
             throw new IllegalArgumentException("Datastream not linked to a License");
 
     }
 
-    protected void assertMultiDatastreamLicense(Entity multiDatastream) {
+    protected void assertMultiDatastreamLicense(PostgresPersistenceManager pm, Entity multiDatastream) {
         if (multiDatastream == null)
             throw new IllegalArgumentException("MultiDatastream does not exist");
 
         if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled() && !multiDatastream.getEntityType().equals(pluginMultiDatastream.etMultiDatastream))
             throw new IllegalArgumentException("Entity not of type MultiDatastream");
 
+        if (multiDatastream.isSetProperty(pluginPlus.npLicenseMultiDatastream)) {
+            // The MultiDatastream has License inline
+            return;
+        }
+
         // Ensure License for MultiDatastream
         Entity license = multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream);
+        if (license == null && multiDatastream.getId() != null) {
+            multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
+            if (multiDatastream != null) {
+                license = multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream);
+            }
+        }
 
         if (license == null)
             throw new IllegalArgumentException("MultiDatastream not linked to a License");
 
     }
 
+    protected void assertEmptyDatastream(PostgresPersistenceManager pm, Entity datastream) {
+        if (datastream == null)
+            throw new IllegalArgumentException("Datastream does not exist");
+
+        if (!datastream.getEntityType().equals(pluginCoreModel.etDatastream))
+            throw new IllegalArgumentException("Entity not of type Datastream");
+
+        if (datastream.isSetProperty(pluginCoreModel.npObservationsDatastream)) {
+            // Observations are inline and part of creating a Datastream from scratch -> That's OK
+            return;
+        }
+
+        // Ensure Datastream by reference has no Observations
+        if (datastream.getId() != null) {
+            Id id = ParserUtils.idFromObject(datastream.getId());
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Datastreams(" + id.getUrl() + ")/Observations");
+            Query query = QueryParser.parseQuery("", pm.getCoreSettings(), rp);
+            query.validate();
+            EntitySet obs = (EntitySet) pm.get(rp, query);
+            if (!obs.isEmpty()) {
+                throw new IllegalArgumentException("Referenced Datastream already contains observations.");
+            }
+        }
+    }
+
+    protected void assertEmptyMultiDatastream(PostgresPersistenceManager pm, Entity mds) {
+        if (mds == null)
+            throw new IllegalArgumentException("MultiDatastream does not exist");
+
+        if (!mds.getEntityType().equals(pluginMultiDatastream.etMultiDatastream))
+            throw new IllegalArgumentException("Entity not of type MultiDatastream");
+
+        if (mds.isSetProperty(pluginMultiDatastream.npObservationsMDs)) {
+            // Observations are inline and part of creating a MultiDatastream from scratch -> That's OK
+            return;
+        }
+
+        // Ensure Datastream by reference has no Observations
+        if (mds.getId() != null) {
+            Id id = ParserUtils.idFromObject(mds.getId());
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/MultiDatastreams(" + id.getUrl() + ")/Observations");
+            Query query = QueryParser.parseQuery("", pm.getCoreSettings(), rp);
+            query.validate();
+            EntitySet obs = (EntitySet) pm.get(rp, query);
+            if (!obs.isEmpty()) {
+                throw new IllegalArgumentException("Referenced MultiDatastream already contains observations.");
+            }
+        }
+    }
+
+    protected void assertEmptyGroup(PostgresPersistenceManager pm, Entity group) {
+        if (group == null)
+            throw new IllegalArgumentException("Group does not exist");
+
+        if (!group.getEntityType().equals(pluginPlus.etGroup))
+            throw new IllegalArgumentException("Entity not of type Group");
+
+        if (group.isSetProperty(pluginPlus.npObservationGroups)) {
+            // Observations are inline and part of creating a Datastream from scratch -> That's OK
+            return;
+        }
+
+        // Ensure Group by reference has no Observations
+        if (group.getId() != null) {
+            Id id = ParserUtils.idFromObject(group.getId());
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Groups(" + id.getUrl() + ")/Observations");
+            Query query = QueryParser.parseQuery("", pm.getCoreSettings(), rp);
+            query.validate();
+            EntitySet obs = (EntitySet) pm.get(rp, query);
+            if (!obs.isEmpty()) {
+                throw new IllegalArgumentException("Referenced Group already contains observations.");
+            }
+        }
+    }
+
+    protected void assertEmptyProject(PostgresPersistenceManager pm, Entity project) {
+        if (project == null)
+            throw new IllegalArgumentException("Project does not exist");
+
+        if (!project.getEntityType().equals(pluginPlus.etProject))
+            throw new IllegalArgumentException("Entity not of type Project");
+
+        // Ensure Project by reference has no Datastreams and no MultiDatastreams
+        if (project.getId() != null) {
+            Id id = ParserUtils.idFromObject(project.getId());
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Projects(" + id.getUrl() + ")");
+            Query query = QueryParser.parseQuery("$expand=Datastream($top=0;$count=true),MultiDatastream($top=0;$count=true)", pm.getCoreSettings(), rp);
+            query.validate();
+            project = (Entity) pm.get(rp, query);
+            if (project.getProperty(pluginPlus.npDatastreamsProject).getCount() != 0) {
+                throw new IllegalArgumentException("Referenced Project already contains Datastream(s).");
+            }
+            if (project.getProperty(pluginPlus.npMultiDatastreamsProject).getCount() != 0) {
+                throw new IllegalArgumentException("Referenced Project already contains MultiDatastream(s).");
+            }
+        }
+    }
 }

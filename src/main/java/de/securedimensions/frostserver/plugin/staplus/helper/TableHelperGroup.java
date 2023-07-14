@@ -76,7 +76,7 @@ public class TableHelperGroup extends TableHelper {
                 assertOwnershipGroup(pm, entity, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
-                    assertGroupLicense(entity);
+                    assertGroupLicense(pm, entity);
 
                 return true;
             }
@@ -100,7 +100,7 @@ public class TableHelperGroup extends TableHelper {
                 assertOwnershipGroup(pm, group, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
-                    assertGroupLicense(group);
+                    assertGroupLicense(pm, group);
 
             }
         });

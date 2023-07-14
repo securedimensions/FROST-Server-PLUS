@@ -75,7 +75,10 @@ public class TableHelperMultiDatastream extends TableHelper {
                     if (isAdmin(principal))
                         return true;
 
-                    assertOwnershipMultiDatastream(entity, principal);
+                    assertOwnershipMultiDatastream(pm, entity, principal);
+
+                    if (pluginPlus.isEnforceLicensingEnabled())
+                        assertMultiDatastreamLicense(pm, entity);
 
                     return true;
                 }
@@ -96,8 +99,10 @@ public class TableHelperMultiDatastream extends TableHelper {
                         return;
 
                     Entity multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, entity.getId());
-                    assertOwnershipMultiDatastream(multiDatastream, principal);
+                    assertOwnershipMultiDatastream(pm, multiDatastream, principal);
 
+                    if (pluginPlus.isEnforceLicensingEnabled())
+                        assertMultiDatastreamLicense(pm, entity);
                 }
             });
 
@@ -115,7 +120,7 @@ public class TableHelperMultiDatastream extends TableHelper {
                         return;
 
                     Entity multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, ParserUtils.idFromObject((entityId)));
-                    assertOwnershipMultiDatastream(multiDatastream, principal);
+                    assertOwnershipMultiDatastream(pm, multiDatastream, principal);
                 }
             });
 

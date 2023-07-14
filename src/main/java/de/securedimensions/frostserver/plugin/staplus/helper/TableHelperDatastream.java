@@ -71,10 +71,10 @@ public class TableHelperDatastream extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                assertOwnershipDatastream(entity, principal);
+                assertOwnershipDatastream(pm, entity, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
-                    assertDatastreamLicense(entity);
+                    assertDatastreamLicense(pm, entity);
 
                 return true;
             }
@@ -92,10 +92,10 @@ public class TableHelperDatastream extends TableHelper {
                     return;
 
                 Entity datastream = pm.get(pluginCoreModel.etDatastream, entityId);
-                assertOwnershipDatastream(datastream, principal);
+                assertOwnershipDatastream(pm, datastream, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
-                    assertDatastreamLicense(datastream);
+                    assertDatastreamLicense(pm, datastream);
 
             }
         });
@@ -114,7 +114,7 @@ public class TableHelperDatastream extends TableHelper {
                     return;
 
                 Entity datastream = pm.get(pluginCoreModel.etDatastream, entityId);
-                assertOwnershipDatastream(datastream, principal);
+                assertOwnershipDatastream(pm, datastream, principal);
 
             }
         });

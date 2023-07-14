@@ -79,8 +79,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/update",
             "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/delete",
             "https://github.com/securedimensions/FROST-Server-PLUS/BUSINESS-LOGIC.md");
-    private static final String REQUIREMENT_ENFORCE_OWNERSHIP = "https://www.secure-dimensions.de/staplus#FROST-Server-EnforceOwnership";
-    private static final String REQUIREMENT_ENFORCE_LICENSING = "https://www.secure-dimensions.de/staplus#FROST-Server-EnforceLicensing";
+    private static final String REQUIREMENT_ENFORCE_OWNERSHIP = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceOwnership";
+    private static final String REQUIREMENT_ENFORCE_LICENSING = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceLicensing";
+    private static final String REQUIREMENT_ENFORCE_GROUP_LICENSING = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceGroupLicensing";
     /**
      * Class License
      */
@@ -148,10 +149,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<TimeInstant> epProjectStartTime = new EntityPropertyMain<>("startTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
     public final EntityPropertyMain<TimeInstant> epProjectEndTime = new EntityPropertyMain<>("endTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
     public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeSimplePrimitive.EDM_STRING, false, true);
-    public final NavigationPropertyEntity npProjectDatastream = new NavigationPropertyEntity("Project", false);
-    public final NavigationPropertyEntitySet npDatastreamsProject = new NavigationPropertyEntitySet("Datastreams", npProjectDatastream);
-    public final NavigationPropertyEntity npProjectMultiDatastream = new NavigationPropertyEntity("Project", false);
-    public final NavigationPropertyEntitySet npMultiDatastreamsProject = new NavigationPropertyEntitySet("MultiDatastreams", npProjectMultiDatastream);
+    public final NavigationPropertyEntity npProjectDatastreams = new NavigationPropertyEntity("Project", false);
+    public final NavigationPropertyEntitySet npDatastreamsProject = new NavigationPropertyEntitySet("Datastreams", npProjectDatastreams);
+    public final NavigationPropertyEntity npProjectMultiDatastreams = new NavigationPropertyEntity("Project", false);
+    public final NavigationPropertyEntitySet npMultiDatastreamsProject = new NavigationPropertyEntitySet("MultiDatastreams", npProjectMultiDatastreams);
     public final EntityType etProject = new EntityType("Project", "Projects");
     public final NavigationPropertyEntity npPartyProject = new NavigationPropertyEntity("Party", false);
     public final NavigationPropertyEntitySet npProjectsParty = new NavigationPropertyEntitySet("Parties", npPartyProject);
@@ -168,6 +169,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     private boolean enabled;
     private boolean enforceOwnership;
     private boolean enforceLicensing;
+    private boolean enforceGroupLicensing;
     private boolean fullyInitialised;
     private URL licenseDomain;
 
@@ -186,8 +188,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         enforceOwnership = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_OWNERSHIP, PluginPlusSettings.class);
 
         enforceLicensing = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_LICENSING, PluginPlusSettings.class);
+        enforceGroupLicensing = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_GROUP_LICENSING, PluginPlusSettings.class);
 
-        if (enforceLicensing) {
+        if (enforceLicensing || enforceGroupLicensing) {
             LOGGER.info("Setting plugins.plus.idType.license, using value 'String'.");
             pluginSettings.set(PluginPlusSettings.TAG_ID_TYPE_LICENSE, "String");
             try {
@@ -401,9 +404,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         npProjectsParty.setEntityType(etParty);
         etParty.registerProperty(npPartyProject);
 
-        npProjectDatastream.setEntityType(etProject);
+        npProjectDatastreams.setEntityType(etProject);
         npDatastreamsProject.setEntityType(pluginCoreModel.etDatastream);
-        pluginCoreModel.etDatastream.registerProperty(npProjectDatastream);
+        pluginCoreModel.etDatastream.registerProperty(npProjectDatastreams);
 
         etProject.registerProperty(npDatastreamsProject);
 
@@ -557,9 +560,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             /**
              * Class Project
              */
-            npProjectMultiDatastream.setEntityType(etProject);
+            npProjectMultiDatastreams.setEntityType(etProject);
             npMultiDatastreamsProject.setEntityType(pluginMultiDatastream.etMultiDatastream);
-            pluginMultiDatastream.etMultiDatastream.registerProperty(npProjectMultiDatastream);
+            pluginMultiDatastream.etMultiDatastream.registerProperty(npProjectMultiDatastreams);
 
             etProject.registerProperty(npMultiDatastreamsProject);
         }
@@ -591,6 +594,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
         if (this.enforceLicensing)
             extensionList.add(REQUIREMENT_ENFORCE_LICENSING);
+
+        if (this.enforceGroupLicensing)
+            extensionList.add(REQUIREMENT_ENFORCE_GROUP_LICENSING);
     }
 
     @Override
@@ -711,6 +717,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
     public boolean isEnforceLicensingEnabled() {
         return enforceLicensing;
+    }
+
+    public boolean isEnforceGroupLicensingEnabled() {
+        return enforceGroupLicensing;
     }
 
     public URL getLicenseDomain() {

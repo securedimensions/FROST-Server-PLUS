@@ -35,6 +35,8 @@ public final class PluginPlusSettings implements ConfigDefaults {
     public static final String TAG_ENABLE_ENFORCE_OWNERSHIP = "staplus.enable.enforceOwnership";
     @DefaultValueBoolean(false)
     public static final String TAG_ENABLE_ENFORCE_LICENSING = "staplus.enable.enforceLicensing";
+    @DefaultValueBoolean(false)
+    public static final String TAG_ENABLE_ENFORCE_GROUP_LICENSING = "staplus.enable.enforceGroupLicensing";
     @DefaultValue("https://creativecommons.org")
     public static final String TAG_ENABLE_LICENSE_DOMAIN = "staplus.licenseDomain";
     @DefaultValue("")

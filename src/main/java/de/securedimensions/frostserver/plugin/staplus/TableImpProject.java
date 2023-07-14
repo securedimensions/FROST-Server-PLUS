@@ -146,7 +146,7 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
                 .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(projectIdIdx)));
 
         // We add the relation to us from the Datastreams table.
-        tableDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectDatastream, tableDatastreams, this)
+        tableDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectDatastreams, tableDatastreams, this)
                 .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(projectIdIdx))
                 .setTargetFieldAccessor(TableImpProject::getId));
 
@@ -159,7 +159,7 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
                     .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(projectMDIdIdx)));
 
             // We add the relation to us from the MultiDatastreams table.
-            tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectMultiDatastream, tableMultiDatastreams, this)
+            tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectMultiDatastreams, tableMultiDatastreams, this)
                     .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(projectMDIdIdx))
                     .setTargetFieldAccessor(TableImpProject::getId));
         }
@@ -192,13 +192,13 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int projectIdIdx = tableDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
         tableDatastreams.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npProjectDatastream, table -> (TableField<Record, ?>) table.field(projectIdIdx));
+                .addEntry(pluginPLUS.npProjectDatastreams, table -> (TableField<Record, ?>) table.field(projectIdIdx));
 
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {
             final int projectMDIdIdx = tableMultiDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
             tableMultiDatastreams.getPropertyFieldRegistry()
-                    .addEntry(pluginPLUS.npProjectMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(projectMDIdIdx));
+                    .addEntry(pluginPLUS.npProjectMultiDatastreams, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(projectMDIdIdx));
         }
 
         // Register with Parties

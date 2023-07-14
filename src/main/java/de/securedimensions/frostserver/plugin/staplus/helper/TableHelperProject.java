@@ -76,7 +76,7 @@ public class TableHelperProject extends TableHelper {
                 assertOwnershipProject(pm, entity, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
-                    assertProjectLicense(entity);
+                    assertProjectLicense(pm, entity);
 
                 return true;
             }
@@ -100,7 +100,7 @@ public class TableHelperProject extends TableHelper {
                 assertOwnershipProject(pm, project, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled())
-                    assertProjectLicense(project);
+                    assertProjectLicense(pm, project);
 
             }
         });
