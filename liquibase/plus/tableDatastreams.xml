@@ -20,31 +20,22 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-05-12-PLUS-GROUPS_OBSERVATIONS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2021-05-19-PLUS-DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="GROUPS_OBSERVATIONS" />
-            </not>
+            <tableExists tableName="DATASTREAMS" />
         </preConditions>
 
-        <createTable tableName="GROUPS_OBSERVATIONS">
-            <column name="GROUP_ID" type="${idType-Group}">
+        <addColumn tableName="DATASTREAMS">
+            <column name="LICENSE_ID" type="${idType-License}">
                 <constraints nullable="true"/>
             </column>
-            <column name="OBSERVATION_ID" type="${idType-Observation}">
+            <column name="PARTY_ID" type="${idType-Party}">
                 <constraints nullable="true"/>
             </column>
-        </createTable>
-        
-        <addPrimaryKey columnNames="GROUP_ID, OBSERVATION_ID" constraintName="GROUPS_OBSERVATIONS_PKEY" tableName="GROUPS_OBSERVATIONS"/>
-        
-        <createIndex tableName="GROUPS_OBSERVATIONS" indexName="GROUPS_OBSERVATIONS_OBSERVATION_ID">
-            <column name="OBSERVATION_ID" />
-        </createIndex>
-        
-        <createIndex tableName="GROUPS_OBSERVATIONS" indexName="GROUPS_OBSERVATIONS_GROUP_ID">
-            <column name="GROUP_ID" />
-        </createIndex>
+            <column name="PROJECT_ID" type="${idType-Project}">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

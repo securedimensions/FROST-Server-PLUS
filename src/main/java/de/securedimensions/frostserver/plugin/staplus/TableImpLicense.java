@@ -18,6 +18,7 @@
 package de.securedimensions.frostserver.plugin.staplus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
@@ -144,32 +145,16 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
 
     private void initGroups(TableCollection tables) {
         TableImpGroups tableGroups = tables.getTableForClass(TableImpGroups.class);
-        final int licenseIdIdx = tableGroups.indexOf("LICENSE_ID");
-
         registerRelation(new RelationOneToMany<>(pluginPLUS.npGroupsLicense, this, tableGroups)
                 .setSourceFieldAccessor(TableImpLicense::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx)));
-
-        // We add the relation to us to the Groups table.
-        tableGroups.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseGroup, tableGroups, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
-                .setTargetFieldAccessor(TableImpLicense::getId));
-
+                .setTargetFieldAccessor(TableImpGroups::getLicenseId));
     }
 
     private void initProject(TableCollection tables) {
         TableImpProject tableProject = tables.getTableForClass(TableImpProject.class);
-        final int licenseIdIdx = tableProject.indexOf("LICENSE_ID");
-
         registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectsLicense, this, tableProject)
                 .setSourceFieldAccessor(TableImpLicense::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx)));
-
-        // We add the relation to us to the Project table.
-        tableProject.registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseProject, tableProject, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(licenseIdIdx))
-                .setTargetFieldAccessor(TableImpLicense::getId));
-
+                .setTargetFieldAccessor(TableImpProject::getLicenseId));
     }
 
     @Override
@@ -206,19 +191,6 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
                     .addEntry(pluginPLUS.npLicenseMultiDatastream, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(licenseMDIdIdx));
         }
 
-        TableImpGroups groupsTable = tables.getTableForClass(TableImpGroups.class);
-        if (groupsTable != null) {
-            final int licenseGroupsIdIdx = groupsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
-            groupsTable.getPropertyFieldRegistry()
-                    .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, ?>) table.field(licenseGroupsIdIdx));
-        }
-
-        TableImpProject projectTable = tables.getTableForClass(TableImpProject.class);
-        if (projectTable != null) {
-            final int licenseProjectIdIdx = projectTable.registerField(DSL.name("LICENSE_ID"), getIdType());
-            projectTable.getPropertyFieldRegistry()
-                    .addEntry(pluginPLUS.npLicenseProject, table -> (TableField<Record, ?>) table.field(licenseProjectIdIdx));
-        }
     }
 
     @Override
@@ -237,12 +209,12 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
     }
 
     @Override
-    public StaMainTable<TableImpLicense> asSecure(String name) {
+    public StaMainTable<TableImpLicense> asSecure(String name, PostgresPersistenceManager pm) {
         final SecurityTableWrapper securityWrapper = getSecurityWrapper();
         if (securityWrapper == null) {
             return as(name);
         }
-        final Table wrappedTable = securityWrapper.wrap(this);
+        final Table wrappedTable = securityWrapper.wrap(this, pm);
         return new TableImpLicense(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
     }
 

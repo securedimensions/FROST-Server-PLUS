@@ -19,10 +19,12 @@ package de.securedimensions.frostserver.plugin.staplus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.JsonValue;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.bindings.MomentBinding;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationManyToMany;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaTableAbstract;
@@ -38,7 +40,6 @@ import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableField;
-import org.jooq.TableLike;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
@@ -105,6 +106,10 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
      */
     public final TableField<Record, ?> colId = createField(DSL.name("ID"), getIdType(), this);
 
+    public final TableField<Record, ?> colPartyId;
+
+    public final TableField<Record, ?> colLicenseId;
+
     private final PluginPLUS pluginPLUS;
     private final PluginCoreModel pluginCoreModel;
 
@@ -117,20 +122,28 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpProject(DataType<?> idType, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
+    public TableImpProject(DataType<?> idType, DataType<?> idTypeParty, DataType<?> idTypeLicense, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
         super(idType, DSL.name("PROJECTS"), null, null);
         this.pluginPLUS = pluginProject;
         this.pluginCoreModel = pluginCoreModel;
+
+        colPartyId = createField(DSL.name("PARTY_ID"), idTypeParty.nullable(true));
+        colLicenseId = createField(DSL.name("LICENSE_ID"), idTypeLicense.nullable(true));
+
     }
 
-    private TableImpProject(Name alias, TableImpProject aliased, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
-        this(alias, aliased, aliased, pluginProject, pluginCoreModel);
+    private TableImpProject(Name alias, TableImpProject aliased, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel) {
+        this(alias, aliased, aliased, pluginPlus, pluginCoreModel);
     }
 
-    private TableImpProject(Name alias, TableImpProject aliased, Table updatedSql, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
+    private TableImpProject(Name alias, TableImpProject aliased, Table updatedSql, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel) {
         super(aliased.getIdType(), alias, aliased, updatedSql);
-        this.pluginPLUS = pluginProject;
+        this.pluginPLUS = pluginPlus;
         this.pluginCoreModel = pluginCoreModel;
+
+        colPartyId = createField(DSL.name("PARTY_ID"), aliased.colPartyId.getDataType().nullable(true));
+        colLicenseId = createField(DSL.name("LICENSE_ID"), aliased.colLicenseId.getDataType().nullable(true));
+
     }
 
     @Override
@@ -140,28 +153,44 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         final int projectIdIdx = tableDatastreams.indexOf("PROJECT_ID");
 
-        // Add relation to Datastreams table
-        registerRelation(new RelationOneToMany<>(pluginPLUS.npDatastreamsProject, this, tableDatastreams)
-                .setSourceFieldAccessor(TableImpProject::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(projectIdIdx)));
+        // We add the relation to Party table.
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyProject, this, tables.getTableForClass(TableImpParty.class))
+                .setSourceFieldAccessor(TableImpProject::getPartyId)
+                .setTargetFieldAccessor(TableImpParty::getId));
 
-        // We add the relation to us from the Datastreams table.
-        tableDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectDatastreams, tableDatastreams, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(projectIdIdx))
-                .setTargetFieldAccessor(TableImpProject::getId));
+        // We add the relation to License table.
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseProject, this, tables.getTableForClass(TableImpLicense.class))
+                .setSourceFieldAccessor(TableImpProject::getLicenseId)
+                .setTargetFieldAccessor(TableImpLicense::getId));
+
+        // Add relation to Datastreams table
+        final TableImpProjectsDatastreams tableProjectsDatastreams = tables.getTableForClass(TableImpProjectsDatastreams.class);
+        registerRelation(new RelationManyToMany<>(pluginPLUS.npDatastreamsProject, this, tableProjectsDatastreams, tableDatastreams)
+                .setSourceFieldAcc(TableImpProject::getId)
+                .setSourceLinkFieldAcc(TableImpProjectsDatastreams::getProjectId)
+                .setTargetLinkFieldAcc(TableImpProjectsDatastreams::getDatastreamId)
+                .setTargetFieldAcc(TableImpDatastreams::getId));
+        tableDatastreams.registerRelation(new RelationManyToMany<>(pluginPLUS.npProjectDatastreams, tableDatastreams, tableProjectsDatastreams, this)
+                .setSourceFieldAcc(TableImpDatastreams::getId)
+                .setSourceLinkFieldAcc(TableImpProjectsDatastreams::getDatastreamId)
+                .setTargetLinkFieldAcc(TableImpProjectsDatastreams::getProjectId)
+                .setTargetFieldAcc(TableImpProject::getId));
 
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {
-            // We add the relation to MultiDatastreams table
-            final int projectMDIdIdx = tableMultiDatastreams.indexOf("PROJECT_ID");
-            registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsProject, this, tableMultiDatastreams)
-                    .setSourceFieldAccessor(TableImpProject::getId)
-                    .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(projectMDIdIdx)));
+            // Add relation to Datastreams table
+            final TableImpProjectsMultiDatastreams tableProjectsMultiDatastreams = tables.getTableForClass(TableImpProjectsMultiDatastreams.class);
+            registerRelation(new RelationManyToMany<>(pluginPLUS.npMultiDatastreamsProject, this, tableProjectsMultiDatastreams, tableMultiDatastreams)
+                    .setSourceFieldAcc(TableImpProject::getId)
+                    .setSourceLinkFieldAcc(TableImpProjectsMultiDatastreams::getProjectId)
+                    .setTargetLinkFieldAcc(TableImpProjectsMultiDatastreams::getMultiDatastreamId)
+                    .setTargetFieldAcc(TableImpMultiDatastreams::getId));
+            tableMultiDatastreams.registerRelation(new RelationManyToMany<>(pluginPLUS.npProjectMultiDatastreams, tableMultiDatastreams, tableProjectsMultiDatastreams, this)
+                    .setSourceFieldAcc(TableImpMultiDatastreams::getId)
+                    .setSourceLinkFieldAcc(TableImpProjectsMultiDatastreams::getMultiDatastreamId)
+                    .setTargetLinkFieldAcc(TableImpProjectsMultiDatastreams::getProjectId)
+                    .setTargetFieldAcc(TableImpProject::getId));
 
-            // We add the relation to us from the MultiDatastreams table.
-            tableMultiDatastreams.registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectMultiDatastreams, tableMultiDatastreams, this)
-                    .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(projectMDIdIdx))
-                    .setTargetFieldAccessor(TableImpProject::getId));
         }
 
     }
@@ -186,27 +215,19 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
                 new ConverterTimeInstant<>(pluginPLUS.epProjectEndTime, table -> table.colEndTime));
 
         pfReg.addEntry(pluginPLUS.npDatastreamsProject, TableImpProject::getId);
-        pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId);
-
-        // We register a navigationProperty on the Datastreams table.
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
-        final int projectIdIdx = tableDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
         tableDatastreams.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npProjectDatastreams, table -> (TableField<Record, ?>) table.field(projectIdIdx));
+                .addEntry(pluginPLUS.npProjectDatastreams, TableImpDatastreams::getId);
 
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {
-            final int projectMDIdIdx = tableMultiDatastreams.registerField(DSL.name("PROJECT_ID"), getIdType());
+            pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId);
             tableMultiDatastreams.getPropertyFieldRegistry()
-                    .addEntry(pluginPLUS.npProjectMultiDatastreams, table -> (TableField<Record, ?>) ((TableLike<Record>) table).field(projectMDIdIdx));
+                    .addEntry(pluginPLUS.npProjectMultiDatastreams, TableImpMultiDatastreams::getId);
         }
-
-        // Register with Parties
-        pfReg.addEntry(pluginPLUS.npProjectsParty, TableImpProject::getId);
-
-        TableImpParty tableParties = tables.getTableForClass(TableImpParty.class);
-        tableParties.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npPartyProject, TableImpParty::getId);
+        pfReg.addEntry(pluginPLUS.npPartyProject, TableImpProject::getPartyId);
+        pfReg.addEntry(pluginPLUS.npLicenseProject, TableImpProject::getLicenseId);
+        pfReg.addEntry(pluginPLUS.npGroupsProject, TableImpProject::getId);
     }
 
     @Override
@@ -219,18 +240,26 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
         return colId;
     }
 
+    public TableField<Record, ?> getPartyId() {
+        return colPartyId;
+    }
+
+    public TableField<Record, ?> getLicenseId() {
+        return colLicenseId;
+    }
+
     @Override
     public TableImpProject as(Name alias) {
         return new TableImpProject(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
     }
 
     @Override
-    public StaMainTable<TableImpProject> asSecure(String name) {
+    public StaMainTable<TableImpProject> asSecure(String name, PostgresPersistenceManager pm) {
         final SecurityTableWrapper securityWrapper = getSecurityWrapper();
         if (securityWrapper == null) {
             return as(name);
         }
-        final Table wrappedTable = securityWrapper.wrap(this);
+        final Table wrappedTable = securityWrapper.wrap(this, pm);
         return new TableImpProject(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
     }
 

@@ -18,6 +18,7 @@
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.IdString;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
@@ -50,7 +51,7 @@ public class TableHelperParty extends TableHelper {
         tableParties.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity party,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -61,41 +62,101 @@ public class TableHelperParty extends TableHelper {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled()) {
                     // test if the authId is set
-                    if (!entity.isSetProperty(pluginPlus.epAuthId))
+                    if (!party.isSetProperty(pluginPlus.epAuthId))
                         return true;
 
                     // make sure that the Party's iot.id is equal to the authId
-                    String authID = entity.getProperty(pluginPlus.epAuthId);
-                    entity.setId(new IdString(authID));
+                    String authID = party.getProperty(pluginPlus.epAuthId);
+                    party.setId(new IdString(authID));
                     // If the Party already exist, we can skip processing
-                    return pm.get(pluginPlus.etParty, entity.getId()) == null;
+                    return pm.get(pluginPlus.etParty, party.getId()) == null;
                 }
 
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal)) {
                     // The admin has extra rights
-                    String authID = entity.getProperty(pluginPlus.epAuthId);
-                    entity.setId(new IdString(authID));
-                    Entity party = pm.get(pluginPlus.etParty, entity.getId());
+                    String authID = party.getProperty(pluginPlus.epAuthId);
+                    party.setId(new IdString(authID));
+                    party = pm.get(pluginPlus.etParty, party.getId());
                     // No need to insert the entity as it already exists. Just return the Id of the existing Party
-                    return party == null;
+                    return (party == null);
                 }
 
                 // We have a username available from the Principal
                 assertPrincipal(principal);
                 String userId = principal.getName();
 
-                if ((entity.isSetProperty(pluginPlus.epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty((pluginPlus.epAuthId))))) {
+                if ((party.isSetProperty(pluginPlus.epAuthId)) && (!userId.equalsIgnoreCase(party.getProperty((pluginPlus.epAuthId))))) {
                     // The authId is set by this plugin - it cannot be set via POSTed Party property authId
-                    throw new IllegalArgumentException("Party property authId cannot be set");
+                    throw new IllegalArgumentException("Party property authId must represent the acting user");
                 }
 
-                entity.setProperty(pluginPlus.epAuthId, userId);
-                entity.setId(new IdString(userId));
-                Entity party = pm.get(pluginPlus.etParty, entity.getId());
-                // No need to insert the entity as it already exists. Just return the Id of the existing Party
-                return party == null;
+                if (party.isSetProperty(pluginPlus.npDatastreamsParty)) {
+                    EntitySet ds = party.getProperty(pluginPlus.npDatastreamsParty);
+                    if (ds == null) {
+                        throw new IllegalArgumentException("Datastreams do not exist.");
+                    }
+                    for (Entity d : ds) {
+                        if (pluginPlus.isEnforceOwnershipEnabled()) {
+                            assertOwnershipDatastream(pm, d, principal);
+                        }
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertLicenseDatastream(pm, d);
+                            assertEmptyDatastream(pm, d);
+                        }
+                    }
+                } else if (party.isSetProperty(pluginPlus.npMultiDatastreamsParty)) {
+                    EntitySet mds = party.getProperty(pluginPlus.npMultiDatastreamsParty);
+                    if (mds == null) {
+                        throw new IllegalArgumentException("MultiDatastreams do not exist.");
+                    }
+                    for (Entity md : mds) {
+                        if (pluginPlus.isEnforceOwnershipEnabled()) {
+                            assertOwnershipMultiDatastream(pm, md, principal);
+                        }
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertLicenseMultiDatastream(pm, md);
+                            assertEmptyMultiDatastream(pm, md);
+                        }
+                    }
+                } else if (party.isSetProperty(pluginPlus.npProjectsParty)) {
+                    EntitySet ps = party.getProperty(pluginPlus.npProjectsParty);
+                    if (ps == null) {
+                        throw new IllegalArgumentException("Projects do not exist.");
+                    }
+                    for (Entity p : ps) {
+                        if (pluginPlus.isEnforceOwnershipEnabled()) {
+                            assertLicenseProject(pm, p);
+                        }
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertOwnershipProject(pm, p, principal);
+                            assertEmptyProject(pm, p);
+                        }
+                    }
+                } else if (party.isSetProperty(pluginPlus.npGroupsParty)) {
+                    EntitySet gs = party.getProperty(pluginPlus.npGroupsParty);
+                    if (gs == null) {
+                        throw new IllegalArgumentException("Groups do not exist.");
+                    }
+                    for (Entity g : gs) {
+                        if (pluginPlus.isEnforceOwnershipEnabled()) {
+                            assertLicenseGroup(pm, g);
+                        }
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertOwnershipGroup(pm, g, principal);
+                            assertEmptyGroup(pm, g);
+                        }
+                    }
+                }
+                //else
+                //  throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
+
+                party.setProperty(pluginPlus.epAuthId, userId);
+                party.setId(new IdString(userId));
+                party = pm.get(pluginPlus.etParty, party.getId());
+                // No need to insert the entity if it already exists:
+                return (party == null);
 
             }
         });
@@ -103,11 +164,11 @@ public class TableHelperParty extends TableHelper {
         tableParties.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+            public void updateInDatabase(PostgresPersistenceManager pm, Entity party, Id partyId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
+                //if (!pluginPlus.isEnforceOwnershipEnabled())
+                //return;
 
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
@@ -118,13 +179,73 @@ public class TableHelperParty extends TableHelper {
                 assertPrincipal(principal);
                 String userId = principal.getName();
 
-                if (!userId.equalsIgnoreCase(entity.getId().toString())) {
+                if (!userId.equalsIgnoreCase(partyId.toString())) {
                     // The authId is set by this plugin - it cannot be set via POSTed Party property authId
                     throw new ForbiddenException("Cannot update existing Party of another user");
                 }
 
-                entity.setProperty(pluginPlus.epAuthId, userId);
-                entity.setId(new IdString(userId));
+                if (party.isSetProperty(pluginPlus.npDatastreamsParty)) {
+                    EntitySet ds = party.getProperty(pluginPlus.npDatastreamsParty);
+                    if (ds == null) {
+                        throw new IllegalArgumentException("Datastreams do not exist.");
+                    }
+                    for (Entity d : ds) {
+                        if (pluginPlus.isEnforceOwnershipEnabled()) {
+                            assertOwnershipDatastream(pm, d, principal);
+                        }
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertLicenseDatastream(pm, d);
+                            assertEmptyDatastream(pm, d);
+                        }
+                    }
+                } else if (party.isSetProperty(pluginPlus.npMultiDatastreamsParty)) {
+                    EntitySet mds = party.getProperty(pluginPlus.npMultiDatastreamsParty);
+                    if (mds == null) {
+                        throw new IllegalArgumentException("MultiDatastreams do not exist.");
+                    }
+                    for (Entity md : mds) {
+                        if (pluginPlus.isEnforceOwnershipEnabled()) {
+                            assertOwnershipMultiDatastream(pm, md, principal);
+                        }
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertLicenseMultiDatastream(pm, md);
+                            assertEmptyMultiDatastream(pm, md);
+                        }
+                    }
+                } else if (party.isSetProperty(pluginPlus.npProjectsParty)) {
+                    EntitySet ps = party.getProperty(pluginPlus.npProjectsParty);
+                    if (ps == null) {
+                        throw new IllegalArgumentException("Projects do not exist.");
+                    }
+                    for (Entity p : ps) {
+                        if (pluginPlus.isEnforceOwnershipEnabled()) {
+                            assertLicenseProject(pm, p);
+                        }
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertOwnershipProject(pm, p, principal);
+                            assertEmptyProject(pm, p);
+                        }
+                    }
+                } else if (party.isSetProperty(pluginPlus.npGroupsParty)) {
+                    EntitySet gs = party.getProperty(pluginPlus.npGroupsParty);
+                    if (gs == null) {
+                        throw new IllegalArgumentException("Groups do not exist.");
+                    }
+                    for (Entity g : gs) {
+                        if (pluginPlus.isEnforceOwnershipEnabled()) {
+                            assertLicenseGroup(pm, g);
+                        }
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertOwnershipGroup(pm, g, principal);
+                            assertEmptyGroup(pm, g);
+                        }
+                    }
+                }
+                //else
+                //throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
+
+                party.setProperty(pluginPlus.epAuthId, userId);
+                party.setId(new IdString(userId));
             }
         });
 

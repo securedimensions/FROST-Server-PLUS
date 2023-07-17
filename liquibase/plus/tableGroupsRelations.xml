@@ -20,29 +20,29 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-05-12-PLUS-GROUPS_OBSERVATIONS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2021-05-17-PLUS-GROUPS_RELATIONS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="GROUPS_OBSERVATIONS" />
+                <tableExists tableName="GROUPS_RELATIONS" />
             </not>
         </preConditions>
-
-        <createTable tableName="GROUPS_OBSERVATIONS">
+        
+        <createTable tableName="GROUPS_RELATIONS">
             <column name="GROUP_ID" type="${idType-Group}">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
-            <column name="OBSERVATION_ID" type="${idType-Observation}">
-                <constraints nullable="true"/>
+            <column name="RELATION_ID" type="${idType-Relation}">
+                <constraints nullable="false"/>
             </column>
         </createTable>
         
-        <addPrimaryKey columnNames="GROUP_ID, OBSERVATION_ID" constraintName="GROUPS_OBSERVATIONS_PKEY" tableName="GROUPS_OBSERVATIONS"/>
+        <addPrimaryKey columnNames="GROUP_ID, RELATION_ID" constraintName="GROUPS_RELATIONS_PKEY" tableName="GROUPS_RELATIONS"/>
         
-        <createIndex tableName="GROUPS_OBSERVATIONS" indexName="GROUPS_OBSERVATIONS_OBSERVATION_ID">
-            <column name="OBSERVATION_ID" />
+        <createIndex tableName="GROUPS_RELATIONS" indexName="GROUPS_RELATIONS_RELATION_ID">
+            <column name="RELATION_ID" />
         </createIndex>
         
-        <createIndex tableName="GROUPS_OBSERVATIONS" indexName="GROUPS_OBSERVATIONS_GROUP_ID">
+        <createIndex tableName="GROUPS_RELATIONS" indexName="GROUPS_RELATIONS_GROUP_ID">
             <column name="GROUP_ID" />
         </createIndex>
     </changeSet>

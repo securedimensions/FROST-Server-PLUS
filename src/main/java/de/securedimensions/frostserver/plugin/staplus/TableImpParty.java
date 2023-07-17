@@ -18,6 +18,7 @@
 package de.securedimensions.frostserver.plugin.staplus;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.relations.RelationOneToMany;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.StaMainTable;
@@ -107,6 +108,17 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         TableImpGroups tableGroups = tables.getTableForClass(TableImpGroups.class);
         TableImpThings tableThings = tables.getTableForClass(TableImpThings.class);
+        TableImpProject tableProjects = tables.getTableForClass(TableImpProject.class);
+
+        // We add relation to the Groups table
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npGroupsParty, this, tableGroups)
+                .setSourceFieldAccessor(TableImpParty::getId)
+                .setTargetFieldAccessor(TableImpGroups::getPartyId));
+
+        // We add relation to the Projects table
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectsParty, this, tableProjects)
+                .setSourceFieldAccessor(TableImpParty::getId)
+                .setTargetFieldAccessor(TableImpProject::getPartyId));
 
         // We add relation to the Things table
         registerRelation(new RelationOneToMany<>(pluginPLUS.npThingsParty, this, tableThings)
@@ -118,17 +130,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
                 .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(tableThings.indexOf("PARTY_ID")))
                 .setTargetFieldAccessor(TableImpParty::getId));
 
-        // We add relation to the Groups table
-        registerRelation(new RelationOneToMany<>(pluginPLUS.npGroupsParty, this, tableGroups)
-                .setSourceFieldAccessor(TableImpParty::getId)
-                .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(tableGroups.indexOf("PARTY_ID"))));
-
-        // We add the relation to us from the Things table.
-        tableGroups.registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyGroup, tableGroups, this)
-                .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(tableGroups.indexOf("PARTY_ID")))
-                .setTargetFieldAccessor(TableImpParty::getId));
-
-        // We add relation to the Datstreams table
+        // We add relation to the Datastreams table
         registerRelation(new RelationOneToMany<>(pluginPLUS.npDatastreamsParty, this, tableDatastreams)
                 .setSourceFieldAccessor(TableImpParty::getId)
                 .setTargetFieldAccessor(table -> (TableField<Record, ?>) table.field(tableDatastreams.indexOf("PARTY_ID"))));
@@ -167,6 +169,9 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         // We register a navigationProperty on the Groups table.
         pfReg.addEntry(pluginPLUS.npGroupsParty, TableImpParty::getId);
 
+        // We register a navigationProperty on the Projects table.
+        pfReg.addEntry(pluginPLUS.npProjectsParty, TableImpParty::getId);
+
         // We register a navigationProperty on the Datastreams table.
         pfReg.addEntry(pluginPLUS.npDatastreamsParty, TableImpParty::getId);
 
@@ -191,12 +196,12 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
     }
 
     @Override
-    public StaMainTable<TableImpParty> asSecure(String name) {
+    public StaMainTable<TableImpParty> asSecure(String name, PostgresPersistenceManager pm) {
         final SecurityTableWrapper securityWrapper = getSecurityWrapper();
         if (securityWrapper == null) {
             return as(name);
         }
-        final Table wrappedTable = securityWrapper.wrap(this);
+        final Table wrappedTable = securityWrapper.wrap(this, pm);
         return new TableImpParty(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
     }
 

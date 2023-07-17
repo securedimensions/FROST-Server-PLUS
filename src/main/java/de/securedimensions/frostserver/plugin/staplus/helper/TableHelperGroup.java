@@ -28,11 +28,9 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpGroups;
-import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
 import java.security.Principal;
 import java.util.Map;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 public class TableHelperGroup extends TableHelper {
 
@@ -42,12 +40,6 @@ public class TableHelperGroup extends TableHelper {
         super(settings, ppm);
 
         this.tableGroups = tables.getTableForClass(TableImpGroups.class);
-
-        final int partyGroupsIdIdx = tableGroups
-                .registerField(DSL.name("PARTY_ID"), tables.getTableForClass(TableImpParty.class).getIdType());
-        tableGroups.getPropertyFieldRegistry()
-                .addEntry(pluginPlus.npPartyGroup, table -> table.field(partyGroupsIdIdx));
-
     }
 
     @Override

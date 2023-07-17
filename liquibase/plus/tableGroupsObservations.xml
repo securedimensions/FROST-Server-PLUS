@@ -29,10 +29,10 @@
 
         <createTable tableName="GROUPS_OBSERVATIONS">
             <column name="GROUP_ID" type="${idType-Group}">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="OBSERVATION_ID" type="${idType-Observation}">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
         </createTable>
         

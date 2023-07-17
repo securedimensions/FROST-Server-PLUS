@@ -84,6 +84,7 @@ public abstract class PartyTests extends AbstractTestClass {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
         SERVER_PROPERTIES.put("plugins.staplus.enable", true);
         SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", false);
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");

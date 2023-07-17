@@ -499,7 +499,7 @@ public abstract class TableHelper {
         if (project.getId() != null) {
             Id id = ParserUtils.idFromObject(project.getId());
             ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Projects(" + id.getUrl() + ")");
-            Query query = QueryParser.parseQuery("$expand=Datastream($top=0;$count=true),MultiDatastream($top=0;$count=true)", pm.getCoreSettings(), rp);
+            Query query = QueryParser.parseQuery("$expand=Datastreams($top=0;$count=true),MultiDatastreams($top=0;$count=true)", pm.getCoreSettings(), rp);
             query.validate();
             project = (Entity) pm.get(rp, query);
             if (project.getProperty(pluginPlus.npDatastreamsProject).getCount() != 0) {

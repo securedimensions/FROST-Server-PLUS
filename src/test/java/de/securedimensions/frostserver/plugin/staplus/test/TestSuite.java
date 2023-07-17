@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
     MultiDatastreamTests.Imp11Tests.class,
     GroupTests.Imp10Tests.class,
     GroupTests.Imp11Tests.class,
+    ProjectTests.Imp10Tests.class,
+    ProjectTests.Imp11Tests.class,
     ThingTests.Imp10Tests.class,
     ThingTests.Imp11Tests.class,
     ObservationTests.Imp10Tests.class,

@@ -50,15 +50,11 @@ public class TableHelperLicense extends TableHelper {
             "https://creativecommons.org/licenses/by-nd/3.0/deed.en",
             "https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en");
 
-    static final List<String> LICENSE_IDS = Arrays.asList(
-            "CC_PD", "CC_BY", "CC_BY_NC", "CC_BY_SA", "CC_BY_NC_SA", "CC_BY_ND", "CC_BY_NC_ND");
-
     public TableHelperLicense(CoreSettings settings, PostgresPersistenceManager ppm) {
         super(settings, ppm);
 
         this.tableLicenses = tables.getTableForClass(TableImpLicense.class);
         this.pluginPlus = settings.getPluginManager().getPlugin(PluginPLUS.class);
-
     }
 
     @Override
@@ -131,7 +127,7 @@ public class TableHelperLicense extends TableHelper {
                         assertEmptyGroup(pm, g);
                     }
                 } else
-                    throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
+                    throw new IllegalArgumentException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
 
                 return true;
             }
@@ -151,8 +147,8 @@ public class TableHelperLicense extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                if (LICENSE_IDS.contains(license.getId().getValue()))
-                    throw new ForbiddenException("System license cannot be updated.");
+                //if (LICENSE_IDS.contains(license.getId().getValue()))
+                //throw new ForbiddenException("System license cannot be updated.");
 
                 if (license.isSetProperty(pluginPlus.npDatastreamsLicense)) {
                     EntitySet ds = license.getProperty(pluginPlus.npDatastreamsLicense);

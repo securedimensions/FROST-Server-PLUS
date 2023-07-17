@@ -82,6 +82,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     private static final String REQUIREMENT_ENFORCE_OWNERSHIP = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceOwnership";
     private static final String REQUIREMENT_ENFORCE_LICENSING = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceLicensing";
     private static final String REQUIREMENT_ENFORCE_GROUP_LICENSING = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceGroupLicensing";
+
+    public static final List<String> LICENSE_IDS = Arrays.asList(
+            "CC_PD", "CC_BY", "CC_BY_NC", "CC_BY_SA", "CC_BY_NC_SA", "CC_BY_ND", "CC_BY_NC_ND");
+
     /**
      * Class License
      */
@@ -108,11 +112,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<String> epGroupPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeSimplePrimitive.EDM_STRING, false, true);
     public final EntityPropertyMain<Map<String, Object>> epGroupDataQuality = new EntityPropertyMain<>("dataQuality", TypeComplex.STA_MAP, false, true);
     public final NavigationPropertyEntitySet npObservationGroups = new NavigationPropertyEntitySet("Groups");
+    public final NavigationPropertyEntitySet npObservationsGroup = new NavigationPropertyEntitySet("Observations", npObservationGroups);
     public final NavigationPropertyEntitySet npRelationGroups = new NavigationPropertyEntitySet("Groups");
-    public final NavigationPropertyEntitySet npPartyGroups = new NavigationPropertyEntitySet("Parties");
-    public final NavigationPropertyEntitySet npObservations = new NavigationPropertyEntitySet("Observations", npObservationGroups);
-    public final NavigationPropertyEntitySet npRelations = new NavigationPropertyEntitySet("Relations", npRelationGroups);
-    public final NavigationPropertyEntitySet npParties = new NavigationPropertyEntitySet("Parties", npPartyGroups);
+    public final NavigationPropertyEntitySet npRelationsGroup = new NavigationPropertyEntitySet("Relations", npRelationGroups);
     public final EntityType etGroup = new EntityType("Group", "Groups");
     /**
      * Class Relation
@@ -149,13 +151,17 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<TimeInstant> epProjectStartTime = new EntityPropertyMain<>("startTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
     public final EntityPropertyMain<TimeInstant> epProjectEndTime = new EntityPropertyMain<>("endTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
     public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeSimplePrimitive.EDM_STRING, false, true);
-    public final NavigationPropertyEntity npProjectDatastreams = new NavigationPropertyEntity("Project", false);
+    public final NavigationPropertyEntitySet npProjectDatastreams = new NavigationPropertyEntitySet("Projects");
     public final NavigationPropertyEntitySet npDatastreamsProject = new NavigationPropertyEntitySet("Datastreams", npProjectDatastreams);
-    public final NavigationPropertyEntity npProjectMultiDatastreams = new NavigationPropertyEntity("Project", false);
+    public final NavigationPropertyEntitySet npProjectMultiDatastreams = new NavigationPropertyEntitySet("Projects");
     public final NavigationPropertyEntitySet npMultiDatastreamsProject = new NavigationPropertyEntitySet("MultiDatastreams", npProjectMultiDatastreams);
     public final EntityType etProject = new EntityType("Project", "Projects");
     public final NavigationPropertyEntity npPartyProject = new NavigationPropertyEntity("Party", false);
-    public final NavigationPropertyEntitySet npProjectsParty = new NavigationPropertyEntitySet("Parties", npPartyProject);
+    public final NavigationPropertyEntitySet npProjectsParty = new NavigationPropertyEntitySet("Projects", npPartyProject);
+
+    public final NavigationPropertyEntitySet npProjectsGroup = new NavigationPropertyEntitySet("Projects");
+    public final NavigationPropertyEntitySet npGroupsProject = new NavigationPropertyEntitySet("Groups", npProjectsGroup);
+
     // Type IDs
     public EntityPropertyMain<?> epIdGroup;
     public EntityPropertyMain<?> epIdLicense;
@@ -212,6 +218,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
          * Class License
          */
         epIdLicense = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeLicense)).setAliases("id");
+        npDatastreamsLicense.setEntityType(pluginCoreModel.etDatastream);
+        npGroupsLicense.setEntityType(etGroup);
+        npProjectsLicense.setEntityType(etProject);
         etLicense
                 .registerProperty(epIdLicense)
                 .registerProperty(pluginCoreModel.epName)
@@ -221,17 +230,35 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epLicenseAttributionText)
                 .registerProperty(npDatastreamsLicense)
                 .registerProperty(npGroupsLicense)
-                .registerProperty(npProjectsLicense);
+                .registerProperty(npProjectsLicense)
+                .addCreateValidator(etLicense.entityName + ".createValidator", (entity) -> {
+
+                    if (!enforceLicensing)
+                        return;
+
+                    if (LICENSE_IDS.contains(entity.getId().getValue()))
+                        throw new ForbiddenException("License with this `id` cannot be created.");
+                })
+                .addUpdateValidator(etParty.entityName + ".updateValidator", (entity) -> {
+
+                    if (!enforceLicensing)
+                        return;
+
+                    if (LICENSE_IDS.contains(entity.getId().getValue()))
+                        throw new ForbiddenException("License with this `id` cannot be updated.");
+                });
 
         npLicenseDatastream.setEntityType(etLicense);
-        npDatastreamsLicense.setEntityType(pluginCoreModel.etDatastream);
-        pluginCoreModel.etDatastream
-                .registerProperty(npLicenseDatastream);
+        pluginCoreModel.etDatastream.registerProperty(npLicenseDatastream);
 
         /**
          * Class Party
          */
         epIdParty = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeParty)).setAliases("id");
+        npThingsParty.setEntityType(pluginCoreModel.etThing);
+        npGroupsParty.setEntityType(etGroup);
+        npProjectsParty.setEntityType(etProject);
+        npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
         etParty
                 .registerProperty(epIdParty)
                 .registerProperty(epPartyDescription)
@@ -240,6 +267,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epPartyRole)
                 .registerProperty(npThingsParty)
                 .registerProperty(npGroupsParty)
+                .registerProperty(npProjectsParty)
                 .registerProperty(npDatastreamsParty)
                 .addCreateValidator(etParty.entityName + ".createValidator", (entity) -> {
 
@@ -334,12 +362,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
                 });
 
-        npThingsParty.setEntityType(pluginCoreModel.etThing);
-
-        npPartyGroup.setEntityType(etParty);
-        etGroup.registerProperty(npPartyGroup);
-        npGroupsParty.setEntityType(etGroup);
-
         /**
          * Class Datastream
          */
@@ -379,12 +401,14 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
                 });
 
-        npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
-
         /**
          * Class Project
          */
         epIdProject = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeProject)).setAliases("id");
+        npLicenseProject.setEntityType(etLicense);
+        npPartyProject.setEntityType(etParty);
+        npDatastreamsProject.setEntityType(pluginCoreModel.etDatastream);
+        npGroupsProject.setEntityType(etGroup);
         etProject
                 .registerProperty(epIdProject)
                 .registerProperty(pluginCoreModel.epName)
@@ -398,22 +422,53 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epProjectEndTime)
                 .registerProperty(epUrl)
                 .registerProperty(npLicenseProject)
-                .registerProperty(npPartyProject);
+                .registerProperty(npPartyProject)
+                .registerProperty(npDatastreamsProject)
+                .registerProperty(npGroupsProject)
+                .addCreateValidator(etProject.entityName + ".createValidator", (entity) -> {
 
-        npPartyProject.setEntityType(etProject);
-        npProjectsParty.setEntityType(etParty);
-        etParty.registerProperty(npPartyProject);
+                    if (!enforceOwnership)
+                        return;
+
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+
+                    if (isAdmin(principal))
+                        return;
+
+                    assertOwnership(entity, entity.getProperty(npPartyProject), principal);
+
+                })
+                .addUpdateValidator(etProject.entityName + ".updateValidator", (entity) -> {
+
+                    if (!enforceOwnership)
+                        return;
+
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+
+                    if (isAdmin(principal))
+                        return;
+
+                    assertOwnership(entity, entity.getProperty(npPartyProject), principal);
+
+                });
 
         npProjectDatastreams.setEntityType(etProject);
-        npDatastreamsProject.setEntityType(pluginCoreModel.etDatastream);
         pluginCoreModel.etDatastream.registerProperty(npProjectDatastreams);
 
-        etProject.registerProperty(npDatastreamsProject);
+        if (pluginMultiDatastream.isEnabled()) {
+            etProject.registerProperty(npMultiDatastreamsProject);
+            npProjectMultiDatastreams.setEntityType(etProject);
+            npMultiDatastreamsProject.setEntityType(pluginMultiDatastream.etMultiDatastream);
+            pluginMultiDatastream.etMultiDatastream.registerProperty(npProjectMultiDatastreams);
+        }
 
         /**
          * Class Group
          */
         epIdGroup = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeGroup)).setAliases("id");
+        npPartyGroup.setEntityType(etParty);
+        npLicenseGroup.setEntityType(etLicense);
+        npProjectsGroup.setEntityType(etProject);
         etGroup
                 .registerProperty(epIdGroup)
                 .registerProperty(pluginCoreModel.epName)
@@ -425,10 +480,11 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epGroupTermsOfUse)
                 .registerProperty(epGroupPrivacyPolicy)
                 .registerProperty(epGroupDataQuality)
-                .registerProperty(npObservations)
-                .registerProperty(npRelations)
+                .registerProperty(npObservationsGroup)
+                .registerProperty(npRelationsGroup)
                 .registerProperty(npLicenseGroup)
                 .registerProperty(npPartyGroup)
+                .registerProperty(npProjectsGroup)
                 .addCreateValidator(etGroup.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
@@ -456,9 +512,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
                 });
 
-        npLicenseGroup.setEntityType(etLicense);
-        npGroupsLicense.setEntityType(etGroup);
-
         npObservationGroups.setEntityType(etGroup);
         pluginCoreModel.etObservation.registerProperty(npObservationGroups);
 
@@ -466,6 +519,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
          * Class Relation
          */
         epIdRelation = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeRelation)).setAliases("id");
+        npSubjectRelation.setEntityType(pluginCoreModel.etObservation);
+        npObjectRelation.setEntityType(pluginCoreModel.etObservation);
+        npRelationGroups.setEntityType(etGroup);
         etRelation
                 .registerProperty(epIdRelation)
                 .registerProperty(pluginCoreModel.epDescription)
@@ -476,14 +532,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(npObjectRelation)
                 .registerProperty(npRelationGroups);
 
-        npSubjectRelation.setEntityType(pluginCoreModel.etObservation);
         npSubjectsObservation.setEntityType(etRelation);
-
-        npObjectRelation.setEntityType(pluginCoreModel.etObservation);
         npObjectsObservation.setEntityType(etRelation);
-
-        npRelationGroups.setEntityType(etGroup);
-        npRelations.setEntityType(etRelation);
+        npRelationsGroup.setEntityType(etRelation);
 
         // link subject and object to Relations
         pluginCoreModel.etObservation
@@ -626,6 +677,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             final DataType dataTypeParty = ppm.getDataTypeFor(plusSettings.idTypeParty);
             final DataType dataTypeProject = ppm.getDataTypeFor(plusSettings.idTypeProject);
             final DataType dataTypeObservation = tableCollection.getTableForType(pluginCoreModel.etObservation).getId().getDataType();
+            final DataType dataTypeDatastream = tableCollection.getTableForType(pluginCoreModel.etDatastream).getId().getDataType();
             /**
              * Class License
              */
@@ -634,9 +686,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             /**
              * Class Group
              */
-            tableCollection.registerTable(etGroup, new TableImpGroups(dataTypeGroup, this, pluginCoreModel, pluginMultiDatastream));
+            tableCollection.registerTable(etGroup, new TableImpGroups(dataTypeGroup, dataTypeParty, dataTypeLicense, this, pluginCoreModel, pluginMultiDatastream));
             tableCollection.registerTable(new TableImpGroupsObservations(dataTypeGroup, dataTypeObservation));
             tableCollection.registerTable(new TableImpGroupsRelations(dataTypeGroup, dataTypeRelation));
+            tableCollection.registerTable(new TableImpGroupsProjects(dataTypeGroup, dataTypeProject));
 
             /**
              * Class Relation
@@ -651,7 +704,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             /**
              * Class Project
              */
-            tableCollection.registerTable(etProject, new TableImpProject(dataTypeProject, this, pluginCoreModel));
+            tableCollection.registerTable(etProject, new TableImpProject(dataTypeProject, dataTypeParty, dataTypeLicense, this, pluginCoreModel));
+            tableCollection.registerTable(new TableImpProjectsDatastreams(dataTypeProject, dataTypeDatastream));
+            if (pluginMultiDatastream.isEnabled()) {
+                final DataType dataTypeMultiDatastream = tableCollection.getTableForType(pluginMultiDatastream.etMultiDatastream).getId().getDataType();
+                tableCollection.registerTable(new TableImpProjectsMultiDatastreams(dataTypeProject, dataTypeMultiDatastream));
+            }
 
             /*
              * Table Helpers

@@ -27,12 +27,10 @@ import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
 import de.securedimensions.frostserver.plugin.staplus.TableImpProject;
 import java.security.Principal;
 import java.util.Map;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 public class TableHelperProject extends TableHelper {
 
@@ -42,12 +40,6 @@ public class TableHelperProject extends TableHelper {
         super(settings, ppm);
 
         this.tableProject = tables.getTableForClass(TableImpProject.class);
-
-        final int partyProjectsIdIdx = tableProject
-                .registerField(DSL.name("PARTY_ID"), tables.getTableForClass(TableImpParty.class).getIdType());
-        tableProject.getPropertyFieldRegistry()
-                .addEntry(pluginPlus.npPartyProject, table -> table.field(partyProjectsIdIdx));
-
     }
 
     @Override

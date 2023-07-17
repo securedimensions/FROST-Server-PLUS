@@ -20,30 +20,30 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-05-12-PLUS-GROUPS_OBSERVATIONS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-07-17-PLUS-PROJECTS_MULTI_DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="GROUPS_OBSERVATIONS" />
+                <tableExists tableName="PROJECTS_MULTI_DATASTREAMS" />
             </not>
         </preConditions>
 
-        <createTable tableName="GROUPS_OBSERVATIONS">
-            <column name="GROUP_ID" type="${idType-Group}">
+        <createTable tableName="PROJECTS_MULTI_DATASTREAMS">
+            <column name="PROJECT_ID" type="${idType-Project}">
                 <constraints nullable="true"/>
             </column>
-            <column name="OBSERVATION_ID" type="${idType-Observation}">
+            <column name="MULTI_DATASTREAM_ID" type="${idType-MultiDatastream}">
                 <constraints nullable="true"/>
             </column>
         </createTable>
         
-        <addPrimaryKey columnNames="GROUP_ID, OBSERVATION_ID" constraintName="GROUPS_OBSERVATIONS_PKEY" tableName="GROUPS_OBSERVATIONS"/>
+        <addPrimaryKey columnNames="PROJECT_ID, MULTI_DATASTREAM_ID" constraintName="PROJECTS_MULTI_DATASTREAMS_PKEY" tableName="PROJECTS_MULTI_DATASTREAMS"/>
         
-        <createIndex tableName="GROUPS_OBSERVATIONS" indexName="GROUPS_OBSERVATIONS_OBSERVATION_ID">
-            <column name="OBSERVATION_ID" />
+        <createIndex tableName="PROJECTS_MULTI_DATASTREAMS" indexName="PROJECTS_MULTI_DATASTREAMS_PROJECT_ID">
+            <column name="PROJECT_ID" />
         </createIndex>
         
-        <createIndex tableName="GROUPS_OBSERVATIONS" indexName="GROUPS_OBSERVATIONS_GROUP_ID">
-            <column name="GROUP_ID" />
+        <createIndex tableName="PROJECTS_MULTI_DATASTREAMS" indexName="PROJECTS_MULTI_DATASTREAMS_MULTI_DATASTREAM_ID">
+            <column name="MULTI_DATASTREAM_ID" />
         </createIndex>
     </changeSet>
 

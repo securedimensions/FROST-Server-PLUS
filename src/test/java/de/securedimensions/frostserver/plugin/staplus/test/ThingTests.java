@@ -302,6 +302,7 @@ public abstract class ThingTests extends AbstractTestClass {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
         SERVER_PROPERTIES.put("plugins.staplus.enable", true);
         SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", false);
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp

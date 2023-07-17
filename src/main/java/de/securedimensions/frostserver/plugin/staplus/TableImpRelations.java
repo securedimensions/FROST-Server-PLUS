@@ -157,6 +157,8 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
         pfReg.addEntry(pluginPLUS.npSubjectRelation, TableImpRelations::getSubjectId);
         pfReg.addEntry(pluginPLUS.npObjectRelation, TableImpRelations::getObjectId);
 
+        pfReg.addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId);
+
         // We register a navigationProperty for Subject on the Observations table.
         tableObservations.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId);
@@ -202,12 +204,12 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     }
 
     @Override
-    public StaMainTable<TableImpRelations> asSecure(String name) {
+    public StaMainTable<TableImpRelations> asSecure(String name, PostgresPersistenceManager pm) {
         final SecurityTableWrapper securityWrapper = getSecurityWrapper();
         if (securityWrapper == null) {
             return as(name);
         }
-        final Table wrappedTable = securityWrapper.wrap(this);
+        final Table wrappedTable = securityWrapper.wrap(this, pm);
         return new TableImpRelations(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
     }
 

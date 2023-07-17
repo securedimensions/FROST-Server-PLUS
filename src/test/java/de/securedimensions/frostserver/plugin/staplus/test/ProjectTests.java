@@ -36,32 +36,28 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tests for the Group class properties. According to the ownership concept, a
- * Group's properties can only be changed by the user that 'owns' the Group
+ * Tests for the Project class properties. According to the ownership concept, a
+ * Project's properties can only be changed by the user that 'owns' the Project
  * instance. That user has the same UUID as the Party's authId property.
  *
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class GroupTests extends AbstractTestClass {
+public abstract class ProjectTests extends AbstractTestClass {
 
-    public static class Imp10Tests extends GroupTests {
+    public static class Imp10Tests extends ProjectTests {
 
         public Imp10Tests() {
             super(ServerVersion.v_1_0);
         }
     }
 
-    public static class Imp11Tests extends GroupTests {
+    public static class Imp11Tests extends ProjectTests {
 
         public Imp11Tests() {
             super(ServerVersion.v_1_1);
@@ -71,22 +67,22 @@ public abstract class GroupTests extends AbstractTestClass {
     /**
      * The logger for this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(GroupTests.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectTests.class);
 
     private static final long serialVersionUID = 1639739965;
 
-    private static final String GROUP_MUST_HAVE_A_PARTY = "Group must have a Party.";
+    private static final String PROJECT_MUST_HAVE_A_PARTY = "Project must have a Party.";
 
     private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE = "Admin should be able to create.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE = "Admin should be able to update.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE_PARTY = "Admin should be able to update Party.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE = "Admin should be able to delete.";
-    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY = "Same user should be able to create Group associated with Party in request.";
-    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY = "Same user should be able to create Group associated with existing Party.";
+    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY = "Same user should be able to create Project associated with Party in request.";
+    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY = "Same user should be able to create Project associated with existing Party.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE = "Same user should be able to update.";
     private static final String SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_OTHER_PARTY = "Same user should not be able to update with other existing Party.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_DELETE = "Same User should NOT be able to delete.";
-    private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create Group.";
+    private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create Project.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE = "Other user should NOT be able to update.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY = "Other user should NOT be able to update Party.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE = "Other user should NOT be able to delete.";
@@ -99,32 +95,37 @@ public abstract class GroupTests extends AbstractTestClass {
     public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
     public static final String ADMIN = "admin";
 
-    private static String GROUP = "{\n"
-            + "	\"name\": \"Group\",\n"
+    private static String PROJECT = "{\n"
+            + "	\"name\": \"Project\",\n"
             + "	\"description\": \"none\",\n"
-            + "	\"creationTime\": \"2021-12-12T12:12:12Z\"\n"
+            + "	\"creationTime\": \"2021-12-12T12:12:12Z\",\n"
+            + "	\"termsOfUse\": \"none\"\n"
             + "}";
 
-    private static String GROUP_INLINE_PARTY = "{\n"
-            + "	 \"name\": \"Group with Party inline\",\n"
+    private static String PROJECT_INLINE_PARTY = "{\n"
+            + "	 \"name\": \"Project with Party inline\",\n"
             + "  \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
-            + "    \"Party\": {\n"
+            + "	 \"termsOfUse\": \"none\",\n"
+            + "	 \"License\": {\"@iot.id\": \"CC_BY\"},\n"
+            + "  \"Party\": {\n"
             + "        \"displayName\": \"Long John Silver Citizen Scientist\",\n"
             + "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
             + "        \"role\": \"individual\",\n"
             + "        \"authId\": \"%s\"\n"
-            + "    }\n"
+            + "  }\n"
             + "}";
 
-    private static String GROUP_EXISTING_PARTY = "{\n"
-            + "	 \"name\": \"Group with Party external\",\n"
+    private static String PROJECT_EXISTING_PARTY = "{\n"
+            + "	 \"name\": \"Project with Party external\",\n"
             + "	 \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
-            + "    \"Party\": {\n"
+            + "	 \"termsOfUse\": \"none\",\n"
+            + "	 \"License\": {\"@iot.id\": \"CC_BY\"},\n"
+            + "  \"Party\": {\n"
             + "        \"authId\": \"%s\"," +
             "          \"role\":  \"individual\"\n"
-            + "    }\n"
+            + "  }\n"
             + "}";
 
     private static String DATASTREAM_PARTY = "{\n"
@@ -166,12 +167,12 @@ public abstract class GroupTests extends AbstractTestClass {
             + "            \"CPU\": \"1.4GHz\",\n"
             + "            \"RAM\": \"4GB\"\n"
             + "        },\n"
-            + "    \"Party\": {\n"
-            + "        \"displayName\": \"Long John Silver Citizen Scientist\",\n"
-            + "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
-            + "        \"role\": \"individual\",\n"
-            + "        \"authId\": \"%s\"\n"
-            + "    }\n"
+            + "         \"Party\": {\n"
+            + "             \"displayName\": \"Long John Silver Citizen Scientist\",\n"
+            + "             \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
+            + "             \"role\": \"individual\",\n"
+            + "             \"authId\": \"%s\"\n"
+            + "         }\n"
             + "    }\n"
             + "}";
 
@@ -236,7 +237,7 @@ public abstract class GroupTests extends AbstractTestClass {
     //private static SensorThingsService service;
     private String partyLJS, partyALICE;
 
-    public GroupTests(ServerVersion version) {
+    public ProjectTests(ServerVersion version) {
         super(version, SERVER_PROPERTIES);
         // This is the party that we are going to apply the Update and Delete tests
         // on...
@@ -284,22 +285,22 @@ public abstract class GroupTests extends AbstractTestClass {
      */
 
     /*
-     * GROUP_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
+     * PROJECT_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
      */
     @Test
-    public void test00GroupMustHaveAParty() throws ClientProtocolException, IOException {
-        String request = GROUP;
+    public void test00ProjectMustHaveAParty() throws ClientProtocolException, IOException {
+        String request = PROJECT;
 
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
-                Assertions.assertTrue(Boolean.TRUE, GROUP_MUST_HAVE_A_PARTY);
+                Assertions.assertTrue(Boolean.TRUE, PROJECT_MUST_HAVE_A_PARTY);
             } else {
-                fail(response, GROUP_MUST_HAVE_A_PARTY);
+                fail(response, PROJECT_MUST_HAVE_A_PARTY);
             }
         }
     }
@@ -308,9 +309,9 @@ public abstract class GroupTests extends AbstractTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY Success: 201 Fail: n/a
      */
     @Test
-    public void test01SameUserCreateGroupInlineParty() throws ClientProtocolException, IOException {
-        String request = String.format(GROUP_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+    public void test01SameUserCreateProjectInlineParty() throws ClientProtocolException, IOException {
+        String request = String.format(PROJECT_INLINE_PARTY, LJS);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
@@ -335,11 +336,11 @@ public abstract class GroupTests extends AbstractTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY Success: 201 Fail: n/a
      */
     @Test
-    public void test01SameUserCreateGroupExistingParty() throws ClientProtocolException, IOException {
+    public void test01SameUserCreateProjectExistingParty() throws ClientProtocolException, IOException {
         createParty(LJS);
 
-        String request = String.format(GROUP_EXISTING_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        String request = String.format(PROJECT_EXISTING_PARTY, LJS);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
@@ -364,9 +365,9 @@ public abstract class GroupTests extends AbstractTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 403 Fail: 201
      */
     @Test
-    public void test02OtherUserCreateGroupAssoc() throws ClientProtocolException, IOException {
-        String request = String.format(GROUP_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+    public void test02OtherUserCreateProjectAssoc() throws ClientProtocolException, IOException {
+        String request = String.format(PROJECT_INLINE_PARTY, LJS);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
@@ -384,16 +385,16 @@ public abstract class GroupTests extends AbstractTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
      */
     @Test
-    public void test03AdminCreateGroupAssoc() throws ClientProtocolException, IOException {
-        String request = String.format(GROUP_INLINE_PARTY, ALICE);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+    public void test03AdminCreateProjectAssoc() throws ClientProtocolException, IOException {
+        String request = String.format(PROJECT_INLINE_PARTY, ALICE);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
-                // we need to make sure that the Group is associated with Alice
+                // we need to make sure that the Project is associated with Alice
                 String location = response.getFirstHeader("Location").getValue();
                 HttpGet httpGet = new HttpGet(location + "/Party");
                 try (CloseableHttpResponse response2 = serviceSTAplus.execute(httpGet)) {
@@ -412,9 +413,9 @@ public abstract class GroupTests extends AbstractTestClass {
      * ANON_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 401 Fail: 201
      */
     @Test
-    public void test02AnonCreateGroupAssoc() throws ClientProtocolException, IOException {
-        String request = String.format(GROUP_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+    public void test02AnonCreateProjectAssoc() throws ClientProtocolException, IOException {
+        String request = String.format(PROJECT_INLINE_PARTY, LJS);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
@@ -430,33 +431,11 @@ public abstract class GroupTests extends AbstractTestClass {
     }
 
     /*
-     * ANY_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION
-     */
-    @Test
-    public void test10AnyUserAddGroupObservation() throws ClientProtocolException, IOException {
-        String groupUrl = createGroupParty(ALICE);
-
-        String request = OBSERVATION_LJS;
-        HttpPost httpPost = new HttpPost(groupUrl + "/Observations");
-        HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
-        httpPost.setEntity(stringEntity);
-        setAuth(httpPost, LJS, "");
-
-        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
-            if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
-                Assertions.assertTrue(Boolean.TRUE, ANY_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION);
-            } else {
-                fail(response, ANY_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION);
-            }
-        }
-    }
-
-    /*
      * UPDATE Tests
      */
-    private String createGroupParty(String userId) throws IOException {
-        String request = String.format(GROUP_INLINE_PARTY, userId);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+    private String createProjectParty(String userId) throws IOException {
+        String request = String.format(PROJECT_INLINE_PARTY, userId);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, userId, "");
@@ -470,11 +449,11 @@ public abstract class GroupTests extends AbstractTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
      */
     @Test
-    public void test12SameUserUpdateGroup() throws ClientProtocolException, IOException {
-        String groupUrl = createGroupParty(LJS);
+    public void test12SameUserUpdateProject() throws ClientProtocolException, IOException {
+        String projectUrl = createProjectParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
-        HttpPatch httpPatch = new HttpPatch(groupUrl);
+        HttpPatch httpPatch = new HttpPatch(projectUrl);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
@@ -493,9 +472,9 @@ public abstract class GroupTests extends AbstractTestClass {
      * SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 403 Fail: n/a
      */
     @Test
-    public void test10SameUserUpdateGroupOtherParty() throws ClientProtocolException, IOException {
+    public void test10SameUserUpdateProjectOtherParty() throws ClientProtocolException, IOException {
         createParty(ALICE);
-        String groupUrl = createGroupParty(LJS);
+        String groupUrl = createProjectParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -516,8 +495,8 @@ public abstract class GroupTests extends AbstractTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE Success: 403 Fail: n/a
      */
     @Test
-    public void test12OtherUserUpdateGroup() throws ClientProtocolException, IOException {
-        String groupUrl = createGroupParty(LJS);
+    public void test12OtherUserUpdateProject() throws ClientProtocolException, IOException {
+        String groupUrl = createProjectParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -538,10 +517,10 @@ public abstract class GroupTests extends AbstractTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 403 Fail: n/a
      */
     @Test
-    public void test10OtherUserUpdateGroupParty() throws ClientProtocolException, IOException {
+    public void test10OtherUserUpdateProjectParty() throws ClientProtocolException, IOException {
         createParty(ALICE);
 
-        String groupUrl = createGroupParty(LJS);
+        String groupUrl = createProjectParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -562,8 +541,8 @@ public abstract class GroupTests extends AbstractTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
      */
     @Test
-    public void test13AdminUpdateGroup() throws ClientProtocolException, IOException {
-        String groupUrl = createGroupParty(LJS);
+    public void test13AdminUpdateProject() throws ClientProtocolException, IOException {
+        String groupUrl = createProjectParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -584,10 +563,10 @@ public abstract class GroupTests extends AbstractTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_UPDATE_PARTY Success: 200 Fail: n/a
      */
     @Test
-    public void test10AdminUpdateGroupParty() throws ClientProtocolException, IOException {
+    public void test10AdminUpdateProjectParty() throws ClientProtocolException, IOException {
         createParty(ALICE);
 
-        String groupUrl = createGroupParty(LJS);
+        String groupUrl = createProjectParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -608,8 +587,8 @@ public abstract class GroupTests extends AbstractTestClass {
      * ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE Success: 401 Fail: n/a
      */
     @Test
-    public void test14AnonUpdateGroup() throws ClientProtocolException, IOException {
-        String groupUrl = createGroupParty(LJS);
+    public void test14AnonUpdateProject() throws ClientProtocolException, IOException {
+        String groupUrl = createProjectParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -633,8 +612,8 @@ public abstract class GroupTests extends AbstractTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_DELETE Success: 200 Fail: n/a
      */
     @Test
-    public void test20SameUserDeleteGroup() throws ClientProtocolException, IOException {
-        String groupUrl = createGroupParty(LJS);
+    public void test20SameUserDeleteProject() throws ClientProtocolException, IOException {
+        String groupUrl = createProjectParty(LJS);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, LJS, "");
 
@@ -651,8 +630,8 @@ public abstract class GroupTests extends AbstractTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE Success: 403 Fail: n/a
      */
     @Test
-    public void test21OtherUserDeleteGroup() throws ClientProtocolException, IOException {
-        String groupUrl = createGroupParty(LJS);
+    public void test21OtherUserDeleteProject() throws ClientProtocolException, IOException {
+        String groupUrl = createProjectParty(LJS);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ALICE, "");
 
@@ -669,8 +648,8 @@ public abstract class GroupTests extends AbstractTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_DELETE Success: 200 Fail: n/a
      */
     @Test
-    public void test22AdminDeleteGroup() throws ClientProtocolException, IOException {
-        String groupUrl = createGroupParty(ALICE);
+    public void test22AdminDeleteProject() throws ClientProtocolException, IOException {
+        String groupUrl = createProjectParty(ALICE);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ADMIN, "");
 
