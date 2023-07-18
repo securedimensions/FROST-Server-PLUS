@@ -164,15 +164,12 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
                 .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId);
         // We register a navigationProperty for Object on the Observations table.
         tableObservations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId);
+                .addEntry(pluginPLUS.npObjectsObservation, TableImpObservations::getId);
 
     }
 
     @Override
     protected void updateNavigationPropertySet(Entity group, EntitySet linkedSet, PostgresPersistenceManager pm, boolean forInsert) throws IncompleteEntityException, NoSuchEntityException {
-        EntityType linkedEntityType = linkedSet.getEntityType();
-
-        // Todo ???
         super.updateNavigationPropertySet(group, linkedSet, pm, forInsert);
     }
 

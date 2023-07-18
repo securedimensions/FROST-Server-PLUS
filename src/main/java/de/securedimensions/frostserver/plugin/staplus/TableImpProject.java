@@ -33,6 +33,7 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.PropertyField
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.utils.validator.SecurityTableWrapper;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 import net.time4j.Moment;
 import org.jooq.DataType;
@@ -113,6 +114,8 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     private final PluginPLUS pluginPLUS;
     private final PluginCoreModel pluginCoreModel;
 
+    private final PluginMultiDatastream pluginMultiDatastream;
+
     /**
      * Create a <code>public.PROJECTS</code> table reference.
      *
@@ -122,24 +125,26 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpProject(DataType<?> idType, DataType<?> idTypeParty, DataType<?> idTypeLicense, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel) {
+    public TableImpProject(DataType<?> idType, DataType<?> idTypeParty, DataType<?> idTypeLicense, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         super(idType, DSL.name("PROJECTS"), null, null);
         this.pluginPLUS = pluginProject;
         this.pluginCoreModel = pluginCoreModel;
+        this.pluginMultiDatastream = pluginMultiDatastream;
 
         colPartyId = createField(DSL.name("PARTY_ID"), idTypeParty.nullable(true));
         colLicenseId = createField(DSL.name("LICENSE_ID"), idTypeLicense.nullable(true));
 
     }
 
-    private TableImpProject(Name alias, TableImpProject aliased, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel) {
-        this(alias, aliased, aliased, pluginPlus, pluginCoreModel);
+    private TableImpProject(Name alias, TableImpProject aliased, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+        this(alias, aliased, aliased, pluginPlus, pluginCoreModel, pluginMultiDatastream);
     }
 
-    private TableImpProject(Name alias, TableImpProject aliased, Table updatedSql, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel) {
+    private TableImpProject(Name alias, TableImpProject aliased, Table updatedSql, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginPlus;
         this.pluginCoreModel = pluginCoreModel;
+        this.pluginMultiDatastream = pluginMultiDatastream;
 
         colPartyId = createField(DSL.name("PARTY_ID"), aliased.colPartyId.getDataType().nullable(true));
         colLicenseId = createField(DSL.name("LICENSE_ID"), aliased.colLicenseId.getDataType().nullable(true));
@@ -176,9 +181,9 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
                 .setTargetLinkFieldAcc(TableImpProjectsDatastreams::getProjectId)
                 .setTargetFieldAcc(TableImpProject::getId));
 
-        TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-        if (tableMultiDatastreams != null) {
-            // Add relation to Datastreams table
+        if (pluginMultiDatastream.isEnabled()) {
+            // Add relation to MultiDatastreams table
+            TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
             final TableImpProjectsMultiDatastreams tableProjectsMultiDatastreams = tables.getTableForClass(TableImpProjectsMultiDatastreams.class);
             registerRelation(new RelationManyToMany<>(pluginPLUS.npMultiDatastreamsProject, this, tableProjectsMultiDatastreams, tableMultiDatastreams)
                     .setSourceFieldAcc(TableImpProject::getId)
@@ -219,8 +224,8 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
         tableDatastreams.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npProjectDatastreams, TableImpDatastreams::getId);
 
-        TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-        if (tableMultiDatastreams != null) {
+        if (pluginMultiDatastream.isEnabled()) {
+            TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
             pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId);
             tableMultiDatastreams.getPropertyFieldRegistry()
                     .addEntry(pluginPLUS.npProjectMultiDatastreams, TableImpMultiDatastreams::getId);
@@ -250,7 +255,7 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
 
     @Override
     public TableImpProject as(Name alias) {
-        return new TableImpProject(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+        return new TableImpProject(alias, this, pluginPLUS, pluginCoreModel, pluginMultiDatastream).initCustomFields();
     }
 
     @Override
@@ -260,7 +265,7 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
             return as(name);
         }
         final Table wrappedTable = securityWrapper.wrap(this, pm);
-        return new TableImpProject(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
+        return new TableImpProject(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
     }
 
     @Override

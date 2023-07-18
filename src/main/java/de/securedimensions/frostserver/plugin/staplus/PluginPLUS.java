@@ -704,7 +704,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             /**
              * Class Project
              */
-            tableCollection.registerTable(etProject, new TableImpProject(dataTypeProject, dataTypeParty, dataTypeLicense, this, pluginCoreModel));
+            tableCollection.registerTable(etProject, new TableImpProject(dataTypeProject, dataTypeParty, dataTypeLicense, this, pluginCoreModel, pluginMultiDatastream));
             tableCollection.registerTable(new TableImpProjectsDatastreams(dataTypeProject, dataTypeDatastream));
             if (pluginMultiDatastream.isEnabled()) {
                 final DataType dataTypeMultiDatastream = tableCollection.getTableForType(pluginMultiDatastream.etMultiDatastream).getId().getDataType();
