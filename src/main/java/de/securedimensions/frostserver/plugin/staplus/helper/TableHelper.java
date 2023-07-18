@@ -24,7 +24,7 @@ import de.fraunhofer.iosb.ilt.frostserver.parser.path.PathParser;
 import de.fraunhofer.iosb.ilt.frostserver.parser.query.QueryParser;
 import de.fraunhofer.iosb.ilt.frostserver.path.ResourcePath;
 import de.fraunhofer.iosb.ilt.frostserver.path.Version;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.EntityFactories;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.tables.TableCollection;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
@@ -54,7 +54,7 @@ public abstract class TableHelper {
         this.entityFactories = null;
     }
 
-    protected TableHelper(CoreSettings settings, PostgresPersistenceManager ppm) {
+    protected TableHelper(CoreSettings settings, JooqPersistenceManager ppm) {
         this.tables = ppm.getTableCollection();
         this.pluginPlus = settings.getPluginManager().getPlugin(PluginPLUS.class);
         this.pluginCoreModel = settings.getPluginManager().getPlugin(PluginCoreModel.class);
@@ -76,7 +76,7 @@ public abstract class TableHelper {
 
     public abstract void registerPreHooks();
 
-    protected void assertOwnershipObservation(PostgresPersistenceManager pm, Entity entity, Principal principal) {
+    protected void assertOwnershipObservation(JooqPersistenceManager pm, Entity entity, Principal principal) {
 
         Entity datastream = null;
         Entity multiDatastream = null;
@@ -117,7 +117,7 @@ public abstract class TableHelper {
             assertOwnershipMultiDatastream(pm, multiDatastream, principal);
     }
 
-    protected void assertOwnershipDatastream(PostgresPersistenceManager pm, Entity datastream, Principal principal) {
+    protected void assertOwnershipDatastream(JooqPersistenceManager pm, Entity datastream, Principal principal) {
         assertPrincipal(principal);
 
         if (datastream == null)
@@ -152,7 +152,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipMultiDatastream(PostgresPersistenceManager pm, Entity multiDatastream, Principal principal) {
+    protected void assertOwnershipMultiDatastream(JooqPersistenceManager pm, Entity multiDatastream, Principal principal) {
         assertPrincipal(principal);
 
         if (multiDatastream == null)
@@ -186,7 +186,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipThing(PostgresPersistenceManager pm, Entity thing, Principal principal) {
+    protected void assertOwnershipThing(JooqPersistenceManager pm, Entity thing, Principal principal) {
         assertPrincipal(principal);
 
         if (thing == null)
@@ -221,7 +221,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipProject(PostgresPersistenceManager pm, Entity project, Principal principal) {
+    protected void assertOwnershipProject(JooqPersistenceManager pm, Entity project, Principal principal) {
         assertPrincipal(principal);
 
         if (project == null)
@@ -256,7 +256,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipGroup(PostgresPersistenceManager pm, Entity group, Principal principal) {
+    protected void assertOwnershipGroup(JooqPersistenceManager pm, Entity group, Principal principal) {
         assertPrincipal(principal);
 
         if (group == null)
@@ -311,7 +311,7 @@ public abstract class TableHelper {
         }
     }
 
-    protected void assertLicenseGroup(PostgresPersistenceManager pm, Entity group) {
+    protected void assertLicenseGroup(JooqPersistenceManager pm, Entity group) {
         if (group == null)
             throw new IllegalArgumentException("Group does not exist");
 
@@ -336,7 +336,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertLicenseProject(PostgresPersistenceManager pm, Entity project) {
+    protected void assertLicenseProject(JooqPersistenceManager pm, Entity project) {
         if (project == null)
             throw new IllegalArgumentException("Project does not exist");
 
@@ -361,7 +361,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertLicenseDatastream(PostgresPersistenceManager pm, Entity datastream) {
+    protected void assertLicenseDatastream(JooqPersistenceManager pm, Entity datastream) {
         if (datastream == null)
             throw new IllegalArgumentException("Datastream does not exist");
 
@@ -387,7 +387,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertLicenseMultiDatastream(PostgresPersistenceManager pm, Entity multiDatastream) {
+    protected void assertLicenseMultiDatastream(JooqPersistenceManager pm, Entity multiDatastream) {
         if (multiDatastream == null)
             throw new IllegalArgumentException("MultiDatastream does not exist");
 
@@ -413,7 +413,7 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertEmptyDatastream(PostgresPersistenceManager pm, Entity datastream) {
+    protected void assertEmptyDatastream(JooqPersistenceManager pm, Entity datastream) {
         if (datastream == null)
             throw new IllegalArgumentException("Datastream does not exist");
 
@@ -438,7 +438,7 @@ public abstract class TableHelper {
         }
     }
 
-    protected void assertEmptyMultiDatastream(PostgresPersistenceManager pm, Entity mds) {
+    protected void assertEmptyMultiDatastream(JooqPersistenceManager pm, Entity mds) {
         if (mds == null)
             throw new IllegalArgumentException("MultiDatastream does not exist");
 
@@ -463,7 +463,7 @@ public abstract class TableHelper {
         }
     }
 
-    protected void assertEmptyGroup(PostgresPersistenceManager pm, Entity group) {
+    protected void assertEmptyGroup(JooqPersistenceManager pm, Entity group) {
         if (group == null)
             throw new IllegalArgumentException("Group does not exist");
 
@@ -488,7 +488,7 @@ public abstract class TableHelper {
         }
     }
 
-    protected void assertEmptyProject(PostgresPersistenceManager pm, Entity project) {
+    protected void assertEmptyProject(JooqPersistenceManager pm, Entity project) {
         if (project == null)
             throw new IllegalArgumentException("Project does not exist");
 

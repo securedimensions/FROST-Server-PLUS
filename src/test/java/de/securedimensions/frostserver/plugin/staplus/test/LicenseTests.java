@@ -19,9 +19,10 @@ package de.securedimensions.frostserver.plugin.staplus.test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
+import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
+import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.helper.TableHelperObservation;
@@ -29,16 +30,15 @@ import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthPro
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.junit.jupiter.api.AfterAll;
@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Andreas Matheus
  */
-public abstract class LicenseTests extends AbstractTestClass {
+public abstract class LicenseTests extends AbstractStaPlusTestClass {
 
     public static class Imp10Tests extends LicenseTests {
 
@@ -76,9 +76,6 @@ public abstract class LicenseTests extends AbstractTestClass {
     private static final Logger LOGGER = LoggerFactory.getLogger(LicenseTests.class);
 
     private static final long serialVersionUID = 1639739965;
-
-    public static final String ALICE = "505851c3-2de9-4844-9bd5-d185fe944265";
-    public static final String ADMIN = "admin";
 
     private static String PARTY_ALICE = String.format("{\"displayName\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"displayName\": \"ALICE\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
 
@@ -271,15 +268,14 @@ public abstract class LicenseTests extends AbstractTestClass {
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
 
-    private static SensorThingsService serviceSTAplus;
-    private static final Properties SERVER_PROPERTIES = new Properties();
+    private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
 
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
-        SERVER_PROPERTIES.put("plugins.staplus.enable", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceGroupLicensing", false);
+        SERVER_PROPERTIES.put("plugins.staplus.enable", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceGroupLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
@@ -290,7 +286,7 @@ public abstract class LicenseTests extends AbstractTestClass {
         //SERVER_PROPERTIES.put("plugins.plus.idType.group", "String");
         //SERVER_PROPERTIES.put("plugins.coreModel.idType.datastream", "String");
         //SERVER_PROPERTIES.put("plugins.multiDatastream.idType.multiDatastream", "String");
-        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
+        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
 
     }
 
@@ -302,7 +298,9 @@ public abstract class LicenseTests extends AbstractTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            sMdl = new SensorThingsSensingV11();
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
 
             for (String k : TableHelperObservation.LICENSES.keySet()) {
                 if (!existLicense(k)) {
@@ -330,10 +328,6 @@ public abstract class LicenseTests extends AbstractTestClass {
         cleanup();
     }
 
-    private static void cleanup() throws ServiceFailureException {
-        //EntityUtils.deleteAll(version, serverSettings, service);
-    }
-
     private int createEntity(String path, String request) throws IOException {
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + path);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -357,12 +351,6 @@ public abstract class LicenseTests extends AbstractTestClass {
         }
 
         Assertions.fail(assertion, new Throwable(msg));
-    }
-
-    private static void setAuth(HttpRequestBase http, String username, String password) {
-        String credentials = username + ":" + password;
-        String base64 = Base64.getEncoder().encodeToString(credentials.getBytes());
-        http.setHeader("Authorization", "BASIC " + base64);
     }
 
     public static List<Object[]> data() {
@@ -421,6 +409,7 @@ public abstract class LicenseTests extends AbstractTestClass {
 
     @Test
     public void testIdId() throws ClientProtocolException, IOException {
+        LOGGER.info("  testIdId");
         for (Object[] d : data()) {
             String datastreamLicenseId = (String) d[0];
             String groupLicenseId = (String) d[1];

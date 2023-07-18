@@ -19,7 +19,7 @@ package de.securedimensions.frostserver.plugin.staplus.helper;
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
@@ -38,7 +38,7 @@ public class TableHelperThing extends TableHelper {
 
     private final TableImpThings tableThings;
 
-    public TableHelperThing(CoreSettings settings, PostgresPersistenceManager ppm) {
+    public TableHelperThing(CoreSettings settings, JooqPersistenceManager ppm) {
         super(settings, ppm);
 
         this.tableThings = tables.getTableForClass(TableImpThings.class);
@@ -55,7 +55,7 @@ public class TableHelperThing extends TableHelper {
         tableThings.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -81,7 +81,7 @@ public class TableHelperThing extends TableHelper {
         tableThings.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+            public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
@@ -101,7 +101,7 @@ public class TableHelperThing extends TableHelper {
         tableThings.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
-            public void delete(PostgresPersistenceManager pm, Id entityId) throws NoSuchEntityException {
+            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return;

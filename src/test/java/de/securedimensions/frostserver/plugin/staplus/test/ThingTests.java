@@ -18,18 +18,18 @@
 package de.securedimensions.frostserver.plugin.staplus.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
+import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
+import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class ThingTests extends AbstractTestClass {
+public abstract class ThingTests extends AbstractStaPlusTestClass {
 
     public static class Imp10Tests extends ThingTests {
 
@@ -112,10 +112,6 @@ public abstract class ThingTests extends AbstractTestClass {
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_DATASTREAM = "Other user should NOT be able to delete Datastream.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE_DATASTREAM = "Admin user should be able to delete Datastream.";
     private static final String ANON_SHOULD_NOT_BE_ABLE_TO_DELETE_DATASTREAM = "Anon should NOT be able to delete Datastream.";
-
-    public static final String ALICE = "505851c3-2de9-4844-9bd5-d185fe944265";
-    public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
-    public static final String ADMIN = "admin";
 
     private static final String THING = "{\n"
             + "    \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
@@ -295,22 +291,21 @@ public abstract class ThingTests extends AbstractTestClass {
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
 
-    private static SensorThingsService serviceSTAplus;
-    private static final Properties SERVER_PROPERTIES = new Properties();
+    private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
 
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
-        SERVER_PROPERTIES.put("plugins.staplus.enable", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", false);
+        SERVER_PROPERTIES.put("plugins.staplus.enable", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
-        SERVER_PROPERTIES.put("auth.allowAnonymousRead", true);
+        SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
-        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
+        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
     }
 
     //private static SensorThingsService service;
@@ -325,7 +320,9 @@ public abstract class ThingTests extends AbstractTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            sMdl = new SensorThingsSensingV11();
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
@@ -346,25 +343,12 @@ public abstract class ThingTests extends AbstractTestClass {
         cleanup();
     }
 
-    private static void cleanup() throws ServiceFailureException {
-        //EntityUtils.deleteAll(version, serverSettings, service);
-    }
-
-    private static void setAuth(HttpRequestBase http, String username, String password) {
-        String credentials = username + ":" + password;
-        String base64 = Base64.getEncoder().encodeToString(credentials.getBytes());
-        http.setHeader("Authorization", "BASIC " + base64);
-    }
-
-    /*
-     * CREATE Tests
-     */
-
     /*
      * THING_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
      */
     @Test
     public void test00ThingMustHaveAParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test00ThingMustHaveAParty");
         String request = THING;
 
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
@@ -386,6 +370,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test01SameUserCreateThingInlineParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateThingInlineParty");
         String request = String.format(THING_INLINE_PARTY, LJS);
 
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
@@ -414,6 +399,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test01SameUserCreateThingExistingParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateThingExistingParty");
         createParty(LJS);
 
         String request = String.format(THING_EXISTING_PARTY, LJS);
@@ -444,6 +430,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test02OtherUserCreateThingInlineParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02OtherUserCreateThingInlineParty");
         String request = String.format(THING_INLINE_PARTY, LJS);
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -464,6 +451,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test02OtherUserCreateThingExistingParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02OtherUserCreateThingExistingParty");
         createParty(LJS);
 
         String request = String.format(THING_EXISTING_PARTY, LJS);
@@ -486,6 +474,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test03AdminCreateThingAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test03AdminCreateThingAssoc");
         String request = String.format(THING_INLINE_PARTY, ALICE);
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -514,6 +503,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test02AnonCreateThingAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02AnonCreateThingAssoc");
         String request = String.format(THING_INLINE_PARTY, LJS);
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Things");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -550,6 +540,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test10SameUserUpdateThing() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10SameUserUpdateThing");
         String thingURL = createThingParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -572,6 +563,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test10SameUserUpdateThingParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10SameUserUpdateThingParty");
         String thingURL = createThingParty(LJS);
 
         String request = "{\"Party\":" + PARTY_ALICE + "}";
@@ -594,6 +586,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test12OtherUserUpdateThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test12OtherUserUpdateThingLocation");
         String thingURL = createThingParty(LJS);
 
         String request = LOCATION;
@@ -616,6 +609,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test13AdminUpdateThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test13AdminUpdateThingLocation");
         String thingURL = createThingParty(LJS);
 
         String request = LOCATION;
@@ -638,6 +632,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test14AnonUpdateThing() throws ClientProtocolException, IOException {
+        LOGGER.info("  test14AnonUpdateThing");
         String thingURL = createThingParty(LJS);
 
         String request = "{\"Location\":" + LOCATION + "}";
@@ -663,6 +658,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test20SameUserDeleteThing() throws ClientProtocolException, IOException {
+        LOGGER.info("  test20SameUserDeleteThing");
         String thingURL = createThingParty(LJS);
         HttpDelete httpDelete = new HttpDelete(thingURL);
         setAuth(httpDelete, LJS, "");
@@ -681,6 +677,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test21OtherUserDeleteThing() throws ClientProtocolException, IOException {
+        LOGGER.info("  test21OtherUserDeleteThing");
         String thingURL = createThingParty(LJS);
         HttpDelete httpDelete = new HttpDelete(thingURL);
         setAuth(httpDelete, ALICE, "");
@@ -699,6 +696,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test22AdminDeleteThing() throws ClientProtocolException, IOException {
+        LOGGER.info("  test22AdminDeleteThing");
         String thingURL = createThingParty(LJS);
         HttpDelete httpDelete = new HttpDelete(thingURL);
         setAuth(httpDelete, ADMIN, "");
@@ -718,6 +716,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test23AnonDeleteThing() throws ClientProtocolException, IOException {
+        LOGGER.info("  test23AnonDeleteThing");
         String thingURL = createThingParty(LJS);
         HttpDelete httpDelete = new HttpDelete(thingURL);
 
@@ -738,6 +737,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test30SameUserAddThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test30SameUserAddThingLocation");
         String thingURL = createThingParty(LJS);
 
         String request = LOCATION;
@@ -760,6 +760,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test31OtherUserAddThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test31OtherUserAddThingLocation");
         String thingURL = createThingParty(LJS);
 
         String request = LOCATION;
@@ -782,6 +783,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test32AdminAddThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test32AdminAddThingLocation");
         String thingURL = createThingParty(LJS);
 
         String request = LOCATION;
@@ -804,6 +806,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test33AnonAddThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test33AnonAddThingLocation");
         String thingURL = createThingParty(LJS);
 
         String request = LOCATION;
@@ -837,6 +840,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test40SameUserDeleteThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test40SameUserDeleteThingLocation");
         String thingURL = createThingParty(LJS);
         addLocation(thingURL, LJS, ++locationId);
 
@@ -857,6 +861,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test41OtherUserDeleteThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test41OtherUserDeleteThingLocation");
         String thingURL = createThingParty(LJS);
         addLocation(thingURL, LJS, ++locationId);
 
@@ -877,6 +882,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test42AdminDeleteThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test42AdminDeleteThingLocation");
         String thingURL = createThingParty(LJS);
         addLocation(thingURL, LJS, ++locationId);
 
@@ -897,6 +903,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test43AnonDeleteThingLocation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test43AnonDeleteThingLocation");
         String thingURL = createThingParty(LJS);
         addLocation(thingURL, LJS, ++locationId);
 
@@ -919,6 +926,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test50SameUserAddThingDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test50SameUserAddThingDatastream");
         String thingURL = createThingParty(LJS);
 
         String request = String.format(DATASTREAM_PARTY, LJS, LJS);
@@ -941,6 +949,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test51OtherUserAddThingDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test51OtherUserAddThingDatastream");
         String thingURL = createThingParty(LJS);
 
         String request = String.format(DATASTREAM_PARTY, LJS, LJS);
@@ -963,6 +972,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test52AdminAddThingDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test52AdminAddThingDatastream");
         String thingURL = createThingParty(LJS);
 
         String request = String.format(DATASTREAM_PARTY, LJS, LJS);
@@ -985,6 +995,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test53AnonAddThingDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test53AnonAddThingDatastream");
         String thingURL = createThingParty(LJS);
 
         String request = String.format(DATASTREAM_PARTY, LJS, LJS);
@@ -1018,6 +1029,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test60SameUserDeleteThingDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test60SameUserDeleteThingDatastream");
         String thingURL = createThingParty(LJS);
         addDatastream(thingURL, LJS, ++datastreamId);
 
@@ -1038,6 +1050,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test61OtherUserDeleteThingDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test61OtherUserDeleteThingDatastream");
         String thingURL = createThingParty(LJS);
         addDatastream(thingURL, LJS, ++datastreamId);
 
@@ -1058,6 +1071,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test62AdminDeleteThingDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test62AdminDeleteThingDatastream");
         String thingURL = createThingParty(LJS);
         addDatastream(thingURL, LJS, ++datastreamId);
 
@@ -1078,6 +1092,7 @@ public abstract class ThingTests extends AbstractTestClass {
      */
     @Test
     public void test63AnonDeleteThingDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test63AnonDeleteThingDatastream");
         String thingURL = createThingParty(LJS);
         addDatastream(thingURL, LJS, ++datastreamId);
 

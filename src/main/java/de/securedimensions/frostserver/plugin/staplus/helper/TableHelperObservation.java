@@ -20,7 +20,7 @@ package de.securedimensions.frostserver.plugin.staplus.helper;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
@@ -114,7 +114,7 @@ public class TableHelperObservation extends TableHelper {
 
     private final TableImpObservations tableObservations;
 
-    public TableHelperObservation(CoreSettings settings, PostgresPersistenceManager ppm) {
+    public TableHelperObservation(CoreSettings settings, JooqPersistenceManager ppm) {
         super(settings, ppm);
 
         this.tableObservations = tables.getTableForClass(TableImpObservations.class);
@@ -127,7 +127,7 @@ public class TableHelperObservation extends TableHelper {
         tableObservations.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -157,7 +157,7 @@ public class TableHelperObservation extends TableHelper {
         tableObservations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity observation, Id entityId)
+            public void updateInDatabase(JooqPersistenceManager pm, Entity observation, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
@@ -178,7 +178,7 @@ public class TableHelperObservation extends TableHelper {
         tableObservations.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
-            public void delete(PostgresPersistenceManager pm, Id entityId) throws NoSuchEntityException {
+            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return;
@@ -198,7 +198,7 @@ public class TableHelperObservation extends TableHelper {
 
     }
 
-    protected void assertLicenseCompatibilty(PostgresPersistenceManager pm, Entity entity) {
+    protected void assertLicenseCompatibilty(JooqPersistenceManager pm, Entity entity) {
 
         Entity group = null;
         if (entity.isSetProperty(pluginPlus.npObservationGroups)) {

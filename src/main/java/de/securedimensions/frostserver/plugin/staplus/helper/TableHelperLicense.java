@@ -20,7 +20,7 @@ package de.securedimensions.frostserver.plugin.staplus.helper;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
@@ -50,7 +50,7 @@ public class TableHelperLicense extends TableHelper {
             "https://creativecommons.org/licenses/by-nd/3.0/deed.en",
             "https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en");
 
-    public TableHelperLicense(CoreSettings settings, PostgresPersistenceManager ppm) {
+    public TableHelperLicense(CoreSettings settings, JooqPersistenceManager ppm) {
         super(settings, ppm);
 
         this.tableLicenses = tables.getTableForClass(TableImpLicense.class);
@@ -63,7 +63,7 @@ public class TableHelperLicense extends TableHelper {
         tableLicenses.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity license,
+            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity license,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -136,7 +136,7 @@ public class TableHelperLicense extends TableHelper {
         tableLicenses.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity license, Id entityId)
+            public void updateInDatabase(JooqPersistenceManager pm, Entity license, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceLicensingEnabled())
@@ -198,7 +198,7 @@ public class TableHelperLicense extends TableHelper {
         tableLicenses.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
-            public void delete(PostgresPersistenceManager pm, Id entityId) throws NoSuchEntityException {
+            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
 
                 if (!pluginPlus.isEnforceLicensingEnabled())
                     return;

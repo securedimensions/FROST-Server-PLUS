@@ -17,17 +17,18 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.test;
 
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
+import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
+import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Base64;
-import java.util.Properties;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.methods.*;
@@ -45,11 +46,8 @@ import org.slf4j.LoggerFactory;
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class PartyTests extends AbstractTestClass {
+public abstract class PartyTests extends AbstractStaPlusTestClass {
 
-    public static final String ALICE = "505851c3-2de9-4844-9bd5-d185fe944265";
-    public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
-    public static final String ADMIN = "admin";
     /**
      * The logger for this class.
      */
@@ -78,20 +76,20 @@ public abstract class PartyTests extends AbstractTestClass {
     private static final String PARTY_ALICE = String.format("{\"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"displayName\": \"Alice in Wonderland\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
     private static final String PARTY_LJS = String.format("{\"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"displayName\": \"Long John Silver Citizen Scientist\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
 
-    private static SensorThingsService serviceSTAplus;
-    private static final Properties SERVER_PROPERTIES = new Properties();
+    private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
+
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
-        SERVER_PROPERTIES.put("plugins.staplus.enable", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", false);
+        SERVER_PROPERTIES.put("plugins.staplus.enable", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entity Type
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
-        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
+        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
     }
 
     //private static SensorThingsService service;
@@ -112,21 +110,13 @@ public abstract class PartyTests extends AbstractTestClass {
         cleanup();
     }
 
-    private static void cleanup() throws ServiceFailureException {
-        //EntityUtils.deleteAll(version, serverSettings, service);
-    }
-
-    private static void setAuth(HttpRequestBase http, String username, String password) {
-        String credentials = username + ":" + password;
-        String base64 = Base64.getEncoder().encodeToString(credentials.getBytes());
-        http.setHeader("Authorization", "BASIC " + base64);
-    }
-
     @Override
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            sMdl = new SensorThingsSensingV11();
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
@@ -144,9 +134,9 @@ public abstract class PartyTests extends AbstractTestClass {
     /*
      * CREATE Tests
      */
-
     @Test
     public void test00UserCreateParty() throws IOException {
+        LOGGER.info("  test00UserCreateParty");
         String request = PARTY;
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -165,6 +155,7 @@ public abstract class PartyTests extends AbstractTestClass {
 
     @Test
     public void test100AnonCreateParty() throws IOException {
+        LOGGER.info("  test100AnonCreateParty");
         try {
             String request = PARTY;
             HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
@@ -189,6 +180,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test01SameUserCreateParty() throws IOException {
+        LOGGER.info("  test01SameUserCreateParty");
         String request = PARTY_LJS;
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -212,6 +204,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test02OtherUserCreateParty() throws IOException {
+        LOGGER.info("  test02OtherUserCreateParty");
         String request = PARTY_LJS;
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -234,6 +227,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test03AdminCreateParty() throws IOException {
+        LOGGER.info("  test03AdminCreateParty");
         String request = PARTY_ALICE;
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -256,6 +250,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test02AnonCreateParty() throws IOException {
+        LOGGER.info("  test02AnonCreateParty");
         String request = PARTY_LJS;
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -282,6 +277,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test10SameUserUpdateParty() throws IOException {
+        LOGGER.info("  test10SameUserUpdateParty");
         String request = "{\"role\": \"institutional\"}";
         HttpPatch httpPatch = new HttpPatch(partyLJSUrl);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -303,6 +299,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test11SameUserUpdatePartyAuthId() throws IOException {
+        LOGGER.info("  test11SameUserUpdatePartyAuthId");
         String request = "{\"authId\": \"505851c3-2de9-4844-9bd5-d185fe944265\"}";
         HttpPatch httpPatch = new HttpPatch(partyLJSUrl);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -324,6 +321,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test12OtherUserUpdateParty() throws IOException {
+        LOGGER.info("  test12OtherUserUpdateParty");
         String request = "{\"role\": \"institutional\"}";
         HttpPatch httpPatch = new HttpPatch(partyLJSUrl);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -345,6 +343,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test13AdminUpdateParty() throws IOException {
+        LOGGER.info("  test13AdminUpdateParty");
         String request = "{\"role\": \"institutional\"}";
         HttpPatch httpPatch = new HttpPatch(partyALICEUrl);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -366,6 +365,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test14AnonUpdateParty() throws IOException {
+        LOGGER.info("  test14AnonUpdateParty");
         String request = "{\"role\": \"institutional\"}";
         HttpPatch httpPatch = new HttpPatch(partyALICEUrl);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -390,6 +390,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test20SameUserDeleteParty() throws IOException {
+        LOGGER.info("  test20SameUserDeleteParty");
         HttpDelete httpDelete = new HttpDelete(partyLJSUrl);
         setAuth(httpDelete, LJS, "");
 
@@ -408,6 +409,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test21OtherUserDeleteParty() throws IOException {
+        LOGGER.info("  test21OtherUserDeleteParty");
         HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
         setAuth(httpDelete, LJS, "");
 
@@ -426,6 +428,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test22AdminDeleteParty() throws IOException {
+        LOGGER.info("  test22AdminDeleteParty");
         // Party Alice created by Admin in a previous test
         HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
         setAuth(httpDelete, ADMIN, "");
@@ -445,6 +448,7 @@ public abstract class PartyTests extends AbstractTestClass {
      */
     @Test
     public void test23AnonDeleteParty() throws IOException {
+        LOGGER.info("  test23AnonDeleteParty");
         HttpDelete httpDelete = new HttpDelete(partyALICEUrl);
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {

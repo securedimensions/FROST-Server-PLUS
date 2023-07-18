@@ -18,18 +18,18 @@
 package de.securedimensions.frostserver.plugin.staplus.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
+import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
+import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class GroupTests extends AbstractTestClass {
+public abstract class GroupTests extends AbstractStaPlusTestClass {
 
     public static class Imp10Tests extends GroupTests {
 
@@ -95,10 +95,6 @@ public abstract class GroupTests extends AbstractTestClass {
     private static final String ANON_SHOULD_NOT_BE_ABLE_TO_DELETE = "anon should NOT be able to delete.";
     private static final String ANY_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION = "Any user should be able to add Observation.";
 
-    public static final String ALICE = "505851c3-2de9-4844-9bd5-d185fe944265";
-    public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
-    public static final String ADMIN = "admin";
-
     private static String GROUP = "{\n"
             + "	\"name\": \"Group\",\n"
             + "	\"description\": \"none\",\n"
@@ -122,8 +118,8 @@ public abstract class GroupTests extends AbstractTestClass {
             + "	 \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
             + "    \"Party\": {\n"
-            + "        \"authId\": \"%s\"," +
-            "          \"role\":  \"individual\"\n"
+            + "        \"authId\": \"%s\","
+            + "          \"role\":  \"individual\"\n"
             + "    }\n"
             + "}";
 
@@ -216,21 +212,20 @@ public abstract class GroupTests extends AbstractTestClass {
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
 
-    private static SensorThingsService serviceSTAplus;
-    private static final Properties SERVER_PROPERTIES = new Properties();
+    private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
 
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
-        SERVER_PROPERTIES.put("plugins.staplus.enable", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", false);
+        SERVER_PROPERTIES.put("plugins.staplus.enable", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
-        // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
+        // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entity type
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
-        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
+        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
     }
 
     //private static SensorThingsService service;
@@ -248,7 +243,9 @@ public abstract class GroupTests extends AbstractTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            sMdl = new SensorThingsSensingV11();
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
@@ -269,25 +266,12 @@ public abstract class GroupTests extends AbstractTestClass {
         cleanup();
     }
 
-    private static void cleanup() throws ServiceFailureException {
-        //EntityUtils.deleteAll(version, serverSettings, service);
-    }
-
-    private static void setAuth(HttpRequestBase http, String username, String password) {
-        String credentials = username + ":" + password;
-        String base64 = Base64.getEncoder().encodeToString(credentials.getBytes());
-        http.setHeader("Authorization", "BASIC " + base64);
-    }
-
-    /*
-     * CREATE Tests
-     */
-
     /*
      * GROUP_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
      */
     @Test
     public void test00GroupMustHaveAParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test00GroupMustHaveAParty");
         String request = GROUP;
 
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
@@ -309,6 +293,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test01SameUserCreateGroupInlineParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateGroupInlineParty");
         String request = String.format(GROUP_INLINE_PARTY, LJS);
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -336,6 +321,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test01SameUserCreateGroupExistingParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateGroupExistingParty");
         createParty(LJS);
 
         String request = String.format(GROUP_EXISTING_PARTY, LJS);
@@ -365,6 +351,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test02OtherUserCreateGroupAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02OtherUserCreateGroupAssoc");
         String request = String.format(GROUP_INLINE_PARTY, LJS);
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -385,6 +372,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test03AdminCreateGroupAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test03AdminCreateGroupAssoc");
         String request = String.format(GROUP_INLINE_PARTY, ALICE);
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -413,6 +401,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test02AnonCreateGroupAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02AnonCreateGroupAssoc");
         String request = String.format(GROUP_INLINE_PARTY, LJS);
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
@@ -434,6 +423,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test10AnyUserAddGroupObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10AnyUserAddGroupObservation");
         String groupUrl = createGroupParty(ALICE);
 
         String request = OBSERVATION_LJS;
@@ -471,6 +461,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test12SameUserUpdateGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test12SameUserUpdateGroup");
         String groupUrl = createGroupParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -494,6 +485,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test10SameUserUpdateGroupOtherParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10SameUserUpdateGroupOtherParty");
         createParty(ALICE);
         String groupUrl = createGroupParty(LJS);
 
@@ -517,6 +509,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test12OtherUserUpdateGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test12OtherUserUpdateGroup");
         String groupUrl = createGroupParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -539,6 +532,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test10OtherUserUpdateGroupParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10OtherUserUpdateGroupParty");
         createParty(ALICE);
 
         String groupUrl = createGroupParty(LJS);
@@ -563,6 +557,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test13AdminUpdateGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test13AdminUpdateGroup");
         String groupUrl = createGroupParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -585,6 +580,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test10AdminUpdateGroupParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10AdminUpdateGroupParty");
         createParty(ALICE);
 
         String groupUrl = createGroupParty(LJS);
@@ -609,6 +605,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test14AnonUpdateGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test14AnonUpdateGroup");
         String groupUrl = createGroupParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -634,6 +631,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test20SameUserDeleteGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test20SameUserDeleteGroup");
         String groupUrl = createGroupParty(LJS);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, LJS, "");
@@ -652,6 +650,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test21OtherUserDeleteGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test21OtherUserDeleteGroup");
         String groupUrl = createGroupParty(LJS);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ALICE, "");
@@ -670,6 +669,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test22AdminDeleteGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test22AdminDeleteGroup");
         String groupUrl = createGroupParty(ALICE);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ADMIN, "");
@@ -689,6 +689,7 @@ public abstract class GroupTests extends AbstractTestClass {
      */
     @Test
     public void test23AnonDeleteParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test23AnonDeleteParty");
         HttpDelete httpDelete = new HttpDelete(partyALICE);
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpDelete)) {

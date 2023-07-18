@@ -24,7 +24,7 @@ import de.fraunhofer.iosb.ilt.frostserver.parser.path.PathParser;
 import de.fraunhofer.iosb.ilt.frostserver.parser.query.QueryParser;
 import de.fraunhofer.iosb.ilt.frostserver.path.ResourcePath;
 import de.fraunhofer.iosb.ilt.frostserver.path.Version;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.PostgresPersistenceManager;
+import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
@@ -43,7 +43,7 @@ public class TableHelperLocation extends TableHelper {
 
     private final TableImpLocations tableLocations;
 
-    public TableHelperLocation(CoreSettings settings, PostgresPersistenceManager ppm) {
+    public TableHelperLocation(CoreSettings settings, JooqPersistenceManager ppm) {
         super(settings, ppm);
 
         this.tableLocations = tables.getTableForClass(TableImpLocations.class);
@@ -55,7 +55,7 @@ public class TableHelperLocation extends TableHelper {
         tableLocations.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, PostgresPersistenceManager pm, Entity entity,
+            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -81,7 +81,7 @@ public class TableHelperLocation extends TableHelper {
         tableLocations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(PostgresPersistenceManager pm, Entity entity, Id entityId)
+            public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
@@ -99,7 +99,7 @@ public class TableHelperLocation extends TableHelper {
         tableLocations.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
-            public void delete(PostgresPersistenceManager pm, Id entityId) throws NoSuchEntityException {
+            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
                     return;
@@ -121,7 +121,7 @@ public class TableHelperLocation extends TableHelper {
 
     }
 
-    private void assertOwnershipLocation(PostgresPersistenceManager pm, Entity location, Principal principal) throws IllegalArgumentException {
+    private void assertOwnershipLocation(JooqPersistenceManager pm, Entity location, Principal principal) throws IllegalArgumentException {
         EntitySet things = location.getProperty(pluginCoreModel.npThingsLocation);
         if ((things != null) && (things.getCount() > 1))
             throw new IllegalArgumentException("Cannot check ownership of Location for more than one Thing");

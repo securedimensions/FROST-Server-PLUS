@@ -18,18 +18,18 @@
 package de.securedimensions.frostserver.plugin.staplus.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
+import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
+import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.methods.*;
@@ -47,11 +47,8 @@ import org.slf4j.LoggerFactory;
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class ObservationTests extends AbstractTestClass {
+public abstract class ObservationTests extends AbstractStaPlusTestClass {
 
-    public static final String ALICE = "505851c3-2de9-4844-9bd5-d185fe944265";
-    public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
-    public static final String ADMIN = "admin";
     /**
      * The logger for this class.
      */
@@ -126,7 +123,7 @@ public abstract class ObservationTests extends AbstractTestClass {
     private static final int HTTP_CODE_400 = 400;
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
-    private static final Properties SERVER_PROPERTIES = new Properties();
+    private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
     private static final String PARTY_ALICE = String.format("{\"displayName\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
     private static final String PARTY_LJS = String.format("{\"displayName\": \"Long John Silver Citizen Scientist\", \"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
     private static final String DATASTREAM_INLINE_PARTY = "{\n"
@@ -211,20 +208,19 @@ public abstract class ObservationTests extends AbstractTestClass {
             + "    }\n"
             + "}";
     private static final String DATASTREAM_EXISTING = "{\"@iot.id\": %s}";
-    private static SensorThingsService service;
 
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
-        SERVER_PROPERTIES.put("plugins.staplus.enable", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", false);
+        SERVER_PROPERTIES.put("plugins.staplus.enable", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
-        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
+        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
     }
 
     public ObservationTests(ServerVersion version) {
@@ -257,21 +253,13 @@ public abstract class ObservationTests extends AbstractTestClass {
         cleanup();
     }
 
-    private static void cleanup() throws ServiceFailureException {
-
-    }
-
-    private static void setAuth(HttpRequestBase http, String username, String password) {
-        String credentials = username + ":" + password;
-        String base64 = Base64.getEncoder().encodeToString(credentials.getBytes());
-        http.setHeader("Authorization", "BASIC " + base64);
-    }
-
     @Override
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            service = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            sMdl = new SensorThingsSensingV11();
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
@@ -295,7 +283,7 @@ public abstract class ObservationTests extends AbstractTestClass {
             setAuth(httpPost, userId, "");
         }
 
-        return service.execute(httpPost);
+        return serviceSTAplus.execute(httpPost);
     }
 
     private String createParty(String userId) throws IOException {
@@ -309,7 +297,7 @@ public abstract class ObservationTests extends AbstractTestClass {
             setAuth(httpPost, userId, "");
         }
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             return response.getFirstHeader("Location").getValue();
         }
     }
@@ -323,7 +311,7 @@ public abstract class ObservationTests extends AbstractTestClass {
             setAuth(httpPost, userId, "");
         }
 
-        try (CloseableHttpResponse response = service.execute(httpPost)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             return response.getFirstHeader("Location").getValue();
         }
     }
@@ -331,7 +319,7 @@ public abstract class ObservationTests extends AbstractTestClass {
     private String getEntityId(String entityUrl) throws ParseException, IOException {
         HttpGet httpGet = new HttpGet(entityUrl);
 
-        try (CloseableHttpResponse response = service.execute(httpGet)) {
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpGet)) {
             String json = org.apache.http.util.EntityUtils.toString(response.getEntity());
             ObjectMapper mapper = new ObjectMapper();
             Map<String, String> map = mapper.readValue(json, Map.class);
@@ -349,6 +337,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test10SameUserCreateObservation() throws IOException {
+        LOGGER.info("  test10SameUserCreateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_DATASTREAM_INLINE_PARTY);
@@ -363,6 +352,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test11SameUserCreateObservation() throws IOException {
+        LOGGER.info("  test11SameUserCreateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_DATASTREAM_EXISTING_PARTY);
@@ -377,6 +367,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test12SameUserCreateObservation() throws IOException {
+        LOGGER.info("  test12SameUserCreateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -394,6 +385,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test20OtherUserCreateObservation() throws IOException {
+        LOGGER.info("  test20OtherUserCreateObservation");
 
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), ALICE)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
@@ -409,6 +401,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test21OtherUserCreateObservation() throws IOException {
+        LOGGER.info("  test21OtherUserCreateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), ALICE)) {
 
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
@@ -424,6 +417,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test22OtherUserCreateObservation() throws IOException {
+        LOGGER.info("  test22OtherUserCreateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -441,6 +435,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test30AnonCreateObservation() throws IOException {
+        LOGGER.info("  test30AnonCreateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), null)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_INLINE_DATASTREAM_INLINE_PARTY);
@@ -455,6 +450,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test31AnonCreateObservation() throws IOException {
+        LOGGER.info("  test31AnonCreateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), null)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_INLINE_DATASTREAM_EXISTING_PARTY);
@@ -469,6 +465,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test32AnonCreateObservation() throws IOException {
+        LOGGER.info("  test32AnonCreateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -486,6 +483,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test40AdminCreateObservation() throws IOException {
+        LOGGER.info("  test40AdminCreateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), ADMIN)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_CREATE_INLINE_DATASTREAM_INLINE_PARTY);
@@ -500,6 +498,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test41AdminCreateObservation() throws IOException {
+        LOGGER.info("  test41AdminCreateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), ADMIN)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_CREATE_INLINE_DATASTREAM_EXISTING_PARTY);
@@ -514,6 +513,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test42AdminCreateObservation() throws IOException {
+        LOGGER.info("  test42AdminCreateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -535,7 +535,7 @@ public abstract class ObservationTests extends AbstractTestClass {
             setAuth(httpDelete, userId, "");
         }
 
-        return service.execute(httpDelete);
+        return serviceSTAplus.execute(httpDelete);
     }
 
     /*
@@ -543,6 +543,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test50SameUserCreateObservation() throws IOException {
+        LOGGER.info("  test50SameUserCreateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), LJS)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_200) {
@@ -559,6 +560,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test51SameUserDeleteObservation() throws IOException {
+        LOGGER.info("  test51SameUserDeleteObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), LJS)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_200) {
@@ -575,6 +577,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test52SameUserDeleteObservation() throws IOException {
+        LOGGER.info("  test52SameUserDeleteObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -594,6 +597,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test60OtherUserDeleteObservation() throws IOException {
+        LOGGER.info("  test60OtherUserDeleteObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), ALICE)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_403) {
@@ -610,6 +614,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test61OtherUserDeleteObservation() throws IOException {
+        LOGGER.info("  test61OtherUserDeleteObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), ALICE)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_403) {
@@ -626,6 +631,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test62OtherUserDeleteObservation() throws IOException {
+        LOGGER.info("  test62OtherUserDeleteObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -645,6 +651,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test70AnonDeleteObservation() throws IOException {
+        LOGGER.info("  test70AnonDeleteObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), null)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_401) {
@@ -661,6 +668,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test71AnonDeleteObservation() throws IOException {
+        LOGGER.info("  test71AnonDeleteObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), null)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_401) {
@@ -677,6 +685,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test72AnonDeleteObservation() throws IOException {
+        LOGGER.info("  test72AnonDeleteObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -696,6 +705,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test80AdminDeleteObservation() throws IOException {
+        LOGGER.info("  test80AdminDeleteObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), ADMIN)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_200) {
@@ -712,6 +722,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test81AdminDeleteObservation() throws IOException {
+        LOGGER.info("  test81AdminDeleteObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), ADMIN)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_200) {
@@ -728,6 +739,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test82AdminCreateObservation() throws IOException {
+        LOGGER.info("  test82AdminCreateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -755,7 +767,7 @@ public abstract class ObservationTests extends AbstractTestClass {
             setAuth(httpPatch, userId, "");
         }
 
-        return service.execute(httpPatch);
+        return serviceSTAplus.execute(httpPatch);
     }
 
     /*
@@ -763,6 +775,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test50SameUserUpdateObservation() throws IOException {
+        LOGGER.info("  test50SameUserUpdateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = updateObservation(response.getFirstHeader("Location").getValue(), LJS)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_200) {
@@ -779,6 +792,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test51SameUserUpdateObservation() throws IOException {
+        LOGGER.info("  test51SameUserUpdateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = updateObservation(response.getFirstHeader("Location").getValue(), LJS)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_200) {
@@ -795,6 +809,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test52SameUserUpdateObservation() throws IOException {
+        LOGGER.info("  test52SameUserUpdateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -814,6 +829,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test60OtherUserUpdateObservation() throws IOException {
+        LOGGER.info("  test60OtherUserUpdateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = updateObservation(response.getFirstHeader("Location").getValue(), ALICE)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_403) {
@@ -830,6 +846,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test61OtherUserUpdateObservation() throws IOException {
+        LOGGER.info("  test61OtherUserUpdateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = updateObservation(response.getFirstHeader("Location").getValue(), ALICE)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_403) {
@@ -846,6 +863,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test62OtherUserUpdateObservation() throws IOException {
+        LOGGER.info("  test62OtherUserUpdateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -865,6 +883,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test70AnonUpdateObservation() throws IOException {
+        LOGGER.info("  test70AnonUpdateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = updateObservation(response.getFirstHeader("Location").getValue(), null)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_401) {
@@ -881,6 +900,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test71AnonUpdateObservation() throws IOException {
+        LOGGER.info("  test71AnonUpdateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = deleteObservation(response.getFirstHeader("Location").getValue(), null)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_401) {
@@ -897,6 +917,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test72AnonUpdateObservation() throws IOException {
+        LOGGER.info("  test72AnonUpdateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 
@@ -916,6 +937,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test80AdminUpdateObservation() throws IOException {
+        LOGGER.info("  test80AdminUpdateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_INLINE_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = updateObservation(response.getFirstHeader("Location").getValue(), ADMIN)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_200) {
@@ -932,6 +954,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test81AdminUpdateObservation() throws IOException {
+        LOGGER.info("  test81AdminUpdateObservation");
         try (CloseableHttpResponse response = createObservation(OBSERVATION_INLINE_DATASTREAM_EXTERNAL_PARTY(LJS), LJS)) {
             try (CloseableHttpResponse response2 = updateObservation(response.getFirstHeader("Location").getValue(), ADMIN)) {
                 if (response2.getStatusLine().getStatusCode() == HTTP_CODE_200) {
@@ -948,6 +971,7 @@ public abstract class ObservationTests extends AbstractTestClass {
      */
     @Test
     public void test82AdminUpdateObservation() throws IOException {
+        LOGGER.info("  test82AdminUpdateObservation");
         String datastreamUrl = createDatastream(DATASTREAM_INLINE_PARTY(LJS), LJS);
         String datastreamId = getEntityId(datastreamUrl);
 

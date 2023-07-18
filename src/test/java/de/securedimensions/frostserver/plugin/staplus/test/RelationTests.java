@@ -17,17 +17,18 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.test;
 
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
+import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
+import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Base64;
-import java.util.Properties;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.methods.*;
@@ -38,17 +39,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tests for the Relation class properties. According to the data model
- * a Relation must have a Subject. A Relation must have either Object or externalObject
+ * Tests for the Relation class properties. According to the data model a
+ * Relation must have a Subject. A Relation must have either Object or
+ * externalObject
  *
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class RelationTests extends AbstractTestClass {
+public abstract class RelationTests extends AbstractStaPlusTestClass {
 
-    public static final String ALICE = "505851c3-2de9-4844-9bd5-d185fe944265";
-    public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
-    public static final String ADMIN = "admin";
     /**
      * The logger for this class.
      */
@@ -140,68 +139,68 @@ public abstract class RelationTests extends AbstractTestClass {
             + "        \"Party\": {\"@iot.id\": \"%s\"}\n"
             + "    }\n"
             + "}";
-    private static final String RELATION_NO_SUBJECT = "{\n" +
-            "\"role\": \"error\", \n" +
-            "\"description\": \"Relation must have a Subject\", \n" +
-            "}";
-    private static final String RELATION_NO_OBJECT = "{\n" +
-            "\"role\": \"error\", \n" +
-            "\"description\": \"Relation must have an Object\", \n" +
-            "\"Subject\": {\"@iot.id\": 1},\n" +
-            "}";
-    private static final String RELATION_SUBJECT_OBJECT = "{\n" +
-            "\"role\": \"OK\", \n" +
-            "\"description\": \"proper Relation with Subject and Object\", \n" +
-            "\"Subject\": {\"@iot.id\": 1},\n" +
-            "\"Object\": {\"@iot.id\": 2}\n" +
-            "}";
+    private static final String RELATION_NO_SUBJECT = "{\n"
+            + "\"role\": \"error\", \n"
+            + "\"description\": \"Relation must have a Subject\", \n"
+            + "}";
+    private static final String RELATION_NO_OBJECT = "{\n"
+            + "\"role\": \"error\", \n"
+            + "\"description\": \"Relation must have an Object\", \n"
+            + "\"Subject\": {\"@iot.id\": 1},\n"
+            + "}";
+    private static final String RELATION_SUBJECT_OBJECT = "{\n"
+            + "\"role\": \"OK\", \n"
+            + "\"description\": \"proper Relation with Subject and Object\", \n"
+            + "\"Subject\": {\"@iot.id\": 1},\n"
+            + "\"Object\": {\"@iot.id\": 2}\n"
+            + "}";
 
-    private static final String RELATION_MDS_SUBJECT_OBJECT = "{\n" +
-            "\"role\": \"OK\", \n" +
-            "\"description\": \"proper Relation with MultiDatastream Subject and Object\", \n" +
-            "\"Subject\": {\"@iot.id\": 100},\n" +
-            "\"Object\": {\"@iot.id\": 2}\n" +
-            "}";
-    private static final String RELATION_SUBJECT_OBJECT_GROUP = "{\n" +
-            "\"role\": \"OK\", \n" +
-            "\"description\": \"proper Relation with Subject and Object\", \n" +
-            "\"Subject\": {\"@iot.id\": 1},\n" +
-            "\"Object\": {\"@iot.id\": 2},\n" +
-            "\"Groups\": [{\"@iot.id\": %d}]\n" +
-            "}";
-    private static final String RELATION_OBJECT_EXTOBJECT = "{\n" +
-            "\"role\": \"error\", \n" +
-            "\"description\": \"Relation must have either Object or externalObject\", \n" +
-            "\"Subject\": {\"@iot.id\": 1},\n" +
-            "\"Object\": {\"@iot.id\": 2}\n" +
-            "\"externalObject\": {\"@iot.id\": \"http://localhost/404\"}\n" +
-            "}";
-    private static final String RELATION_EXTERNAL_OBSERVATIONS = "{\n" +
-            "\"role\": \"OK\", \n" +
-            "\"description\": \"proper Relation with Subject and Object\", \n" +
-            "\"Subject\": {\"@iot.id\": %d},\n" +
-            "\"Object\": {\"@iot.id\": %d}\n" +
-            "}";
-    private static final String RELATION_EXTERNAL_OBSERVATIONS_GROUP = "{\n" +
-            "\"role\": \"OK\", \n" +
-            "\"description\": \"proper Relation with Subject and Object\", \n" +
-            "\"Subject\": {\"@iot.id\": %d},\n" +
-            "\"Object\": {\"@iot.id\": %d},\n" +
-            "\"Groups\": [{\"@iot.id\": %d}]\n" +
-            "}";
-    private static final String RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP = "{\n" +
-            "\"role\": \"OK\", \n" +
-            "\"description\": \"proper Relation with Subject and Object\", \n" +
-            "\"Subject\": {\"@iot.id\": %d},\n" +
-            "\"Object\": {\"@iot.id\": %d},\n" +
-            "\"Groups\": [%s]\n" +
-            "}";
+    private static final String RELATION_MDS_SUBJECT_OBJECT = "{\n"
+            + "\"role\": \"OK\", \n"
+            + "\"description\": \"proper Relation with MultiDatastream Subject and Object\", \n"
+            + "\"Subject\": {\"@iot.id\": 100},\n"
+            + "\"Object\": {\"@iot.id\": 2}\n"
+            + "}";
+    private static final String RELATION_SUBJECT_OBJECT_GROUP = "{\n"
+            + "\"role\": \"OK\", \n"
+            + "\"description\": \"proper Relation with Subject and Object\", \n"
+            + "\"Subject\": {\"@iot.id\": 1},\n"
+            + "\"Object\": {\"@iot.id\": 2},\n"
+            + "\"Groups\": [{\"@iot.id\": %d}]\n"
+            + "}";
+    private static final String RELATION_OBJECT_EXTOBJECT = "{\n"
+            + "\"role\": \"error\", \n"
+            + "\"description\": \"Relation must have either Object or externalObject\", \n"
+            + "\"Subject\": {\"@iot.id\": 1},\n"
+            + "\"Object\": {\"@iot.id\": 2}\n"
+            + "\"externalObject\": {\"@iot.id\": \"http://localhost/404\"}\n"
+            + "}";
+    private static final String RELATION_EXTERNAL_OBSERVATIONS = "{\n"
+            + "\"role\": \"OK\", \n"
+            + "\"description\": \"proper Relation with Subject and Object\", \n"
+            + "\"Subject\": {\"@iot.id\": %d},\n"
+            + "\"Object\": {\"@iot.id\": %d}\n"
+            + "}";
+    private static final String RELATION_EXTERNAL_OBSERVATIONS_GROUP = "{\n"
+            + "\"role\": \"OK\", \n"
+            + "\"description\": \"proper Relation with Subject and Object\", \n"
+            + "\"Subject\": {\"@iot.id\": %d},\n"
+            + "\"Object\": {\"@iot.id\": %d},\n"
+            + "\"Groups\": [{\"@iot.id\": %d}]\n"
+            + "}";
+    private static final String RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP = "{\n"
+            + "\"role\": \"OK\", \n"
+            + "\"description\": \"proper Relation with Subject and Object\", \n"
+            + "\"Subject\": {\"@iot.id\": %d},\n"
+            + "\"Object\": {\"@iot.id\": %d},\n"
+            + "\"Groups\": [%s]\n"
+            + "}";
     private static final int HTTP_CODE_200 = 200;
     private static final int HTTP_CODE_201 = 201;
     private static final int HTTP_CODE_400 = 400;
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
-    private static final Properties SERVER_PROPERTIES = new Properties();
+    private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
     private static final String GROUP_INLINE_LJS = "{\n"
             + "  \"id\": %d,\n"
             + "	 \"name\": \"Group with LJS inline\",\n"
@@ -226,20 +225,19 @@ public abstract class RelationTests extends AbstractTestClass {
             + "        \"authId\": \"505851c3-2de9-4844-9bd5-d185fe944265\"\n"
             + "    }\n"
             + "}";
-    private static SensorThingsService service;
 
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
-        SERVER_PROPERTIES.put("plugins.staplus.enable", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", false);
+        SERVER_PROPERTIES.put("plugins.staplus.enable", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
-        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
+        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
     }
 
     public RelationTests(ServerVersion version) {
@@ -285,21 +283,13 @@ public abstract class RelationTests extends AbstractTestClass {
         cleanup();
     }
 
-    private static void cleanup() throws ServiceFailureException {
-
-    }
-
-    private static void setAuth(HttpRequestBase http, String username, String password) {
-        String credentials = username + ":" + password;
-        String base64 = Base64.getEncoder().encodeToString(credentials.getBytes());
-        http.setHeader("Authorization", "BASIC " + base64);
-    }
-
     @Override
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            service = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            sMdl = new SensorThingsSensingV11();
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
 
             try (CloseableHttpResponse r1 = createObservation(OBSERVATION_INLINE_PARTY(LJS, 1), LJS)) {
                 if (r1.getStatusLine().getStatusCode() != HTTP_CODE_201) {
@@ -367,7 +357,7 @@ public abstract class RelationTests extends AbstractTestClass {
             setAuth(httpPost, userId, "");
         }
 
-        return service.execute(httpPost);
+        return serviceSTAplus.execute(httpPost);
 
     }
 
@@ -380,7 +370,7 @@ public abstract class RelationTests extends AbstractTestClass {
             setAuth(httpPost, userId, "");
         }
 
-        return service.execute(httpPost);
+        return serviceSTAplus.execute(httpPost);
     }
 
     private CloseableHttpResponse createRelation(String request, String userId) throws IOException {
@@ -392,7 +382,7 @@ public abstract class RelationTests extends AbstractTestClass {
             setAuth(httpPost, userId, "");
         }
 
-        return service.execute(httpPost);
+        return serviceSTAplus.execute(httpPost);
     }
 
     private CloseableHttpResponse createGroup(String request, String userId) throws IOException {
@@ -404,7 +394,7 @@ public abstract class RelationTests extends AbstractTestClass {
             setAuth(httpPost, userId, "");
         }
 
-        return service.execute(httpPost);
+        return serviceSTAplus.execute(httpPost);
     }
 
     /*
@@ -413,6 +403,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test00CreateRelation() throws IOException {
+        LOGGER.info("  test00CreateRelation");
         final String CREATE_RELATION = "Create Relation with Subject and Object.";
         try (CloseableHttpResponse response = createRelation(RELATION_SUBJECT_OBJECT, LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
@@ -425,6 +416,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test00CreateRelationMDS() throws IOException {
+        LOGGER.info("  test00CreateRelationMDS");
         final String CREATE_RELATION = "Create Relation with MultiDatastream Subject and Datastream Object.";
         try (CloseableHttpResponse response = createRelation(RELATION_MDS_SUBJECT_OBJECT, LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
@@ -437,6 +429,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test00CreateRelationGroup() throws IOException {
+        LOGGER.info("  test00CreateRelationGroup");
         final String CREATE_RELATION = "Create Relation with Subject, Object and Group.";
         try (CloseableHttpResponse response = createRelation(String.format(RELATION_SUBJECT_OBJECT_GROUP, 1), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
@@ -449,6 +442,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test00CreateRelationNoSubject() throws IOException {
+        LOGGER.info("  test00CreateRelationNoSubject");
         final String CREATE_RELATION_NO_SUBJECT = "Create Relation with no Subject.";
         try (CloseableHttpResponse response = createRelation(RELATION_NO_SUBJECT, LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
@@ -461,6 +455,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test00CreateRelationNoObject() throws IOException {
+        LOGGER.info("  test00CreateRelationNoObject");
         final String CREATE_RELATION_NO_OBJECT = "Create Relation with no Object.";
         try (CloseableHttpResponse response = createRelation(RELATION_NO_OBJECT, LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
@@ -473,6 +468,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test00CreateRelationObjectExtObject() throws IOException {
+        LOGGER.info("  test00CreateRelationObjectExtObject");
         final String CREATE_RELATION_OBJECT_EXTOBJECT = "Create Relation with Object and extObject.";
         try (CloseableHttpResponse response = createRelation(RELATION_OBJECT_EXTOBJECT, LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
@@ -491,6 +487,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test10SameUserCreateRelation() throws IOException {
+        LOGGER.info("  test10SameUserCreateRelation");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION);
@@ -502,6 +499,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10SameUserCreateRelationMDS() throws IOException {
+        LOGGER.info("  test10SameUserCreateRelationMDS");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS(100, 2), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION);
@@ -513,6 +511,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10SameUserCreateRelationGroup() throws IOException {
+        LOGGER.info("  test10SameUserCreateRelationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 1 /* LJS */), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -524,6 +523,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10SameUserCreateRelationInternalGroup() throws IOException {
+        LOGGER.info("  test10SameUserCreateRelationInternalGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP(1, 2, GROUP_INLINE_LJS(100)), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -538,6 +538,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test20OtherUserCreateRelation() throws IOException {
+        LOGGER.info("  test20OtherUserCreateRelation");
         /*
          * The Datastream (and so the observations) is associated to LJS
          */
@@ -552,6 +553,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test20OtherUserCreateRelationMDS() throws IOException {
+        LOGGER.info("  test20OtherUserCreateRelationMDS");
         /*
          * The Datastream (and so the observations) is associated to LJS
          */
@@ -566,6 +568,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10OtherUserCreateRelationGroup() throws IOException {
+        LOGGER.info("  test10OtherUserCreateRelationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 2 /* ALICE */), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -577,6 +580,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10OtherUserCreateRelationInternalGroup() throws IOException {
+        LOGGER.info("  test10OtherUserCreateRelationInternalGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP(1, 2, GROUP_INLINE_ALICE(101)), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -591,6 +595,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test30AnonCreateRelation() throws IOException {
+        LOGGER.info("  test30AnonCreateRelation");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), null)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION);
@@ -602,6 +607,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10AnonUserCreateRelationGroup() throws IOException {
+        LOGGER.info("  test10AnonUserCreateRelationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 2 /* ALICE */), null)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -613,6 +619,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10AnonUserCreateRelationInternalGroup() throws IOException {
+        LOGGER.info("  test10AnonUserCreateRelationInternalGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP(1, 2, GROUP_INLINE_ALICE(102)), null)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -627,6 +634,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test40AdminCreateRelation() throws IOException {
+        LOGGER.info("  test40AdminCreateRelation");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), ADMIN)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_CREATE_RELATION);
@@ -638,6 +646,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10AdminCreateRelationGroup() throws IOException {
+        LOGGER.info("  test10AdminCreateRelationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 2 /* ALICE */), ADMIN)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -649,6 +658,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test10AdminCreateRelationInternalGroup() throws IOException {
+        LOGGER.info("  test10AdminCreateRelationInternalGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP(1, 2, GROUP_INLINE_ALICE(103)), ADMIN)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -667,7 +677,7 @@ public abstract class RelationTests extends AbstractTestClass {
             setAuth(httpDelete, userId, "");
         }
 
-        return service.execute(httpDelete);
+        return serviceSTAplus.execute(httpDelete);
     }
 
     /*
@@ -675,6 +685,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test50SameUserDeleteRelation() throws IOException {
+        LOGGER.info("  test50SameUserDeleteRelation");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -694,6 +705,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test60OtherUserDeleteRelation() throws IOException {
+        LOGGER.info("  test60OtherUserDeleteRelation");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -713,6 +725,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test70AnonDeleteRelation() throws IOException {
+        LOGGER.info("  test70AnonDeleteRelation");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -732,6 +745,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test80AdminDeleteObservation() throws IOException {
+        LOGGER.info("  test80AdminDeleteObservation");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -759,7 +773,7 @@ public abstract class RelationTests extends AbstractTestClass {
             setAuth(httpPatch, userId, "");
         }
 
-        return service.execute(httpPatch);
+        return serviceSTAplus.execute(httpPatch);
     }
 
     private CloseableHttpResponse updateRelationInternalSubject(String url, String subject, String userId) throws IOException {
@@ -772,7 +786,7 @@ public abstract class RelationTests extends AbstractTestClass {
             setAuth(httpPatch, userId, "");
         }
 
-        return service.execute(httpPatch);
+        return serviceSTAplus.execute(httpPatch);
     }
 
     /*
@@ -780,6 +794,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test50SameUserUpdateRelationExternalSubject() throws IOException {
+        LOGGER.info("  test50SameUserUpdateRelationExternalSubject");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -796,6 +811,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test50SameUserUpdateRelationInternalSubject() throws IOException {
+        LOGGER.info("  test50SameUserUpdateRelationInternalSubject");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -815,6 +831,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test60OtherUserUpdateRelationExternalSubject() throws IOException {
+        LOGGER.info("  test60OtherUserUpdateRelationExternalSubject");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -831,6 +848,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test50OtherUserUpdateRelationInternalSubject() throws IOException {
+        LOGGER.info("  test50OtherUserUpdateRelationInternalSubject");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -850,6 +868,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test70AnonUpdateRelation() throws IOException {
+        LOGGER.info("  test70AnonUpdateRelation");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -866,6 +885,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test60OAnonUserUpdateRelationExternalSubject() throws IOException {
+        LOGGER.info("  test60OAnonUserUpdateRelationExternalSubject");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -882,6 +902,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test50AnonUserUpdateRelationInternalSubject() throws IOException {
+        LOGGER.info("  test50AnonUserUpdateRelationInternalSubject");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -901,6 +922,7 @@ public abstract class RelationTests extends AbstractTestClass {
      */
     @Test
     public void test80AdminUpdateRelation() throws IOException {
+        LOGGER.info("  test80AdminUpdateRelation");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -917,6 +939,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test50AdminUpdateRelationExternalSubject() throws IOException {
+        LOGGER.info("  test50AdminUpdateRelationExternalSubject");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();
@@ -933,6 +956,7 @@ public abstract class RelationTests extends AbstractTestClass {
 
     @Test
     public void test50AdminUpdateRelationInternalSubject() throws IOException {
+        LOGGER.info("  test50AdminUpdateRelationInternalSubject");
         try (CloseableHttpResponse r1 = createRelation(RELATION_EXTERNAL_OBSERVATIONS(1, 2), LJS)) {
             if (r1.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 String url = r1.getFirstHeader("Location").getValue();

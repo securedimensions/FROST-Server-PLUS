@@ -18,18 +18,19 @@
 package de.securedimensions.frostserver.plugin.staplus.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import de.fraunhofer.iosb.ilt.statests.AbstractTestClass;
+import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
+import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsMultiDatastreamV11;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class MultiDatastreamTests extends AbstractTestClass {
+public abstract class MultiDatastreamTests extends AbstractStaPlusTestClass {
 
     public static class Imp10Tests extends MultiDatastreamTests {
 
@@ -105,10 +106,6 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_OBSERVATION = "Other user should NOT be able to update Observation.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE_OBSERVATION = "Admin should be able to update Observation.";
     private static final String ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE_OBSERVATION = "anon should NOT be able to update Observation.";
-
-    public static final String ALICE = "505851c3-2de9-4844-9bd5-d185fe944265";
-    public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
-    public static final String ADMIN = "admin";
 
     private static final String MULTIDATASTREAM = "{\n"
             + "    \"name\": \"Environmental Datastream from Camera Trap\",\n"
@@ -364,21 +361,20 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
     private static final int HTTP_CODE_401 = 401;
     private static final int HTTP_CODE_403 = 403;
 
-    private static SensorThingsService serviceSTAplus;
-    private static final Properties SERVER_PROPERTIES = new Properties();
+    private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
 
     static {
         SERVER_PROPERTIES.put("plugins.plugins", PluginPLUS.class.getName());
-        SERVER_PROPERTIES.put("plugins.staplus.enable", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", true);
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", false);
+        SERVER_PROPERTIES.put("plugins.staplus.enable", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", "true");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
-        // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
+        // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
-        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", true);
+        SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
 
     }
 
@@ -394,7 +390,10 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
         LOGGER.info("Setting up for version {}.", version.urlPart);
 
         try {
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)));
+            sMdl = new SensorThingsSensingV11();
+            mMdl = new SensorThingsMultiDatastreamV11(sMdl);
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
@@ -416,24 +415,12 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
         cleanup();
     }
 
-    private static void cleanup() throws ServiceFailureException {
-        //EntityUtils.deleteAll(version, serverSettings, service);
-    }
-
-    private static void setAuth(HttpRequestBase http, String username, String password) {
-        String credentials = username + ":" + password;
-        String base64 = Base64.getEncoder().encodeToString(credentials.getBytes());
-        http.setHeader("Authorization", "BASIC " + base64);
-    }
-    /*
-     * CREATE Tests
-     */
-
     /*
      * MULTIDATASTREAM_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
      */
     @Test
     public void test00MultiDatastreamMustHaveAParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test00MultiDatastreamMustHaveAParty");
         String request = MULTIDATASTREAM;
 
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
@@ -455,6 +442,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test01SameUserCreateMultiDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateMultiDatastream");
         String request = String.format(MULTIDATASTREAM_PARTY, LJS, LJS);
 
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
@@ -483,6 +471,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test02OtherUserCreateMultiDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02OtherUserCreateMultiDatastream");
         String request = String.format(MULTIDATASTREAM_PARTY, LJS, LJS);
 
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
@@ -504,6 +493,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test03AdminCreateMultiDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test03AdminCreateMultiDatastream");
         String request = String.format(MULTIDATASTREAM_PARTY, ALICE, ALICE);
 
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
@@ -533,6 +523,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test02AnonCreateMultiDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02AnonCreateMultiDatastream");
         String request = String.format(MULTIDATASTREAM_PARTY, LJS, LJS);
 
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/MultiDatastreams");
@@ -570,6 +561,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test10SameUserUpdateMultiDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10SameUserUpdateMultiDatastream");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -592,6 +584,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test10SameUserUpdateMultiDatastreamParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10SameUserUpdateMultiDatastreamParty");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = "{\"Party\":" + PARTY_ALICE + "}";
@@ -614,6 +607,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test12OtherUserUpdateMultiDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test12OtherUserUpdateMultiDatastream");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -636,6 +630,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test13AdminUpdateMultiDatastream() throws ClientProtocolException, IOException {
+        LOGGER.info("  test13AdminUpdateMultiDatastream");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -658,6 +653,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test14AnonUpdateParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test14AnonUpdateParty");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
@@ -683,6 +679,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test20SameUserDeleteParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test20SameUserDeleteParty");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         HttpDelete httpDelete = new HttpDelete(datastreamUrl);
@@ -702,6 +699,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test21OtherUserDeleteParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test21OtherUserDeleteParty");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         HttpDelete httpDelete = new HttpDelete(datastreamUrl);
@@ -721,6 +719,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test22AdminDeleteParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test22AdminDeleteParty");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         HttpDelete httpDelete = new HttpDelete(datastreamUrl);
@@ -741,6 +740,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test23AnonDeleteParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test23AnonDeleteParty");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         HttpDelete httpDelete = new HttpDelete(datastreamUrl);
@@ -757,11 +757,13 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
     /*
      * Observation Tests
      */
+
     /*
      * SAME_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION Success: 201 Fail n/a
      */
     @Test
     public void test30SameUserAddObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test30SameUserAddObservation");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = MDS_OBSERVATION;
@@ -784,6 +786,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test31OtherUserAddObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test31OtherUserAddObservation");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = MDS_OBSERVATION;
@@ -806,6 +809,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test32AdminAddObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test32AdminAddObservation");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = MDS_OBSERVATION;
@@ -828,6 +832,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test33AnonAddObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test33AnonAddObservation");
         String datastreamUrl = createMultiDatastreamForParty(LJS);
 
         String request = MDS_OBSERVATION;
@@ -862,6 +867,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test40SameUserDeleteObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test40SameUserDeleteObservation");
 
         String datastreamUrl = createMultiDatastreamForParty(LJS);
         addObservation(datastreamUrl, LJS, ++observationId);
@@ -883,6 +889,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test41OtherUserDeleteObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test41OtherUserDeleteObservation");
 
         String datastreamUrl = createMultiDatastreamForParty(LJS);
         addObservation(datastreamUrl, LJS, ++observationId);
@@ -904,6 +911,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test42AdminDeleteObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test42AdminDeleteObservation");
 
         String datastreamUrl = createMultiDatastreamForParty(LJS);
         addObservation(datastreamUrl, LJS, ++observationId);
@@ -925,6 +933,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test43AnonDeleteObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test43AnonDeleteObservation");
 
         String datastreamUrl = createMultiDatastreamForParty(LJS);
         addObservation(datastreamUrl, LJS, ++observationId);
@@ -945,6 +954,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test50SameUserUpdateObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test50SameUserUpdateObservation");
 
         String datastreamUrl = createMultiDatastreamForParty(LJS);
         addObservation(datastreamUrl, LJS, ++observationId);
@@ -969,6 +979,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test51OtherUserUpdateObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test51OtherUserUpdateObservation");
 
         String datastreamUrl = createMultiDatastreamForParty(LJS);
         addObservation(datastreamUrl, LJS, ++observationId);
@@ -993,6 +1004,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test52AdminUpdateObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test52AdminUpdateObservation");
 
         String datastreamUrl = createMultiDatastreamForParty(LJS);
         addObservation(datastreamUrl, LJS, ++observationId);
@@ -1017,6 +1029,7 @@ public abstract class MultiDatastreamTests extends AbstractTestClass {
      */
     @Test
     public void test53AnonUpdateObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test53AnonUpdateObservation");
 
         String datastreamUrl = createMultiDatastreamForParty(LJS);
         addObservation(datastreamUrl, LJS, ++observationId);
