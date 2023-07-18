@@ -130,14 +130,14 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
         registerRelation(new RelationOneToMany<>(pluginPLUS.npSubjectRelation, this, tableObservations)
                 .setSourceFieldAccessor(TableImpRelations::getSubjectId)
                 .setTargetFieldAccessor(TableImpObservations::getId));
-        tableObservations.registerRelation(new RelationOneToMany<>(pluginPLUS.npSubjectsObservation, tableObservations, this)
+        tableObservations.registerRelation(new RelationOneToMany<>(pluginPLUS.npObjectsObservation, tableObservations, this)
                 .setSourceFieldAccessor(TableImpObservations::getId)
                 .setTargetFieldAccessor(TableImpRelations::getSubjectId));
 
         registerRelation(new RelationOneToMany<>(pluginPLUS.npObjectRelation, this, tableObservations)
                 .setSourceFieldAccessor(TableImpRelations::getObjectId)
                 .setTargetFieldAccessor(TableImpObservations::getId));
-        tableObservations.registerRelation(new RelationOneToMany<>(pluginPLUS.npObjectsObservation, tableObservations, this)
+        tableObservations.registerRelation(new RelationOneToMany<>(pluginPLUS.npSubjectsObservation, tableObservations, this)
                 .setSourceFieldAccessor(TableImpObservations::getId)
                 .setTargetFieldAccessor(TableImpRelations::getObjectId));
 
@@ -164,7 +164,7 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
                 .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId);
         // We register a navigationProperty for Object on the Observations table.
         tableObservations.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npObjectsObservation, TableImpObservations::getId);
+                .addEntry(pluginPLUS.npSubjectsObservation, TableImpObservations::getId);
 
     }
 

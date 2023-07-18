@@ -124,9 +124,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<String> epRelationRole = new EntityPropertyMain<>("role", TypeSimplePrimitive.EDM_STRING, true, false);
     public final NavigationPropertyEntity npSubjectRelation = new NavigationPropertyEntity("Subject", true);
 
-    public final NavigationPropertyEntitySet npSubjectsObservation = new NavigationPropertyEntitySet("Subjects", npSubjectRelation);
+    public final NavigationPropertyEntitySet npObjectsObservation = new NavigationPropertyEntitySet("Objects", npSubjectRelation);
     public final NavigationPropertyEntity npObjectRelation = new NavigationPropertyEntity("Object", false);
-    public final NavigationPropertyEntitySet npObjectsObservation = new NavigationPropertyEntitySet("Objects", npObjectRelation);
+    public final NavigationPropertyEntitySet npSubjectsObservation = new NavigationPropertyEntitySet("Subjects", npObjectRelation);
     public final EntityType etRelation = new EntityType("Relation", "Relations");
     public final EntityPropertyMain<String> epPartyDescription = new EntityPropertyMain<>("description", TypeSimplePrimitive.EDM_STRING, false, true);
     public final EntityPropertyMain<Role> epPartyRole = new EntityPropertyMain<>("role", propertyTypeRole, true, false);
@@ -532,14 +532,14 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(npObjectRelation)
                 .registerProperty(npRelationGroups);
 
-        npSubjectsObservation.setEntityType(etRelation);
         npObjectsObservation.setEntityType(etRelation);
+        npSubjectsObservation.setEntityType(etRelation);
         npRelationsGroup.setEntityType(etRelation);
 
         // link subject and object to Relations
         pluginCoreModel.etObservation
-                .registerProperty(npSubjectsObservation)
                 .registerProperty(npObjectsObservation)
+                .registerProperty(npSubjectsObservation)
                 .addUpdateValidator(pluginCoreModel.etObservation.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
