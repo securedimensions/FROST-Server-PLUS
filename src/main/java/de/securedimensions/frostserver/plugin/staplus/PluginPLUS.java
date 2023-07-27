@@ -236,7 +236,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     if (!enforceLicensing)
                         return;
 
-                    if (LICENSE_IDS.contains(entity.getId().getValue()))
+                    if (entity.getId() != null && LICENSE_IDS.contains(entity.getId().getValue()))
                         throw new ForbiddenException("License with this `id` cannot be created.");
                 })
                 .addUpdateValidator(etParty.entityName + ".updateValidator", (entity) -> {
@@ -244,7 +244,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     if (!enforceLicensing)
                         return;
 
-                    if (LICENSE_IDS.contains(entity.getId().getValue()))
+                    if (entity.getId() != null && LICENSE_IDS.contains(entity.getId().getValue()))
                         throw new ForbiddenException("License with this `id` cannot be updated.");
                 });
 
