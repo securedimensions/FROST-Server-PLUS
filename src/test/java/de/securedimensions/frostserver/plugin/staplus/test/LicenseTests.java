@@ -48,9 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tests for the Group class properties. According to the ownership concept, a
- * Group's properties can only be changed by the user that 'owns' the Group
- * instance. That user has the same UUID as the Party's authId property.
  *
  * @author Andreas Matheus
  */
@@ -87,17 +84,6 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
                 + "    \"Party\": " + PARTY_ALICE + ",\n"
                 + "    \"License\": %s\n"
                 + "}", license);
-    }
-
-    private static String GROUP(int id, String license) {
-        return String.format("{\n"
-                + " \"@iot.id\": %d,\n"
-                + "	\"name\": \"Group\",\n"
-                + "	\"description\": \"with license\",\n"
-                + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
-                + "    \"Party\": " + PARTY_ALICE + ",\n"
-                + "    \"License\": %s\n"
-                + "}", id, license);
     }
 
     private static String DATASTREAM(String license) {
