@@ -28,32 +28,33 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceMana
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpLocations;
+import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpFeatures;
 import de.fraunhofer.iosb.ilt.frostserver.query.Query;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
+import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import java.security.Principal;
-import java.util.Map;
 import org.jooq.Field;
 
-public class TableHelperLocation extends TableHelper {
+import java.security.Principal;
+import java.util.Map;
 
-    private final TableImpLocations tableLocations;
+public class TableHelperFeatureOfInterest extends TableHelper {
 
-    public TableHelperLocation(CoreSettings settings, JooqPersistenceManager ppm) {
+    private final TableImpFeatures tableFoI;
+
+    public TableHelperFeatureOfInterest(CoreSettings settings, JooqPersistenceManager ppm) {
         super(settings, ppm);
 
-        this.tableLocations = tables.getTableForClass(TableImpLocations.class);
+        this.tableFoI = tables.getTableForClass(TableImpFeatures.class);
     }
 
     @Override
     public void registerPreHooks() {
 
-        tableLocations.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableFoI.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
             public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
@@ -63,7 +64,7 @@ public class TableHelperLocation extends TableHelper {
                  * Select Phase
                  */
                 if (phase == Phase.PRE_RELATIONS) {
-                    final String encodingType = (String)entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
+                    final String encodingType = (String)entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
                     if (!encodingType.equalsIgnoreCase("application/geo+json"))
                         throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
                 }
@@ -73,21 +74,21 @@ public class TableHelperLocation extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                if (pluginPlus.isEnforceOwnershipEnabled())
-                    assertOwnershipLocation(pm, entity, principal);
+                if (!pluginPlus.isEnforceOwnershipEnabled())
+                    assertOwnershipFeatureOfInterest(pm, entity, principal);
 
                 return true;
             }
         });
 
-        tableLocations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+        tableFoI.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
             public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
-                final String encodingType = (String)entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
-                if (encodingType != null && !encodingType.equalsIgnoreCase("application/geo+json"))
+                final String encodingType = (String)entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
+                if ((encodingType != null) && !encodingType.equalsIgnoreCase("application/geo+json"))
                     throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
 
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
@@ -95,44 +96,37 @@ public class TableHelperLocation extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                if (pluginPlus.isEnforceOwnershipEnabled())
-                    assertOwnershipLocation(pm, entity, principal);
+                if (pluginPlus.isEnforceOwnershipEnabled()) {
+                    // Unpredictable implications as we don't know all the observations were this FeatureOfInterest is associated to
+                    throw new IllegalArgumentException("Updating a FeatureOfInterest is not supported");
+                }
             }
         });
 
-        tableLocations.registerHookPreDelete(-10.0, new HookPreDelete() {
+        tableFoI.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
             public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
-
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
 
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal))
                     return;
 
-                Id id = ParserUtils.idFromObject(entityId);
-                ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Locations(" + id.getUrl() + ")");
-                Query query = QueryParser.parseQuery("$expand=Things", pm.getCoreSettings(), rp);
-                query.validate();
-                Entity location = (Entity) pm.get(rp, query);
-
-                assertOwnershipLocation(pm, location, principal);
+                // Unpredictable implications as we don't know all the observations were this FeatureOfInterest is associated to
+                throw new IllegalArgumentException("Deleting a FeatureOfInterest is not supported");
             }
         });
-
     }
 
-    private void assertOwnershipLocation(JooqPersistenceManager pm, Entity location, Principal principal) throws IllegalArgumentException {
-        EntitySet things = location.getProperty(pluginCoreModel.npThingsLocation);
-        if ((things != null) && (things.getCount() > 1))
-            throw new IllegalArgumentException("Cannot check ownership of Location for more than one Thing");
+    private void assertOwnershipFeatureOfInterest(JooqPersistenceManager pm, Entity location, Principal principal) throws IllegalArgumentException {
+        EntitySet observations = location.getProperty(pluginCoreModel.npObservationsFeature);
+        if ((observations != null) && (observations.getCount() > 1))
+            throw new IllegalArgumentException("Cannot check ownership of FeatureOfInterest for more than one Observation");
 
-        if (things != null) {
-            Entity thing = pm.get(pluginCoreModel.etThing, things.iterator().next().getId());
-            assertOwnershipThing(pm, thing, principal);
+        if (observations != null) {
+            Entity observation = pm.get(pluginCoreModel.etObservation, observations.iterator().next().getId());
+            assertOwnershipObservation(pm, observation, principal);
         }
     }
 

@@ -69,8 +69,9 @@ public class TableHelperLicense extends TableHelper {
                 /*
                  * Select Phase
                  */
-                if (phase == Phase.PRE_RELATIONS)
+                if (phase == Phase.PRE_RELATIONS) {
                     return true;
+                }
 
                 if (!pluginPlus.isEnforceLicensingEnabled())
                     return true;
@@ -127,7 +128,7 @@ public class TableHelperLicense extends TableHelper {
                         assertEmptyGroup(pm, g);
                     }
                 } else
-                    throw new IllegalArgumentException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
+                    ;//throw new IllegalArgumentException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
 
                 return true;
             }
