@@ -304,7 +304,6 @@ public abstract class ThingTests extends AbstractStaPlusTestClass {
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
-        SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
         SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
     }
 
