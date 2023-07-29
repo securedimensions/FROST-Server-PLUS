@@ -84,6 +84,15 @@ A `Relation` can only be created if the `Subject` is linked to the `Party` that 
 This implementation generates a set of Creative Commons licenses as configured (see [README](/README.md) for details).
 These `License` entities are read-only.
 
+## Enforcing the Storage-CRS Requirement
+
+According to the STAplus conformance class `Core`, this implementation enforces the requirement 
+`http://www.opengis.net/spec/sensorthings-staplus/1.0/req/storage-crs/crs-definition`.
+This requires that the `encodingType` property must be set to the value `application/geo+json` when creating a 
+`Location` or `FeatureOfInterest` entity. For updating the `Location` or `FeatureOfInterest` entity, the 
+`encodingType` property must not be set (be present in the JSON request). But if present, the value must be 
+`application/geo+json`.
+
 ## Enforce Licensing
 
 Once enabled, it controls a specific use of `License` entities.
