@@ -236,7 +236,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     if (!enforceLicensing)
                         return;
 
-                    if (entity.getId() != null && LICENSE_IDS.contains(entity.getId().getValue()))
+                    if ((entity.getId() != null) && LICENSE_IDS.contains(entity.getId().getValue()))
                         throw new ForbiddenException("License with this `id` cannot be created.");
                 })
                 .addUpdateValidator(etParty.entityName + ".updateValidator", (entity) -> {
@@ -244,7 +244,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     if (!enforceLicensing)
                         return;
 
-                    if (entity.getId() != null && LICENSE_IDS.contains(entity.getId().getValue()))
+                    if ((entity.getId() != null) && LICENSE_IDS.contains(entity.getId().getValue()))
                         throw new ForbiddenException("License with this `id` cannot be updated.");
                 });
 
@@ -722,6 +722,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             new TableHelperGroup(settings, ppm).registerPreHooks();
             new TableHelperObservation(settings, ppm).registerPreHooks();
             new TableHelperLocation(settings, ppm).registerPreHooks();
+            new TableHelperFeatureOfInterest(settings, ppm).registerPreHooks();
             new TableHelperLicense(settings, ppm).registerPreHooks();
             new TableHelperProject(settings, ppm).registerPreHooks();
             new TableHelperRelation(settings, ppm).registerPreHooks();
