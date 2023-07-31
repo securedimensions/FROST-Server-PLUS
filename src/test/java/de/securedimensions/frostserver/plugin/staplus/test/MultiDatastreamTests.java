@@ -391,9 +391,9 @@ public abstract class MultiDatastreamTests extends AbstractStaPlusTestClass {
 
         try {
             sMdl = new SensorThingsSensingV11();
-            mMdl = new SensorThingsMultiDatastreamV11(sMdl);
-            pMdl = new SensorThingsPlus(sMdl);
-            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
+            mMdl = new SensorThingsMultiDatastreamV11();
+            pMdl = new SensorThingsPlus();
+            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)), sMdl, mMdl, pMdl);
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
