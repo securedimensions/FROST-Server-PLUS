@@ -455,7 +455,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         npCampaignDatastreams.setEntityType(etCampaign);
         pluginCoreModel.etDatastream.registerProperty(npCampaignDatastreams);
 
-        if (pluginMultiDatastream.isEnabled()) {
+        if (pluginMultiDatastream != null) {
             etCampaign.registerProperty(npMultiDatastreamsCampaign);
             npCampaignMultiDatastreams.setEntityType(etCampaign);
             npMultiDatastreamsCampaign.setEntityType(pluginMultiDatastream.etMultiDatastream);
@@ -562,7 +562,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
                 });
 
-        if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled()) {
+        if ((pluginMultiDatastream != null)) {
             /**
              * Class License
              */

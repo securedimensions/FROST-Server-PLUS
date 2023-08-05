@@ -140,7 +140,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
                 .setSourceFieldAccessor(table -> (TableField<Record, ?>) table.field(tableDatastreams.indexOf("PARTY_ID")))
                 .setTargetFieldAccessor(TableImpParty::getId));
 
-        if (pluginMultiDatastream.isEnabled()) {
+        if (pluginMultiDatastream != null) {
             TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
             final int partyMDIdIdx = tableMultiDatastreams.indexOf("PARTY_ID");
             registerRelation(new RelationOneToMany<>(pluginPLUS.npMultiDatastreamsParty, this, tableMultiDatastreams)
@@ -175,7 +175,7 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         // We register a navigationProperty on the Datastreams table.
         pfReg.addEntry(pluginPLUS.npDatastreamsParty, TableImpParty::getId);
 
-        if (pluginMultiDatastream.isEnabled()) {
+        if (pluginMultiDatastream != null) {
             // We register a navigationProperty on the MultiDatastreams table.
             pfReg.addEntry(pluginPLUS.npMultiDatastreamsParty, TableImpParty::getId);
         }

@@ -181,7 +181,7 @@ public class TableImpCampaign extends StaTableAbstract<TableImpCampaign> {
                 .setTargetLinkFieldAcc(TableImpCampaignsDatastreams::getCampaignId)
                 .setTargetFieldAcc(TableImpCampaign::getId));
 
-        if (pluginMultiDatastream.isEnabled()) {
+        if (pluginMultiDatastream != null) {
             // Add relation to MultiDatastreams table
             TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
             final TableImpCampaignsMultiDatastreams tableCampaignsMultiDatastreams = tables.getTableForClass(TableImpCampaignsMultiDatastreams.class);
@@ -224,7 +224,7 @@ public class TableImpCampaign extends StaTableAbstract<TableImpCampaign> {
         tableDatastreams.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npCampaignDatastreams, TableImpDatastreams::getId);
 
-        if (pluginMultiDatastream.isEnabled()) {
+        if (pluginMultiDatastream != null) {
             TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
             pfReg.addEntry(pluginPLUS.npMultiDatastreamsCampaign, TableImpCampaign::getId);
             tableMultiDatastreams.getPropertyFieldRegistry()
