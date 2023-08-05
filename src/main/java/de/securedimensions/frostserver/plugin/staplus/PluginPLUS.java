@@ -706,7 +706,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
              */
             tableCollection.registerTable(etCampaign, new TableImpCampaign(dataTypeCampaign, dataTypeParty, dataTypeLicense, this, pluginCoreModel, pluginMultiDatastream));
             tableCollection.registerTable(new TableImpCampaignsDatastreams(dataTypeCampaign, dataTypeDatastream));
-            if (pluginMultiDatastream.isEnabled()) {
+            if (pluginMultiDatastream != null) {
                 final DataType dataTypeMultiDatastream = tableCollection.getTableForType(pluginMultiDatastream.etMultiDatastream).getId().getDataType();
                 tableCollection.registerTable(new TableImpCampaignsMultiDatastreams(dataTypeCampaign, dataTypeMultiDatastream));
             }
