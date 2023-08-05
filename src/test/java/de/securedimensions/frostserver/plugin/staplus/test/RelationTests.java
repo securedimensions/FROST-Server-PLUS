@@ -288,8 +288,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
             sMdl = new SensorThingsSensingV11();
-            pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)), sMdl, pMdl);
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
 
             try (CloseableHttpResponse r1 = createObservation(OBSERVATION_INLINE_PARTY(LJS, 1), LJS)) {
                 if (r1.getStatusLine().getStatusCode() != HTTP_CODE_201) {

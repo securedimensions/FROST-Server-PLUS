@@ -320,8 +320,8 @@ public abstract class ThingTests extends AbstractStaPlusTestClass {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
             sMdl = new SensorThingsSensingV11();
-            pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)), sMdl, pMdl);
+            pMdl = new SensorThingsPlus(sMdl);
+            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
