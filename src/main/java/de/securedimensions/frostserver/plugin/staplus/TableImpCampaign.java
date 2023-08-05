@@ -50,60 +50,60 @@ import org.jooq.impl.SQLDataType;
  * @author am
  * @author scf
  */
-public class TableImpProject extends StaTableAbstract<TableImpProject> {
+public class TableImpCampaign extends StaTableAbstract<TableImpCampaign> {
 
     /**
-     * The column <code>public.PROJECT.EP_NAME</code>.
+     * The column <code>public.CAMPAIGN.EP_NAME</code>.
      */
     public final TableField<Record, String> colName = createField(DSL.name("NAME"), SQLDataType.CLOB.defaultValue(DSL.field("'no name'::text", SQLDataType.CLOB)), this);
 
     /**
-     * The column <code>public.PROJECT.EP_DESCRIPTION</code>.
+     * The column <code>public.CAMPAIGN.EP_DESCRIPTION</code>.
      */
     public final TableField<Record, String> colDescription = createField(DSL.name("DESCRIPTION"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECT.EP_PROPERTIES</code>.
+     * The column <code>public.CAMPAIGN.EP_PROPERTIES</code>.
      */
     public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
 
     /**
-     * The column <code>public.PROJECT.EP_CLASSIFICATION</code>.
+     * The column <code>public.CAMPAIGN.EP_CLASSIFICATION</code>.
      */
     public final TableField<Record, String> colClassification = createField(DSL.name("CLASSIFICATION"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECT.EP_TERMSOFUSE</code>.
+     * The column <code>public.CAMPAIGN.EP_TERMSOFUSE</code>.
      */
-    public final TableField<Record, String> colTermsOfUse = createField(DSL.name("TERMSOFUSE"), SQLDataType.CLOB, this);
+    public final TableField<Record, String> colTermsOfUse = createField(DSL.name("TERMS_OF_USE"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECT.EP_PRIVACYPOLICY</code>.
+     * The column <code>public.CAMPAIGN.EP_PRIVACYPOLICY</code>.
      */
-    public final TableField<Record, String> colPrivacyPolicy = createField(DSL.name("PRIVACYPOLICY"), SQLDataType.CLOB, this);
+    public final TableField<Record, String> colPrivacyPolicy = createField(DSL.name("PRIVACY_POLICY"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECTS.EP_URL</code>.
+     * The column <code>public.CAMPAIGNS.EP_URL</code>.
      */
     public final TableField<Record, String> colUrl = createField(DSL.name("URL"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.PROJECT.START_TIME</code>.
+     * The column <code>public.CAMPAIGN.START_TIME</code>.
      */
     public final TableField<Record, Moment> colStartTime = createField(DSL.name("START_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
-     * The column <code>public.PROJECT.END_TIME</code>.
+     * The column <code>public.CAMPAIGN.END_TIME</code>.
      */
     public final TableField<Record, Moment> colEndTime = createField(DSL.name("END_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
-     * The column <code>public.PROJECT.CREATION_TIME</code>.
+     * The column <code>public.CAMPAIGN.CREATION_TIME</code>.
      */
     public final TableField<Record, Moment> colCreationTime = createField(DSL.name("CREATION_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
 
     /**
-     * The column <code>public.PROJECT.EP_ID</code>.
+     * The column <code>public.CAMPAIGN.EP_ID</code>.
      */
     public final TableField<Record, ?> colId = createField(DSL.name("ID"), getIdType(), this);
 
@@ -117,17 +117,17 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     private final PluginMultiDatastream pluginMultiDatastream;
 
     /**
-     * Create a <code>public.PROJECTS</code> table reference.
+     * Create a <code>public.CAMPAIGNS</code> table reference.
      *
      * @param idType The (SQL)DataType of the Id columns used in the actual
      * database.
-     * @param pluginProject the party plugin this table belongs to.
+     * @param pluginPLUS the STAplus plugin
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpProject(DataType<?> idType, DataType<?> idTypeParty, DataType<?> idTypeLicense, PluginPLUS pluginProject, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
-        super(idType, DSL.name("PROJECTS"), null, null);
-        this.pluginPLUS = pluginProject;
+    public TableImpCampaign(DataType<?> idType, DataType<?> idTypeParty, DataType<?> idTypeLicense, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+        super(idType, DSL.name("CAMPAIGNS"), null, null);
+        this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
         this.pluginMultiDatastream = pluginMultiDatastream;
 
@@ -136,11 +136,11 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
 
     }
 
-    private TableImpProject(Name alias, TableImpProject aliased, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+    private TableImpCampaign(Name alias, TableImpCampaign aliased, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         this(alias, aliased, aliased, pluginPlus, pluginCoreModel, pluginMultiDatastream);
     }
 
-    private TableImpProject(Name alias, TableImpProject aliased, Table updatedSql, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+    private TableImpCampaign(Name alias, TableImpCampaign aliased, Table updatedSql, PluginPLUS pluginPlus, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginPlus;
         this.pluginCoreModel = pluginCoreModel;
@@ -156,45 +156,45 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
         final TableCollection tables = getTables();
 
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
-        final int projectIdIdx = tableDatastreams.indexOf("PROJECT_ID");
+        final int projectIdIdx = tableDatastreams.indexOf("CAMPAIGN_ID");
 
         // We add the relation to Party table.
-        registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyProject, this, tables.getTableForClass(TableImpParty.class))
-                .setSourceFieldAccessor(TableImpProject::getPartyId)
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyCampaign, this, tables.getTableForClass(TableImpParty.class))
+                .setSourceFieldAccessor(TableImpCampaign::getPartyId)
                 .setTargetFieldAccessor(TableImpParty::getId));
 
         // We add the relation to License table.
-        registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseProject, this, tables.getTableForClass(TableImpLicense.class))
-                .setSourceFieldAccessor(TableImpProject::getLicenseId)
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseCampaign, this, tables.getTableForClass(TableImpLicense.class))
+                .setSourceFieldAccessor(TableImpCampaign::getLicenseId)
                 .setTargetFieldAccessor(TableImpLicense::getId));
 
         // Add relation to Datastreams table
-        final TableImpProjectsDatastreams tableProjectsDatastreams = tables.getTableForClass(TableImpProjectsDatastreams.class);
-        registerRelation(new RelationManyToMany<>(pluginPLUS.npDatastreamsProject, this, tableProjectsDatastreams, tableDatastreams)
-                .setSourceFieldAcc(TableImpProject::getId)
-                .setSourceLinkFieldAcc(TableImpProjectsDatastreams::getProjectId)
-                .setTargetLinkFieldAcc(TableImpProjectsDatastreams::getDatastreamId)
+        final TableImpCampaignsDatastreams tableCampaignsDatastreams = tables.getTableForClass(TableImpCampaignsDatastreams.class);
+        registerRelation(new RelationManyToMany<>(pluginPLUS.npDatastreamsCampaign, this, tableCampaignsDatastreams, tableDatastreams)
+                .setSourceFieldAcc(TableImpCampaign::getId)
+                .setSourceLinkFieldAcc(TableImpCampaignsDatastreams::getCampaignId)
+                .setTargetLinkFieldAcc(TableImpCampaignsDatastreams::getDatastreamId)
                 .setTargetFieldAcc(TableImpDatastreams::getId));
-        tableDatastreams.registerRelation(new RelationManyToMany<>(pluginPLUS.npProjectDatastreams, tableDatastreams, tableProjectsDatastreams, this)
+        tableDatastreams.registerRelation(new RelationManyToMany<>(pluginPLUS.npCampaignDatastreams, tableDatastreams, tableCampaignsDatastreams, this)
                 .setSourceFieldAcc(TableImpDatastreams::getId)
-                .setSourceLinkFieldAcc(TableImpProjectsDatastreams::getDatastreamId)
-                .setTargetLinkFieldAcc(TableImpProjectsDatastreams::getProjectId)
-                .setTargetFieldAcc(TableImpProject::getId));
+                .setSourceLinkFieldAcc(TableImpCampaignsDatastreams::getDatastreamId)
+                .setTargetLinkFieldAcc(TableImpCampaignsDatastreams::getCampaignId)
+                .setTargetFieldAcc(TableImpCampaign::getId));
 
         if (pluginMultiDatastream.isEnabled()) {
             // Add relation to MultiDatastreams table
             TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-            final TableImpProjectsMultiDatastreams tableProjectsMultiDatastreams = tables.getTableForClass(TableImpProjectsMultiDatastreams.class);
-            registerRelation(new RelationManyToMany<>(pluginPLUS.npMultiDatastreamsProject, this, tableProjectsMultiDatastreams, tableMultiDatastreams)
-                    .setSourceFieldAcc(TableImpProject::getId)
-                    .setSourceLinkFieldAcc(TableImpProjectsMultiDatastreams::getProjectId)
-                    .setTargetLinkFieldAcc(TableImpProjectsMultiDatastreams::getMultiDatastreamId)
+            final TableImpCampaignsMultiDatastreams tableCampaignsMultiDatastreams = tables.getTableForClass(TableImpCampaignsMultiDatastreams.class);
+            registerRelation(new RelationManyToMany<>(pluginPLUS.npMultiDatastreamsCampaign, this, tableCampaignsMultiDatastreams, tableMultiDatastreams)
+                    .setSourceFieldAcc(TableImpCampaign::getId)
+                    .setSourceLinkFieldAcc(TableImpCampaignsMultiDatastreams::getCampaignId)
+                    .setTargetLinkFieldAcc(TableImpCampaignsMultiDatastreams::getMultiDatastreamId)
                     .setTargetFieldAcc(TableImpMultiDatastreams::getId));
-            tableMultiDatastreams.registerRelation(new RelationManyToMany<>(pluginPLUS.npProjectMultiDatastreams, tableMultiDatastreams, tableProjectsMultiDatastreams, this)
+            tableMultiDatastreams.registerRelation(new RelationManyToMany<>(pluginPLUS.npCampaignMultiDatastreams, tableMultiDatastreams, tableCampaignsMultiDatastreams, this)
                     .setSourceFieldAcc(TableImpMultiDatastreams::getId)
-                    .setSourceLinkFieldAcc(TableImpProjectsMultiDatastreams::getMultiDatastreamId)
-                    .setTargetLinkFieldAcc(TableImpProjectsMultiDatastreams::getProjectId)
-                    .setTargetFieldAcc(TableImpProject::getId));
+                    .setSourceLinkFieldAcc(TableImpCampaignsMultiDatastreams::getMultiDatastreamId)
+                    .setTargetLinkFieldAcc(TableImpCampaignsMultiDatastreams::getCampaignId)
+                    .setTargetFieldAcc(TableImpCampaign::getId));
 
         }
 
@@ -203,41 +203,41 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     @Override
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
-        pfReg.addEntryId(TableImpProject::getId);
+        pfReg.addEntryId(TableImpCampaign::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
         pfReg.addEntryString(pluginPLUS.epClassification, table -> table.colClassification);
-        pfReg.addEntryString(pluginPLUS.epProjectTermsOfUse, table -> table.colTermsOfUse);
-        pfReg.addEntryString(pluginPLUS.epProjectPrivacyPolicy, table -> table.colPrivacyPolicy);
+        pfReg.addEntryString(pluginPLUS.epCampaignTermsOfUse, table -> table.colTermsOfUse);
+        pfReg.addEntryString(pluginPLUS.epCampaignPrivacyPolicy, table -> table.colPrivacyPolicy);
         pfReg.addEntryString(pluginPLUS.epUrl, table -> table.colUrl);
 
-        pfReg.addEntry(pluginPLUS.epProjectCreationTime, table -> table.colCreationTime,
-                new ConverterTimeInstant<>(pluginPLUS.epProjectCreationTime, table -> table.colCreationTime));
-        pfReg.addEntry(pluginPLUS.epProjectStartTime, table -> table.colStartTime,
-                new ConverterTimeInstant<>(pluginPLUS.epProjectStartTime, table -> table.colStartTime));
-        pfReg.addEntry(pluginPLUS.epProjectEndTime, table -> table.colEndTime,
-                new ConverterTimeInstant<>(pluginPLUS.epProjectEndTime, table -> table.colEndTime));
+        pfReg.addEntry(pluginPLUS.epCampaignCreationTime, table -> table.colCreationTime,
+                new ConverterTimeInstant<>(pluginPLUS.epCampaignCreationTime, table -> table.colCreationTime));
+        pfReg.addEntry(pluginPLUS.epCampaignStartTime, table -> table.colStartTime,
+                new ConverterTimeInstant<>(pluginPLUS.epCampaignStartTime, table -> table.colStartTime));
+        pfReg.addEntry(pluginPLUS.epCampaignEndTime, table -> table.colEndTime,
+                new ConverterTimeInstant<>(pluginPLUS.epCampaignEndTime, table -> table.colEndTime));
 
-        pfReg.addEntry(pluginPLUS.npDatastreamsProject, TableImpProject::getId);
+        pfReg.addEntry(pluginPLUS.npDatastreamsCampaign, TableImpCampaign::getId);
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
         tableDatastreams.getPropertyFieldRegistry()
-                .addEntry(pluginPLUS.npProjectDatastreams, TableImpDatastreams::getId);
+                .addEntry(pluginPLUS.npCampaignDatastreams, TableImpDatastreams::getId);
 
         if (pluginMultiDatastream.isEnabled()) {
             TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
-            pfReg.addEntry(pluginPLUS.npMultiDatastreamsProject, TableImpProject::getId);
+            pfReg.addEntry(pluginPLUS.npMultiDatastreamsCampaign, TableImpCampaign::getId);
             tableMultiDatastreams.getPropertyFieldRegistry()
-                    .addEntry(pluginPLUS.npProjectMultiDatastreams, TableImpMultiDatastreams::getId);
+                    .addEntry(pluginPLUS.npCampaignMultiDatastreams, TableImpMultiDatastreams::getId);
         }
-        pfReg.addEntry(pluginPLUS.npPartyProject, TableImpProject::getPartyId);
-        pfReg.addEntry(pluginPLUS.npLicenseProject, TableImpProject::getLicenseId);
-        pfReg.addEntry(pluginPLUS.npGroupsProject, TableImpProject::getId);
+        pfReg.addEntry(pluginPLUS.npPartyCampaign, TableImpCampaign::getPartyId);
+        pfReg.addEntry(pluginPLUS.npLicenseCampaign, TableImpCampaign::getLicenseId);
+        pfReg.addEntry(pluginPLUS.npGroupsCampaign, TableImpCampaign::getId);
     }
 
     @Override
     public EntityType getEntityType() {
-        return pluginPLUS.etProject;
+        return pluginPLUS.etCampaign;
     }
 
     @Override
@@ -254,22 +254,22 @@ public class TableImpProject extends StaTableAbstract<TableImpProject> {
     }
 
     @Override
-    public TableImpProject as(Name alias) {
-        return new TableImpProject(alias, this, pluginPLUS, pluginCoreModel, pluginMultiDatastream).initCustomFields();
+    public TableImpCampaign as(Name alias) {
+        return new TableImpCampaign(alias, this, pluginPLUS, pluginCoreModel, pluginMultiDatastream).initCustomFields();
     }
 
     @Override
-    public StaMainTable<TableImpProject> asSecure(String name, JooqPersistenceManager pm) {
+    public StaMainTable<TableImpCampaign> asSecure(String name, JooqPersistenceManager pm) {
         final SecurityTableWrapper securityWrapper = getSecurityWrapper();
         if (securityWrapper == null) {
             return as(name);
         }
         final Table wrappedTable = securityWrapper.wrap(this, pm);
-        return new TableImpProject(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
+        return new TableImpCampaign(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
     }
 
     @Override
-    public TableImpProject getThis() {
+    public TableImpCampaign getThis() {
         return this;
     }
 

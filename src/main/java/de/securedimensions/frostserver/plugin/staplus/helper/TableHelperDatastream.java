@@ -93,7 +93,7 @@ public class TableHelperDatastream extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                // We need to assert on the existing Project that is to be updated
+                // We need to assert on the existing Datastream that is to be updated
                 datastream = pm.get(pluginCoreModel.etDatastream, datastream.getId());
                 assertOwnershipDatastream(pm, datastream, principal);
 

@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Tests for the Relation class properties. According to the data model a
  * Relation must have a Subject. A Relation must have either Object or
- * externalObject
+ * externalResource
  *
  * @author Andreas Matheus
  */
@@ -54,11 +54,11 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationTests.class);
     private static final long serialVersionUID = 1639739965;
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION = "Same user should be able to create Relation.";
-    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP = "Same user should be able to create Relation to own Group.";
+    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP = "Same user should be able to create Relation to own ObservationGroup.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE_RELATION = "Same user should be able to update Relation.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_DELETE_RELATION = "Same user should be able to delete Relation.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION = "Other user should NOT be able to create Relation to other party's observation.";
-    private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP = "User should NOT be able to create Relation to other user's Group.";
+    private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP = "User should NOT be able to create Relation to other user's ObservationGroup.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_RELATION = "Other user should NOT be able to update Relation to other party's observation.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE_RELATION = "Other user should NOT be able to delete Relation to other party's observation.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE_RELATION = "Admin should be able to create Relation to other party's observation.";
@@ -66,7 +66,7 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE_RELATION = "Admin should be able to update Relation to other party's observation.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE_RELATION = "Admin should be able to delete Relation to other party's observation.";
     private static final String ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION = "anon should NOT be able to create Relation.";
-    private static final String ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP = "anon should NOT be able to create Relation with Group.";
+    private static final String ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP = "anon should NOT be able to create Relation with ObservationGroup.";
     private static final String ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE_RELATION = "anon should NOT be able to update Relation.";
     private static final String ANON_SHOULD_NOT_BE_ABLE_TO_DELETE_RELATION = "anon should NOT be able to delete Relation.";
     private static final String OBSERVATION = "{\n"
@@ -166,14 +166,14 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
             + "\"description\": \"proper Relation with Subject and Object\", \n"
             + "\"Subject\": {\"@iot.id\": 1},\n"
             + "\"Object\": {\"@iot.id\": 2},\n"
-            + "\"Groups\": [{\"@iot.id\": %d}]\n"
+            + "\"ObservationGroups\": [{\"@iot.id\": %d}]\n"
             + "}";
     private static final String RELATION_OBJECT_EXTOBJECT = "{\n"
             + "\"role\": \"error\", \n"
-            + "\"description\": \"Relation must have either Object or externalObject\", \n"
+            + "\"description\": \"Relation must have either Object or externalResource\", \n"
             + "\"Subject\": {\"@iot.id\": 1},\n"
             + "\"Object\": {\"@iot.id\": 2}\n"
-            + "\"externalObject\": {\"@iot.id\": \"http://localhost/404\"}\n"
+            + "\"externalResource\": {\"@iot.id\": \"http://localhost/404\"}\n"
             + "}";
     private static final String RELATION_EXTERNAL_OBSERVATIONS = "{\n"
             + "\"role\": \"OK\", \n"
@@ -186,14 +186,14 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
             + "\"description\": \"proper Relation with Subject and Object\", \n"
             + "\"Subject\": {\"@iot.id\": %d},\n"
             + "\"Object\": {\"@iot.id\": %d},\n"
-            + "\"Groups\": [{\"@iot.id\": %d}]\n"
+            + "\"ObservationGroups\": [{\"@iot.id\": %d}]\n"
             + "}";
     private static final String RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP = "{\n"
             + "\"role\": \"OK\", \n"
             + "\"description\": \"proper Relation with Subject and Object\", \n"
             + "\"Subject\": {\"@iot.id\": %d},\n"
             + "\"Object\": {\"@iot.id\": %d},\n"
-            + "\"Groups\": [%s]\n"
+            + "\"ObservationGroups\": [%s]\n"
             + "}";
     private static final int HTTP_CODE_200 = 200;
     private static final int HTTP_CODE_201 = 201;
@@ -203,7 +203,7 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
     private static final String GROUP_INLINE_LJS = "{\n"
             + "  \"id\": %d,\n"
-            + "	 \"name\": \"Group with LJS inline\",\n"
+            + "	 \"name\": \"ObservationGroup with LJS inline\",\n"
             + "  \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
             + "    \"Party\": {\n"
@@ -215,7 +215,7 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
             + "}";
     private static final String GROUP_INLINE_ALICE = "{\n"
             + "  \"id\": %d,\n"
-            + "	 \"name\": \"Group with ALICE inline\",\n"
+            + "	 \"name\": \"ObservationGroup with ALICE inline\",\n"
             + "  \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
             + "    \"Party\": {\n"
@@ -301,14 +301,14 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
                     LOGGER.error("Failed to create Observation no. 2");
                 }
             }
-            try (CloseableHttpResponse r3 = createGroup(GROUP_INLINE_LJS(1), LJS)) {
+            try (CloseableHttpResponse r3 = createObservationGroup(GROUP_INLINE_LJS(1), LJS)) {
                 if (r3.getStatusLine().getStatusCode() != HTTP_CODE_201) {
-                    LOGGER.error("Failed to create Group no. 1");
+                    LOGGER.error("Failed to create ObservationGroup no. 1");
                 }
             }
-            try (CloseableHttpResponse r4 = createGroup(GROUP_INLINE_ALICE(2), ALICE)) {
+            try (CloseableHttpResponse r4 = createObservationGroup(GROUP_INLINE_ALICE(2), ALICE)) {
                 if (r4.getStatusLine().getStatusCode() != HTTP_CODE_201) {
-                    LOGGER.error("Failed to create Group no. 2");
+                    LOGGER.error("Failed to create ObservationGroup no. 2");
                 }
             }
             /*
@@ -385,8 +385,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
         return serviceSTAplus.execute(httpPost);
     }
 
-    private CloseableHttpResponse createGroup(String request, String userId) throws IOException {
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+    private CloseableHttpResponse createObservationGroup(String request, String userId) throws IOException {
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/ObservationGroups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
@@ -428,9 +428,9 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test00CreateRelationGroup() throws IOException {
-        LOGGER.info("  test00CreateRelationGroup");
-        final String CREATE_RELATION = "Create Relation with Subject, Object and Group.";
+    public void test00CreateRelationObservationGroup() throws IOException {
+        LOGGER.info("  test00CreateRelationObservationGroup");
+        final String CREATE_RELATION = "Create Relation with Subject, Object and ObservationGroup.";
         try (CloseableHttpResponse response = createRelation(String.format(RELATION_SUBJECT_OBJECT_GROUP, 1), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, CREATE_RELATION);
@@ -510,8 +510,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test10SameUserCreateRelationGroup() throws IOException {
-        LOGGER.info("  test10SameUserCreateRelationGroup");
+    public void test10SameUserCreateRelationObservationGroup() throws IOException {
+        LOGGER.info("  test10SameUserCreateRelationObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 1 /* LJS */), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -522,8 +522,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test10SameUserCreateRelationInternalGroup() throws IOException {
-        LOGGER.info("  test10SameUserCreateRelationInternalGroup");
+    public void test10SameUserCreateRelationInternalObservationGroup() throws IOException {
+        LOGGER.info("  test10SameUserCreateRelationInternalObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP(1, 2, GROUP_INLINE_LJS(100)), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, SAME_USER_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -567,8 +567,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test10OtherUserCreateRelationGroup() throws IOException {
-        LOGGER.info("  test10OtherUserCreateRelationGroup");
+    public void test10OtherUserCreateRelationObservationGroup() throws IOException {
+        LOGGER.info("  test10OtherUserCreateRelationObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 2 /* ALICE */), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -579,8 +579,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test10OtherUserCreateRelationInternalGroup() throws IOException {
-        LOGGER.info("  test10OtherUserCreateRelationInternalGroup");
+    public void test10OtherUserCreateRelationInternalObservationGroup() throws IOException {
+        LOGGER.info("  test10OtherUserCreateRelationInternalObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP(1, 2, GROUP_INLINE_ALICE(101)), LJS)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -606,8 +606,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test10AnonUserCreateRelationGroup() throws IOException {
-        LOGGER.info("  test10AnonUserCreateRelationGroup");
+    public void test10AnonUserCreateRelationObservationGroup() throws IOException {
+        LOGGER.info("  test10AnonUserCreateRelationObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 2 /* ALICE */), null)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -618,8 +618,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test10AnonUserCreateRelationInternalGroup() throws IOException {
-        LOGGER.info("  test10AnonUserCreateRelationInternalGroup");
+    public void test10AnonUserCreateRelationInternalObservationGroup() throws IOException {
+        LOGGER.info("  test10AnonUserCreateRelationInternalObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP(1, 2, GROUP_INLINE_ALICE(102)), null)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_401) {
                 Assertions.assertTrue(Boolean.TRUE, ANON_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -645,8 +645,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test10AdminCreateRelationGroup() throws IOException {
-        LOGGER.info("  test10AdminCreateRelationGroup");
+    public void test10AdminCreateRelationObservationGroup() throws IOException {
+        LOGGER.info("  test10AdminCreateRelationObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 2 /* ALICE */), ADMIN)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP);
@@ -657,8 +657,8 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void test10AdminCreateRelationInternalGroup() throws IOException {
-        LOGGER.info("  test10AdminCreateRelationInternalGroup");
+    public void test10AdminCreateRelationInternalObservationGroup() throws IOException {
+        LOGGER.info("  test10AdminCreateRelationInternalObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_INTERNAL_GROUP(1, 2, GROUP_INLINE_ALICE(103)), ADMIN)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 Assertions.assertTrue(Boolean.TRUE, ADMIN_SHOULD_BE_ABLE_TO_CREATE_RELATION_GROUP);

@@ -20,7 +20,7 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2021-05-25-PLUS-MULTI_DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2021-08-03-PLUS-MULTI_DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="MULTI_DATASTREAMS" />
         </preConditions>
@@ -30,9 +30,6 @@
                 <constraints nullable="true"/>
             </column>
             <column name="PARTY_ID" type="${idType-Party}">
-                <constraints nullable="true"/>
-            </column>
-            <column name="PROJECT_ID" type="${idType-Project}">
                 <constraints nullable="true"/>
             </column>
         </addColumn>

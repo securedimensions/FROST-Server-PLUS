@@ -20,30 +20,30 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2023-07-17-PLUS-PROJECTS_DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-08-03-PLUS-GROUPS_CAMPAIGNS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="PROJECTS_DATASTREAMS" />
+                <tableExists tableName="GROUPS_CAMPAIGNS" />
             </not>
         </preConditions>
 
-        <createTable tableName="PROJECTS_DATASTREAMS">
-            <column name="PROJECT_ID" type="${idType-Project}">
+        <createTable tableName="GROUPS_CAMPAIGNS">
+            <column name="GROUP_ID" type="${idType-Group}">
                 <constraints nullable="true"/>
             </column>
-            <column name="DATASTREAM_ID" type="${idType-Datastream}">
+            <column name="CAMPAIGN_ID" type="${idType-Campaign}">
                 <constraints nullable="true"/>
             </column>
         </createTable>
         
-        <addPrimaryKey columnNames="PROJECT_ID, DATASTREAM_ID" constraintName="PROJECTS_DATASTREAMS_PKEY" tableName="PROJECTS_DATASTREAMS"/>
+        <addPrimaryKey columnNames="GROUP_ID, CAMPAIGN_ID" constraintName="GROUPS_CAMPAIGNS_PKEY" tableName="GROUPS_CAMPAIGNS"/>
         
-        <createIndex tableName="PROJECTS_DATASTREAMS" indexName="PROJECTS_DATASTREAMS_PROJECT_ID">
-            <column name="PROJECT_ID" />
+        <createIndex tableName="GROUPS_CAMPAIGNS" indexName="GROUPS_CAMPAIGNS_CAMPAIGN_ID">
+            <column name="CAMPAIGN_ID" />
         </createIndex>
         
-        <createIndex tableName="PROJECTS_DATASTREAMS" indexName="PROJECTS_DATASTREAMS_DATASTREAM_ID">
-            <column name="DATASTREAM_ID" />
+        <createIndex tableName="GROUPS_CAMPAIGNS" indexName="GROUPS_CAMPAIGNS_GROUP_ID">
+            <column name="GROUP_ID" />
         </createIndex>
     </changeSet>
 

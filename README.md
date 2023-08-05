@@ -1,6 +1,10 @@
 # Sensor Things API - PLUS (STAplus)
 This repository contains an open source reference implementation of STAplus.
 
+**_NOTE_:** This implementation is still work in progress. The source code is already available in this repository to give you the opportunity to follow along or actually contribute.
+
+**_INPORTANT_: Do not yet use in production!**
+
 ## About the OGC STAplus Standard
 STAplus is an OGC Candidate Standard [22-022](https://docs.ogc.org/DRAFTS/22-022.html) that extends the suite of OGC SensorThings API [v1.0](https://docs.ogc.org/is/15-078r6/15-078r6.html) and [v1.1](https://docs.ogc.org/is/18-088/18-088.html) Standards.
 
@@ -47,12 +51,12 @@ Different features of the STAplus plugin can be activated / deactivated using FR
 
 * **plugins.staplus.enable:**  
   Set to `true` to activate the STAplus plugin. Default: `false`.
-* **plugins.staplus.idType.group:**  
-  The type of the primary key column of the Groups table. Defaults to the value of **plugins.coreModel.idType**.
+* **plugins.staplus.idType.observation_group:**  
+  The type of the primary key column of the ObservationGroups table. Defaults to the value of **plugins.coreModel.idType**.
 * **plugins.staplus.idType.license:**  
   The type of the primary key column of the Licenses table. Defaults to the value of **plugins.coreModel.idType**.
-* **plugins.staplus.idType.project:**  
-  The type of the primary key column of the Projects table. Defaults to the value of **plugins.coreModel.idType**.
+* **plugins.staplus.idType.campaign:**  
+  The type of the primary key column of the Campaigns table. Defaults to the value of **plugins.coreModel.idType**.
 * **plugins.staplus.idType.relation:**  
   The type of the primary key column of the Relations table. Defaults to the value of **plugins.coreModel.idType**.
 
@@ -63,9 +67,9 @@ The activation of the `Enforcement of Ownership` allows to operate the STAplus e
 
 Each acting user is identified via a unique UUID, provided by the authentication plugin. The `REMOTE_USER` value is used to identify the user. The value of `REMOTE_USER` represents the user as a `Party` object via the `authId` property. When creating a `Party` object, the value for the `authId` property must either be empty or match the value for the `REMOTE_USER`. All other values are rejected by the implementation and will result in a response with HTTP status code 400.
 
-The classes `Thing`, `MultiDatastream`, `Datastream` and `Group` are directly associated to a Party. Objects of class `Observation` are linked to the owning Party object via the `(Multi)Datastream`. Objects of class `Relation` are linked to the Party object via the `Subject` property.
+The classes `Thing`, `MultiDatastream`, `Datastream` and `ObservationGroup` are directly associated to a Party. Objects of class `Observation` are linked to the owning Party object via the `(Multi)Datastream`. Objects of class `Relation` are linked to the Party object via the `Subject` property.
 
-When activating the Concept of Ownership, the implementation enforces the multiplicity `[1]` on the association of these classes to `Party`. Therefore, creating objects of class `Thing`, `MultiDatastream`, `Datastream` or `Group` require the association with the Party object that represents the acting user. 
+When activating the Concept of Ownership, the implementation enforces the multiplicity `[1]` on the association of these classes to `Party`. Therefore, creating objects of class `Thing`, `MultiDatastream`, `Datastream` or `ObservationGroup` require the association with the Party object that represents the acting user. 
 
 A user can `update` or `delete` any object owned. However, the user *cannot* delete the own Party. This requires admin access.
 
@@ -91,7 +95,7 @@ This configuration overwrites the `id` generation for the `Party` entity only.
 
 
 ## <a name="EnforceLicensing"></a>Enforcement of Licensing
-According to the STAplus Data Model, a `Datastream`, `Group` and `Project` may have a `License` association. In order to ensure the use of compatible licenses, this implementations generates a given set of configured licenses.
+According to the STAplus Data Model, a `Datastream`, `ObservationGroup` and `Campaign` may have a `License` association. In order to ensure the use of compatible licenses, this implementations generates a given set of configured licenses.
 
 ### Settings
 The file `resources/tables.xml` contains as the last constructor for table generation the entry 
@@ -106,8 +110,8 @@ You can change this configuration accordingly to load a different set of license
 Set to `true` to enable the enforcement of licensing. Default: `false`.
 
 
-## <a name="EnforceGroupLicensing"></a>Enforcement of Group Licensing
-When adding (an) `Observation(s)` to a `Group`, the `Enforcement of Licensing` ensures that the `License`, associated to (an) `Observation(s)` is compatible to the `License` associated to a `Group`.
+## <a name="EnforceGroupLicensing"></a>Enforcement of ObservationGroup Licensing
+When adding (an) `Observation(s)` to an `ObservationGroup`, the `Enforcement of Licensing` ensures that the `License`, associated to (an) `Observation(s)` is compatible to the `License` associated to an `ObservationGroup`.
 
 When activating the `Enforcement of Licensing`, the plugin enforces licenses compatibility based on the Creative Commons v3 licensing model an the license compatibility according to the official cart. 
 
@@ -117,8 +121,8 @@ The plugin creates the different Creative Commons Licenses in read-only mode as 
 
 ### Settings
 
-**plugins.plus.enable.enforceGroupLicensing:**  
-Set to `true` to enable the enforcement of licensing on `Group` entity. Default: `false`. 
+**plugins.plus.enable.enforceObservationGroupLicensing:**  
+Set to `true` to enable the enforcement of licensing on `ObservationGroup` entity. Default: `false`. 
 
 ## Appreciation
-Work on this project has being funded by the European Commission under Grant Agreement No. 863463 and 101086421.
+Work on this implementation has being funded by the European Commission.

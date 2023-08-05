@@ -99,8 +99,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final NavigationPropertyEntitySet npMultiDatastreamsLicense = new NavigationPropertyEntitySet("MultiDatastreams", npLicenseMultiDatastream);
     public final NavigationPropertyEntity npLicenseGroup = new NavigationPropertyEntity("License", false);
     public final NavigationPropertyEntitySet npGroupsLicense = new NavigationPropertyEntitySet("Groups", npLicenseGroup);
-    public final NavigationPropertyEntity npLicenseProject = new NavigationPropertyEntity("License", false);
-    public final NavigationPropertyEntitySet npProjectsLicense = new NavigationPropertyEntitySet("Projects", npLicenseProject);
+    public final NavigationPropertyEntity npLicenseCampaign = new NavigationPropertyEntity("License", false);
+    public final NavigationPropertyEntitySet npCampaignsLicense = new NavigationPropertyEntitySet("Campaigns", npLicenseCampaign);
     public final EntityType etLicense = new EntityType("License", "Licenses");
     /**
      * Class Group
@@ -111,16 +111,16 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final EntityPropertyMain<String> epGroupTermsOfUse = new EntityPropertyMain<>("termsOfUse", TypeSimplePrimitive.EDM_STRING, false, true);
     public final EntityPropertyMain<String> epGroupPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeSimplePrimitive.EDM_STRING, false, true);
     public final EntityPropertyMain<Map<String, Object>> epGroupDataQuality = new EntityPropertyMain<>("dataQuality", TypeComplex.STA_MAP, false, true);
-    public final NavigationPropertyEntitySet npObservationGroups = new NavigationPropertyEntitySet("Groups");
+    public final NavigationPropertyEntitySet npObservationGroups = new NavigationPropertyEntitySet("ObservationGroups");
     public final NavigationPropertyEntitySet npObservationsGroup = new NavigationPropertyEntitySet("Observations", npObservationGroups);
-    public final NavigationPropertyEntitySet npRelationGroups = new NavigationPropertyEntitySet("Groups");
+    public final NavigationPropertyEntitySet npRelationGroups = new NavigationPropertyEntitySet("ObservationGroups");
     public final NavigationPropertyEntitySet npRelationsGroup = new NavigationPropertyEntitySet("Relations", npRelationGroups);
-    public final EntityType etGroup = new EntityType("Group", "Groups");
+    public final EntityType etGroup = new EntityType("ObservationGroup", "ObservationGroups");
     /**
      * Class Relation
      */
     public final EntityPropertyMain<String> epRelationDescription = new EntityPropertyMain<>("description", TypeSimplePrimitive.EDM_STRING, false, true);
-    public final EntityPropertyMain<String> epExternalObject = new EntityPropertyMain<>("externalObject", TypeSimplePrimitive.EDM_STRING, false, true);
+    public final EntityPropertyMain<String> epExternalObject = new EntityPropertyMain<>("externalResource", TypeSimplePrimitive.EDM_STRING, false, true);
     public final EntityPropertyMain<String> epRelationRole = new EntityPropertyMain<>("role", TypeSimplePrimitive.EDM_STRING, true, false);
     public final NavigationPropertyEntity npSubjectRelation = new NavigationPropertyEntity("Subject", true);
 
@@ -135,38 +135,38 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final NavigationPropertyEntity npPartyThing = new NavigationPropertyEntity("Party", false);
     public final NavigationPropertyEntitySet npThingsParty = new NavigationPropertyEntitySet("Things", npPartyThing);
     public final NavigationPropertyEntity npPartyGroup = new NavigationPropertyEntity("Party", false);
-    public final NavigationPropertyEntitySet npGroupsParty = new NavigationPropertyEntitySet("Groups", npPartyGroup);
+    public final NavigationPropertyEntitySet npGroupsParty = new NavigationPropertyEntitySet("ObservationGroups", npPartyGroup);
     public final NavigationPropertyEntity npPartyDatastream = new NavigationPropertyEntity("Party", false);
     public final NavigationPropertyEntitySet npDatastreamsParty = new NavigationPropertyEntitySet("Datastreams", npPartyDatastream);
     public final NavigationPropertyEntity npPartyMultiDatastream = new NavigationPropertyEntity("Party", false);
     public final NavigationPropertyEntitySet npMultiDatastreamsParty = new NavigationPropertyEntitySet("MultiDatastreams", npPartyMultiDatastream);
     public final EntityType etParty = new EntityType("Party", "Parties");
     /**
-     * Class Project
+     * Class Campaign
      */
     public final EntityPropertyMain<String> epClassification = new EntityPropertyMain<>("classification", TypeSimplePrimitive.EDM_STRING, false, true);
-    public final EntityPropertyMain<String> epProjectTermsOfUse = new EntityPropertyMain<>("termsOfUse", TypeSimplePrimitive.EDM_STRING, true, false);
-    public final EntityPropertyMain<String> epProjectPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeSimplePrimitive.EDM_STRING, false, true);
-    public final EntityPropertyMain<TimeInstant> epProjectCreationTime = new EntityPropertyMain<>("creationTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, true, false);
-    public final EntityPropertyMain<TimeInstant> epProjectStartTime = new EntityPropertyMain<>("startTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
-    public final EntityPropertyMain<TimeInstant> epProjectEndTime = new EntityPropertyMain<>("endTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
+    public final EntityPropertyMain<String> epCampaignTermsOfUse = new EntityPropertyMain<>("termsOfUse", TypeSimplePrimitive.EDM_STRING, true, false);
+    public final EntityPropertyMain<String> epCampaignPrivacyPolicy = new EntityPropertyMain<>("privacyPolicy", TypeSimplePrimitive.EDM_STRING, false, true);
+    public final EntityPropertyMain<TimeInstant> epCampaignCreationTime = new EntityPropertyMain<>("creationTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, true, false);
+    public final EntityPropertyMain<TimeInstant> epCampaignStartTime = new EntityPropertyMain<>("startTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
+    public final EntityPropertyMain<TimeInstant> epCampaignEndTime = new EntityPropertyMain<>("endTime", TypeSimplePrimitive.EDM_DATETIMEOFFSET, false, true);
     public final EntityPropertyMain<String> epUrl = new EntityPropertyMain<>("url", TypeSimplePrimitive.EDM_STRING, false, true);
-    public final NavigationPropertyEntitySet npProjectDatastreams = new NavigationPropertyEntitySet("Projects");
-    public final NavigationPropertyEntitySet npDatastreamsProject = new NavigationPropertyEntitySet("Datastreams", npProjectDatastreams);
-    public final NavigationPropertyEntitySet npProjectMultiDatastreams = new NavigationPropertyEntitySet("Projects");
-    public final NavigationPropertyEntitySet npMultiDatastreamsProject = new NavigationPropertyEntitySet("MultiDatastreams", npProjectMultiDatastreams);
-    public final EntityType etProject = new EntityType("Project", "Projects");
-    public final NavigationPropertyEntity npPartyProject = new NavigationPropertyEntity("Party", false);
-    public final NavigationPropertyEntitySet npProjectsParty = new NavigationPropertyEntitySet("Projects", npPartyProject);
+    public final NavigationPropertyEntitySet npCampaignDatastreams = new NavigationPropertyEntitySet("Campaigns");
+    public final NavigationPropertyEntitySet npDatastreamsCampaign = new NavigationPropertyEntitySet("Datastreams", npCampaignDatastreams);
+    public final NavigationPropertyEntitySet npCampaignMultiDatastreams = new NavigationPropertyEntitySet("Campaigns");
+    public final NavigationPropertyEntitySet npMultiDatastreamsCampaign = new NavigationPropertyEntitySet("MultiDatastreams", npCampaignMultiDatastreams);
+    public final EntityType etCampaign = new EntityType("Campaign", "Campaigns");
+    public final NavigationPropertyEntity npPartyCampaign = new NavigationPropertyEntity("Party", false);
+    public final NavigationPropertyEntitySet npCampaignsParty = new NavigationPropertyEntitySet("Campaigns", npPartyCampaign);
 
-    public final NavigationPropertyEntitySet npProjectsGroup = new NavigationPropertyEntitySet("Projects");
-    public final NavigationPropertyEntitySet npGroupsProject = new NavigationPropertyEntitySet("Groups", npProjectsGroup);
+    public final NavigationPropertyEntitySet npCampaignsGroup = new NavigationPropertyEntitySet("Campaigns");
+    public final NavigationPropertyEntitySet npGroupsCampaign = new NavigationPropertyEntitySet("ObservationGroups", npCampaignsGroup);
 
     // Type IDs
     public EntityPropertyMain<?> epIdGroup;
     public EntityPropertyMain<?> epIdLicense;
     public EntityPropertyMain<?> epIdParty;
-    public EntityPropertyMain<?> epIdProject;
+    public EntityPropertyMain<?> epIdCampaign;
     public EntityPropertyMain<?> epIdRelation;
     private CoreSettings settings;
     private PluginPlusSettings plusSettings;
@@ -220,7 +220,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         epIdLicense = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeLicense)).setAliases("id");
         npDatastreamsLicense.setEntityType(pluginCoreModel.etDatastream);
         npGroupsLicense.setEntityType(etGroup);
-        npProjectsLicense.setEntityType(etProject);
+        npCampaignsLicense.setEntityType(etCampaign);
         etLicense
                 .registerProperty(epIdLicense)
                 .registerProperty(pluginCoreModel.epName)
@@ -230,7 +230,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epLicenseAttributionText)
                 .registerProperty(npDatastreamsLicense)
                 .registerProperty(npGroupsLicense)
-                .registerProperty(npProjectsLicense)
+                .registerProperty(npCampaignsLicense)
                 .addCreateValidator(etLicense.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceLicensing)
@@ -257,7 +257,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         epIdParty = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeParty)).setAliases("id");
         npThingsParty.setEntityType(pluginCoreModel.etThing);
         npGroupsParty.setEntityType(etGroup);
-        npProjectsParty.setEntityType(etProject);
+        npCampaignsParty.setEntityType(etCampaign);
         npDatastreamsParty.setEntityType(pluginCoreModel.etDatastream);
         etParty
                 .registerProperty(epIdParty)
@@ -267,7 +267,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(epPartyRole)
                 .registerProperty(npThingsParty)
                 .registerProperty(npGroupsParty)
-                .registerProperty(npProjectsParty)
+                .registerProperty(npCampaignsParty)
                 .registerProperty(npDatastreamsParty)
                 .addCreateValidator(etParty.entityName + ".createValidator", (entity) -> {
 
@@ -402,30 +402,30 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 });
 
         /**
-         * Class Project
+         * Class Campaign
          */
-        epIdProject = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeProject)).setAliases("id");
-        npLicenseProject.setEntityType(etLicense);
-        npPartyProject.setEntityType(etParty);
-        npDatastreamsProject.setEntityType(pluginCoreModel.etDatastream);
-        npGroupsProject.setEntityType(etGroup);
-        etProject
-                .registerProperty(epIdProject)
+        epIdCampaign = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeCampaign)).setAliases("id");
+        npLicenseCampaign.setEntityType(etLicense);
+        npPartyCampaign.setEntityType(etParty);
+        npDatastreamsCampaign.setEntityType(pluginCoreModel.etDatastream);
+        npGroupsCampaign.setEntityType(etGroup);
+        etCampaign
+                .registerProperty(epIdCampaign)
                 .registerProperty(pluginCoreModel.epName)
                 .registerProperty(pluginCoreModel.epDescription)
                 .registerProperty(ModelRegistry.EP_PROPERTIES)
                 .registerProperty(epClassification)
-                .registerProperty(epProjectTermsOfUse)
-                .registerProperty(epProjectPrivacyPolicy)
-                .registerProperty(epProjectCreationTime)
-                .registerProperty(epProjectStartTime)
-                .registerProperty(epProjectEndTime)
+                .registerProperty(epCampaignTermsOfUse)
+                .registerProperty(epCampaignPrivacyPolicy)
+                .registerProperty(epCampaignCreationTime)
+                .registerProperty(epCampaignStartTime)
+                .registerProperty(epCampaignEndTime)
                 .registerProperty(epUrl)
-                .registerProperty(npLicenseProject)
-                .registerProperty(npPartyProject)
-                .registerProperty(npDatastreamsProject)
-                .registerProperty(npGroupsProject)
-                .addCreateValidator(etProject.entityName + ".createValidator", (entity) -> {
+                .registerProperty(npLicenseCampaign)
+                .registerProperty(npPartyCampaign)
+                .registerProperty(npDatastreamsCampaign)
+                .registerProperty(npGroupsCampaign)
+                .addCreateValidator(etCampaign.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
@@ -435,10 +435,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     if (isAdmin(principal))
                         return;
 
-                    assertOwnership(entity, entity.getProperty(npPartyProject), principal);
+                    assertOwnership(entity, entity.getProperty(npPartyCampaign), principal);
 
                 })
-                .addUpdateValidator(etProject.entityName + ".updateValidator", (entity) -> {
+                .addUpdateValidator(etCampaign.entityName + ".updateValidator", (entity) -> {
 
                     if (!enforceOwnership)
                         return;
@@ -448,18 +448,18 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     if (isAdmin(principal))
                         return;
 
-                    assertOwnership(entity, entity.getProperty(npPartyProject), principal);
+                    assertOwnership(entity, entity.getProperty(npPartyCampaign), principal);
 
                 });
 
-        npProjectDatastreams.setEntityType(etProject);
-        pluginCoreModel.etDatastream.registerProperty(npProjectDatastreams);
+        npCampaignDatastreams.setEntityType(etCampaign);
+        pluginCoreModel.etDatastream.registerProperty(npCampaignDatastreams);
 
         if (pluginMultiDatastream.isEnabled()) {
-            etProject.registerProperty(npMultiDatastreamsProject);
-            npProjectMultiDatastreams.setEntityType(etProject);
-            npMultiDatastreamsProject.setEntityType(pluginMultiDatastream.etMultiDatastream);
-            pluginMultiDatastream.etMultiDatastream.registerProperty(npProjectMultiDatastreams);
+            etCampaign.registerProperty(npMultiDatastreamsCampaign);
+            npCampaignMultiDatastreams.setEntityType(etCampaign);
+            npMultiDatastreamsCampaign.setEntityType(pluginMultiDatastream.etMultiDatastream);
+            pluginMultiDatastream.etMultiDatastream.registerProperty(npCampaignMultiDatastreams);
         }
 
         /**
@@ -468,7 +468,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         epIdGroup = new EntityPropertyMain<>(AT_IOT_ID, mr.getPropertyType(plusSettings.idTypeGroup)).setAliases("id");
         npPartyGroup.setEntityType(etParty);
         npLicenseGroup.setEntityType(etLicense);
-        npProjectsGroup.setEntityType(etProject);
+        npCampaignsGroup.setEntityType(etCampaign);
         etGroup
                 .registerProperty(epIdGroup)
                 .registerProperty(pluginCoreModel.epName)
@@ -484,7 +484,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 .registerProperty(npRelationsGroup)
                 .registerProperty(npLicenseGroup)
                 .registerProperty(npPartyGroup)
-                .registerProperty(npProjectsGroup)
+                .registerProperty(npCampaignsGroup)
                 .addCreateValidator(etGroup.entityName + ".createValidator", (entity) -> {
 
                     if (!enforceOwnership)
@@ -609,13 +609,13 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             etParty.registerProperty(npMultiDatastreamsParty);
 
             /**
-             * Class Project
+             * Class Campaign
              */
-            npProjectMultiDatastreams.setEntityType(etProject);
-            npMultiDatastreamsProject.setEntityType(pluginMultiDatastream.etMultiDatastream);
-            pluginMultiDatastream.etMultiDatastream.registerProperty(npProjectMultiDatastreams);
+            npCampaignMultiDatastreams.setEntityType(etCampaign);
+            npMultiDatastreamsCampaign.setEntityType(pluginMultiDatastream.etMultiDatastream);
+            pluginMultiDatastream.etMultiDatastream.registerProperty(npCampaignMultiDatastreams);
 
-            etProject.registerProperty(npMultiDatastreamsProject);
+            etCampaign.registerProperty(npMultiDatastreamsCampaign);
         }
 
     }
@@ -658,7 +658,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         modelRegistry.registerEntityType(etGroup);
         modelRegistry.registerEntityType(etRelation);
         modelRegistry.registerEntityType(etParty);
-        modelRegistry.registerEntityType(etProject);
+        modelRegistry.registerEntityType(etCampaign);
     }
 
     @Override
@@ -675,7 +675,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             final DataType dataTypeGroup = ppm.getDataTypeFor(plusSettings.idTypeGroup);
             final DataType dataTypeRelation = ppm.getDataTypeFor(plusSettings.idTypeRelation);
             final DataType dataTypeParty = ppm.getDataTypeFor(plusSettings.idTypeParty);
-            final DataType dataTypeProject = ppm.getDataTypeFor(plusSettings.idTypeProject);
+            final DataType dataTypeCampaign = ppm.getDataTypeFor(plusSettings.idTypeCampaign);
             final DataType dataTypeObservation = tableCollection.getTableForType(pluginCoreModel.etObservation).getId().getDataType();
             final DataType dataTypeDatastream = tableCollection.getTableForType(pluginCoreModel.etDatastream).getId().getDataType();
             /**
@@ -686,15 +686,15 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             /**
              * Class Group
              */
-            tableCollection.registerTable(etGroup, new TableImpGroups(dataTypeGroup, dataTypeParty, dataTypeLicense, this, pluginCoreModel, pluginMultiDatastream));
+            tableCollection.registerTable(etGroup, new TableImpGroup(dataTypeGroup, dataTypeParty, dataTypeLicense, this, pluginCoreModel, pluginMultiDatastream));
             tableCollection.registerTable(new TableImpGroupsObservations(dataTypeGroup, dataTypeObservation));
             tableCollection.registerTable(new TableImpGroupsRelations(dataTypeGroup, dataTypeRelation));
-            tableCollection.registerTable(new TableImpGroupsProjects(dataTypeGroup, dataTypeProject));
+            tableCollection.registerTable(new TableImpGroupsCampaigns(dataTypeGroup, dataTypeCampaign));
 
             /**
              * Class Relation
              */
-            tableCollection.registerTable(etRelation, new TableImpRelations(dataTypeRelation, dataTypeObservation, dataTypeGroup, this, pluginCoreModel));
+            tableCollection.registerTable(etRelation, new TableImpRelation(dataTypeRelation, dataTypeObservation, dataTypeGroup, this, pluginCoreModel));
 
             /**
              * Class Party
@@ -702,13 +702,13 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             tableCollection.registerTable(etParty, new TableImpParty(dataTypeParty, this, pluginCoreModel, pluginMultiDatastream));
 
             /**
-             * Class Project
+             * Class Campaign
              */
-            tableCollection.registerTable(etProject, new TableImpProject(dataTypeProject, dataTypeParty, dataTypeLicense, this, pluginCoreModel, pluginMultiDatastream));
-            tableCollection.registerTable(new TableImpProjectsDatastreams(dataTypeProject, dataTypeDatastream));
+            tableCollection.registerTable(etCampaign, new TableImpCampaign(dataTypeCampaign, dataTypeParty, dataTypeLicense, this, pluginCoreModel, pluginMultiDatastream));
+            tableCollection.registerTable(new TableImpCampaignsDatastreams(dataTypeCampaign, dataTypeDatastream));
             if (pluginMultiDatastream.isEnabled()) {
                 final DataType dataTypeMultiDatastream = tableCollection.getTableForType(pluginMultiDatastream.etMultiDatastream).getId().getDataType();
-                tableCollection.registerTable(new TableImpProjectsMultiDatastreams(dataTypeProject, dataTypeMultiDatastream));
+                tableCollection.registerTable(new TableImpCampaignsMultiDatastreams(dataTypeCampaign, dataTypeMultiDatastream));
             }
 
             /*
@@ -724,7 +724,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             new TableHelperLocation(settings, ppm).registerPreHooks();
             new TableHelperFeatureOfInterest(settings, ppm).registerPreHooks();
             new TableHelperLicense(settings, ppm).registerPreHooks();
-            new TableHelperProject(settings, ppm).registerPreHooks();
+            new TableHelperCampaign(settings, ppm).registerPreHooks();
             new TableHelperRelation(settings, ppm).registerPreHooks();
         }
         fullyInitialised = true;
@@ -745,7 +745,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         ppm.generateLiquibaseVariables(target, "Group", plusSettings.idTypeGroup);
         ppm.generateLiquibaseVariables(target, "License", plusSettings.idTypeLicense);
         ppm.generateLiquibaseVariables(target, "Party", plusSettings.idTypeParty);
-        ppm.generateLiquibaseVariables(target, "Project", plusSettings.idTypeProject);
+        ppm.generateLiquibaseVariables(target, "Campaign", plusSettings.idTypeCampaign);
         ppm.generateLiquibaseVariables(target, "Relation", plusSettings.idTypeRelation);
 
         return target;

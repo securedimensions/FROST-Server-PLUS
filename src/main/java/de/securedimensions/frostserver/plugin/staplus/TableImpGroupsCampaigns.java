@@ -24,42 +24,42 @@ import org.jooq.Record;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-public class TableImpGroupsProjects extends StaLinkTable<TableImpGroupsProjects> {
+public class TableImpGroupsCampaigns extends StaLinkTable<TableImpGroupsCampaigns> {
 
-    public static final String NAME_TABLE = "GROUPS_PROJECTS";
+    public static final String NAME_TABLE = "GROUPS_CAMPAIGNS";
     private static final long serialVersionUID = 1626971276;
 
     /**
-     * The column <code>public.GROUPS_PROJECTS.GROUP_ID</code>.
+     * The column <code>public.GROUPS_CAMPAIGNS.GROUP_ID</code>.
      */
     public final TableField<Record, ?> colGroupId;
 
     /**
-     * The column <code>public.GROUPS_PROJECTS.PROJECT_ID</code>.
+     * The column <code>public.GROUPS_CAMPAIGNS.CAMPAIGN_ID</code>.
      */
-    public final TableField<Record, ?> colProjectId;
+    public final TableField<Record, ?> colCampaignId;
 
     /**
-     * Create a <code>public.GROUPS_PROJECTS</code> table reference.
+     * Create a <code>public.GROUPS_CAMPAIGNS</code> table reference.
      *
      * @param idTypeGroup The (SQL)DataType of the Id columns used in the actual
      * database.
-     * @param idTypeProject
+     * @param idTypeCampaign
      */
-    public TableImpGroupsProjects(DataType<?> idTypeGroup, DataType<?> idTypeProject) {
+    public TableImpGroupsCampaigns(DataType<?> idTypeGroup, DataType<?> idTypeCampaign) {
         super(DSL.name(NAME_TABLE), null);
         colGroupId = createField(DSL.name("GROUP_ID"), idTypeGroup);
-        colProjectId = createField(DSL.name("PROJECT_ID"), idTypeProject);
+        colCampaignId = createField(DSL.name("CAMPAIGN_ID"), idTypeCampaign);
     }
 
-    private TableImpGroupsProjects(Name alias, TableImpGroupsProjects aliased) {
+    private TableImpGroupsCampaigns(Name alias, TableImpGroupsCampaigns aliased) {
         super(alias, aliased);
         colGroupId = createField(DSL.name("GROUP_ID"), aliased.colGroupId.getDataType());
-        colProjectId = createField(DSL.name("PROJECT_ID"), aliased.colProjectId.getDataType());
+        colCampaignId = createField(DSL.name("CAMPAIGN_ID"), aliased.colCampaignId.getDataType());
     }
 
-    public TableField<Record, ?> getProjectId() {
-        return colProjectId;
+    public TableField<Record, ?> getCampaignId() {
+        return colCampaignId;
     }
 
     public TableField<Record, ?> getGroupId() {
@@ -67,12 +67,12 @@ public class TableImpGroupsProjects extends StaLinkTable<TableImpGroupsProjects>
     }
 
     @Override
-    public TableImpGroupsProjects as(Name alias) {
-        return new TableImpGroupsProjects(alias, this).initCustomFields();
+    public TableImpGroupsCampaigns as(Name alias) {
+        return new TableImpGroupsCampaigns(alias, this).initCustomFields();
     }
 
     @Override
-    public TableImpGroupsProjects getThis() {
+    public TableImpGroupsCampaigns getThis() {
         return this;
     }
 

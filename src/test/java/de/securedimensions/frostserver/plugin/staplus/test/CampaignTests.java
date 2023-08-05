@@ -41,23 +41,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tests for the Project class properties. According to the ownership concept, a
- * Project's properties can only be changed by the user that 'owns' the Project
+ * Tests for the Campaign class properties. According to the ownership concept, a
+ * Campaign's properties can only be changed by the user that 'owns' the Campaign
  * instance. That user has the same UUID as the Party's authId property.
  *
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class ProjectTests extends AbstractStaPlusTestClass {
+public abstract class CampaignTests extends AbstractStaPlusTestClass {
 
-    public static class Imp10Tests extends ProjectTests {
+    public static class Imp10Tests extends CampaignTests {
 
         public Imp10Tests() {
             super(ServerVersion.v_1_0);
         }
     }
 
-    public static class Imp11Tests extends ProjectTests {
+    public static class Imp11Tests extends CampaignTests {
 
         public Imp11Tests() {
             super(ServerVersion.v_1_1);
@@ -67,22 +67,22 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
     /**
      * The logger for this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectTests.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CampaignTests.class);
 
     private static final long serialVersionUID = 1639739965;
 
-    private static final String PROJECT_MUST_HAVE_A_PARTY = "Project must have a Party.";
+    private static final String CAMPAIGN_MUST_HAVE_A_PARTY = "Campaign must have a Party.";
 
     private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE = "Admin should be able to create.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE = "Admin should be able to update.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE_PARTY = "Admin should be able to update Party.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE = "Admin should be able to delete.";
-    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY = "Same user should be able to create Project associated with Party in request.";
-    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY = "Same user should be able to create Project associated with existing Party.";
+    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY = "Same user should be able to create Campaign associated with Party in request.";
+    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY = "Same user should be able to create Campaign associated with existing Party.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE = "Same user should be able to update.";
     private static final String SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_OTHER_PARTY = "Same user should not be able to update with other existing Party.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_DELETE = "Same User should NOT be able to delete.";
-    private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create Project.";
+    private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create Campaign.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE = "Other user should NOT be able to update.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY = "Other user should NOT be able to update Party.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE = "Other user should NOT be able to delete.";
@@ -91,15 +91,15 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
     private static final String ANON_SHOULD_NOT_BE_ABLE_TO_DELETE = "anon should NOT be able to delete.";
     private static final String ANY_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION = "Any user should be able to add Observation.";
 
-    private static String PROJECT = "{\n"
-            + "	\"name\": \"Project\",\n"
+    private static String CAMPAIGN = "{\n"
+            + "	\"name\": \"Campaign\",\n"
             + "	\"description\": \"none\",\n"
             + "	\"creationTime\": \"2021-12-12T12:12:12Z\",\n"
             + "	\"termsOfUse\": \"none\"\n"
             + "}";
 
-    private static String PROJECT_INLINE_PARTY = "{\n"
-            + "	 \"name\": \"Project with Party inline\",\n"
+    private static String CAMPAIGN_INLINE_PARTY = "{\n"
+            + "	 \"name\": \"Campaign with Party inline\",\n"
             + "  \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
             + "	 \"termsOfUse\": \"none\",\n"
@@ -112,8 +112,8 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
             + "  }\n"
             + "}";
 
-    private static String PROJECT_EXISTING_PARTY = "{\n"
-            + "	 \"name\": \"Project with Party external\",\n"
+    private static String CAMPAIGN_EXISTING_PARTY = "{\n"
+            + "	 \"name\": \"Campaign with Party external\",\n"
             + "	 \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
             + "	 \"termsOfUse\": \"none\",\n"
@@ -232,7 +232,7 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
     //private static SensorThingsService service;
     private String partyLJS, partyALICE;
 
-    public ProjectTests(ServerVersion version) {
+    public CampaignTests(ServerVersion version) {
         super(version, SERVER_PROPERTIES);
         // This is the party that we are going to apply the Update and Delete tests
         // on...
@@ -268,23 +268,23 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
     }
 
     /*
-     * PROJECT_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
+     * CAMPAIGN_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
      */
     @Test
-    public void test00ProjectMustHaveAParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test00ProjectMustHaveAParty");
-        String request = PROJECT;
+    public void test00CampaignMustHaveAParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test00CampaignMustHaveAParty");
+        String request = CAMPAIGN;
 
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Campaigns");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
-                Assertions.assertTrue(Boolean.TRUE, PROJECT_MUST_HAVE_A_PARTY);
+                Assertions.assertTrue(Boolean.TRUE, CAMPAIGN_MUST_HAVE_A_PARTY);
             } else {
-                fail(response, PROJECT_MUST_HAVE_A_PARTY);
+                fail(response, CAMPAIGN_MUST_HAVE_A_PARTY);
             }
         }
     }
@@ -293,10 +293,10 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY Success: 201 Fail: n/a
      */
     @Test
-    public void test01SameUserCreateProjectInlineParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test01SameUserCreateProjectInlineParty");
-        String request = String.format(PROJECT_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
+    public void test01SameUserCreateCampaignInlineParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateCampaignInlineParty");
+        String request = String.format(CAMPAIGN_INLINE_PARTY, LJS);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Campaigns");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
@@ -321,12 +321,12 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY Success: 201 Fail: n/a
      */
     @Test
-    public void test01SameUserCreateProjectExistingParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test01SameUserCreateProjectExistingParty");
+    public void test01SameUserCreateCampaignExistingParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateCampaignExistingParty");
         createParty(LJS);
 
-        String request = String.format(PROJECT_EXISTING_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
+        String request = String.format(CAMPAIGN_EXISTING_PARTY, LJS);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Campaigns");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
@@ -351,10 +351,10 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 403 Fail: 201
      */
     @Test
-    public void test02OtherUserCreateProjectAssoc() throws ClientProtocolException, IOException {
-        LOGGER.info("  test02OtherUserCreateProjectAssoc");
-        String request = String.format(PROJECT_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
+    public void test02OtherUserCreateCampaignAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02OtherUserCreateCampaignAssoc");
+        String request = String.format(CAMPAIGN_INLINE_PARTY, LJS);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Campaigns");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
@@ -372,17 +372,17 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
      */
     @Test
-    public void test03AdminCreateProjectAssoc() throws ClientProtocolException, IOException {
-        LOGGER.info("  test03AdminCreateProjectAssoc");
-        String request = String.format(PROJECT_INLINE_PARTY, ALICE);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
+    public void test03AdminCreateCampaignAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test03AdminCreateCampaignAssoc");
+        String request = String.format(CAMPAIGN_INLINE_PARTY, ALICE);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Campaigns");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
-                // we need to make sure that the Project is associated with Alice
+                // we need to make sure that the Campaign is associated with Alice
                 String location = response.getFirstHeader("Location").getValue();
                 HttpGet httpGet = new HttpGet(location + "/Party");
                 try (CloseableHttpResponse response2 = serviceSTAplus.execute(httpGet)) {
@@ -401,10 +401,10 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * ANON_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 401 Fail: 201
      */
     @Test
-    public void test02AnonCreateProjectAssoc() throws ClientProtocolException, IOException {
-        LOGGER.info("  test02AnonCreateProjectAssoc");
-        String request = String.format(PROJECT_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
+    public void test02AnonCreateCampaignAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02AnonCreateCampaignAssoc");
+        String request = String.format(CAMPAIGN_INLINE_PARTY, LJS);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Campaigns");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
@@ -422,9 +422,9 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
     /*
      * UPDATE Tests
      */
-    private String createProjectParty(String userId) throws IOException {
-        String request = String.format(PROJECT_INLINE_PARTY, userId);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Projects");
+    private String createCampaignParty(String userId) throws IOException {
+        String request = String.format(CAMPAIGN_INLINE_PARTY, userId);
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Campaigns");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, userId, "");
@@ -438,12 +438,12 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
      */
     @Test
-    public void test12SameUserUpdateProject() throws ClientProtocolException, IOException {
-        LOGGER.info("  test12SameUserUpdateProject");
-        String projectUrl = createProjectParty(LJS);
+    public void test12SameUserUpdateCampaign() throws ClientProtocolException, IOException {
+        LOGGER.info("  test12SameUserUpdateCampaign");
+        String campaignUrl = createCampaignParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
-        HttpPatch httpPatch = new HttpPatch(projectUrl);
+        HttpPatch httpPatch = new HttpPatch(campaignUrl);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, LJS, "");
@@ -462,10 +462,10 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 403 Fail: n/a
      */
     @Test
-    public void test10SameUserUpdateProjectOtherParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test10SameUserUpdateProjectOtherParty");
+    public void test10SameUserUpdateCampaignOtherParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10SameUserUpdateCampaignOtherParty");
         createParty(ALICE);
-        String groupUrl = createProjectParty(LJS);
+        String groupUrl = createCampaignParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -486,9 +486,9 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE Success: 403 Fail: n/a
      */
     @Test
-    public void test12OtherUserUpdateProject() throws ClientProtocolException, IOException {
-        LOGGER.info("  test12OtherUserUpdateProject");
-        String groupUrl = createProjectParty(LJS);
+    public void test12OtherUserUpdateCampaign() throws ClientProtocolException, IOException {
+        LOGGER.info("  test12OtherUserUpdateCampaign");
+        String groupUrl = createCampaignParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -509,11 +509,11 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 403 Fail: n/a
      */
     @Test
-    public void test10OtherUserUpdateProjectParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test10OtherUserUpdateProjectParty");
+    public void test10OtherUserUpdateCampaignParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10OtherUserUpdateCampaignParty");
         createParty(ALICE);
 
-        String groupUrl = createProjectParty(LJS);
+        String groupUrl = createCampaignParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -534,9 +534,9 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
      */
     @Test
-    public void test13AdminUpdateProject() throws ClientProtocolException, IOException {
-        LOGGER.info("  test13AdminUpdateProject");
-        String groupUrl = createProjectParty(LJS);
+    public void test13AdminUpdateCampaign() throws ClientProtocolException, IOException {
+        LOGGER.info("  test13AdminUpdateCampaign");
+        String groupUrl = createCampaignParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -557,11 +557,11 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_UPDATE_PARTY Success: 200 Fail: n/a
      */
     @Test
-    public void test10AdminUpdateProjectParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test10AdminUpdateProjectParty");
+    public void test10AdminUpdateCampaignParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10AdminUpdateCampaignParty");
         createParty(ALICE);
 
-        String groupUrl = createProjectParty(LJS);
+        String groupUrl = createCampaignParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -582,9 +582,9 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE Success: 401 Fail: n/a
      */
     @Test
-    public void test14AnonUpdateProject() throws ClientProtocolException, IOException {
-        LOGGER.info("  test14AnonUpdateProject");
-        String groupUrl = createProjectParty(LJS);
+    public void test14AnonUpdateCampaign() throws ClientProtocolException, IOException {
+        LOGGER.info("  test14AnonUpdateCampaign");
+        String groupUrl = createCampaignParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -608,9 +608,9 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_DELETE Success: 200 Fail: n/a
      */
     @Test
-    public void test20SameUserDeleteProject() throws ClientProtocolException, IOException {
-        LOGGER.info("  test20SameUserDeleteProject");
-        String groupUrl = createProjectParty(LJS);
+    public void test20SameUserDeleteCampaign() throws ClientProtocolException, IOException {
+        LOGGER.info("  test20SameUserDeleteCampaign");
+        String groupUrl = createCampaignParty(LJS);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, LJS, "");
 
@@ -627,9 +627,9 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE Success: 403 Fail: n/a
      */
     @Test
-    public void test21OtherUserDeleteProject() throws ClientProtocolException, IOException {
-        LOGGER.info("  test21OtherUserDeleteProject");
-        String groupUrl = createProjectParty(LJS);
+    public void test21OtherUserDeleteCampaign() throws ClientProtocolException, IOException {
+        LOGGER.info("  test21OtherUserDeleteCampaign");
+        String groupUrl = createCampaignParty(LJS);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ALICE, "");
 
@@ -646,9 +646,9 @@ public abstract class ProjectTests extends AbstractStaPlusTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_DELETE Success: 200 Fail: n/a
      */
     @Test
-    public void test22AdminDeleteProject() throws ClientProtocolException, IOException {
-        LOGGER.info("  test22AdminDeleteProject");
-        String groupUrl = createProjectParty(ALICE);
+    public void test22AdminDeleteCampaign() throws ClientProtocolException, IOException {
+        LOGGER.info("  test22AdminDeleteCampaign");
+        String groupUrl = createCampaignParty(ALICE);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ADMIN, "");
 

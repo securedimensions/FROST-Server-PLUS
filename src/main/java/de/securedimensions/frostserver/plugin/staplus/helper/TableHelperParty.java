@@ -120,18 +120,18 @@ public class TableHelperParty extends TableHelper {
                             assertEmptyMultiDatastream(pm, md);
                         }
                     }
-                } else if (party.isSetProperty(pluginPlus.npProjectsParty)) {
-                    EntitySet ps = party.getProperty(pluginPlus.npProjectsParty);
+                } else if (party.isSetProperty(pluginPlus.npCampaignsParty)) {
+                    EntitySet ps = party.getProperty(pluginPlus.npCampaignsParty);
                     if (ps == null) {
-                        throw new IllegalArgumentException("Projects do not exist.");
+                        throw new IllegalArgumentException("Campaigns do not exist.");
                     }
                     for (Entity p : ps) {
                         if (pluginPlus.isEnforceOwnershipEnabled()) {
-                            assertLicenseProject(pm, p);
+                            assertLicenseCampaign(pm, p);
                         }
                         if (pluginPlus.isEnforceLicensingEnabled()) {
-                            assertOwnershipProject(pm, p, principal);
-                            assertEmptyProject(pm, p);
+                            assertOwnershipCampaign(pm, p, principal);
+                            assertEmptyCampaign(pm, p);
                         }
                     }
                 } else if (party.isSetProperty(pluginPlus.npGroupsParty)) {
@@ -150,7 +150,7 @@ public class TableHelperParty extends TableHelper {
                     }
                 }
                 //else
-                //  throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
+                //  throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Campaign` or `Group`.");
 
                 party.setProperty(pluginPlus.epAuthId, userId);
                 party.setId(new IdString(userId));
@@ -212,18 +212,18 @@ public class TableHelperParty extends TableHelper {
                             assertEmptyMultiDatastream(pm, md);
                         }
                     }
-                } else if (party.isSetProperty(pluginPlus.npProjectsParty)) {
-                    EntitySet ps = party.getProperty(pluginPlus.npProjectsParty);
+                } else if (party.isSetProperty(pluginPlus.npCampaignsParty)) {
+                    EntitySet ps = party.getProperty(pluginPlus.npCampaignsParty);
                     if (ps == null) {
-                        throw new IllegalArgumentException("Projects do not exist.");
+                        throw new IllegalArgumentException("Campaigns do not exist.");
                     }
                     for (Entity p : ps) {
                         if (pluginPlus.isEnforceOwnershipEnabled()) {
-                            assertLicenseProject(pm, p);
+                            assertLicenseCampaign(pm, p);
                         }
                         if (pluginPlus.isEnforceLicensingEnabled()) {
-                            assertOwnershipProject(pm, p, principal);
-                            assertEmptyProject(pm, p);
+                            assertOwnershipCampaign(pm, p, principal);
+                            assertEmptyCampaign(pm, p);
                         }
                     }
                 } else if (party.isSetProperty(pluginPlus.npGroupsParty)) {
@@ -242,7 +242,7 @@ public class TableHelperParty extends TableHelper {
                     }
                 }
                 //else
-                //throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
+                //throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Campaign` or `Group`.");
 
                 party.setProperty(pluginPlus.epAuthId, userId);
                 party.setId(new IdString(userId));

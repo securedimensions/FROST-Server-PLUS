@@ -17,6 +17,8 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.securedimensions.frostserver.plugin.staplus.helper.TableHelperLicense.*;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
@@ -221,14 +223,14 @@ public abstract class TableHelper {
 
     }
 
-    protected void assertOwnershipProject(JooqPersistenceManager pm, Entity project, Principal principal) {
+    protected void assertOwnershipCampaign(JooqPersistenceManager pm, Entity project, Principal principal) {
         assertPrincipal(principal);
 
         if (project == null)
-            throw new IllegalArgumentException("Project does not exist");
+            throw new IllegalArgumentException("Campaign does not exist");
 
-        if (!project.getEntityType().equals(pluginPlus.etProject))
-            throw new IllegalArgumentException("Entity not of type Project");
+        if (!project.getEntityType().equals(pluginPlus.etCampaign))
+            throw new IllegalArgumentException("Entity not of type Campaign");
 
         // We can get the username from the Principal
         String userId = principal.getName();
@@ -237,7 +239,7 @@ public abstract class TableHelper {
         Entity party = null;
 
         if (project != null)
-            party = project.getProperty(pluginPlus.npPartyProject);
+            party = project.getProperty(pluginPlus.npPartyCampaign);
 
         if (party == null && project.getId() != null) {
             project = pm.get(pluginPlus.etGroup, project.getId());
@@ -247,12 +249,12 @@ public abstract class TableHelper {
         }
 
         if (party == null)
-            throw new IllegalArgumentException("Project not linked to a Party");
+            throw new IllegalArgumentException("Campaign not linked to a Party");
 
         String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getId().toString();
 
         if (!partyId.equalsIgnoreCase(userId))
-            throw new ForbiddenException("Project not linked to acting Party");
+            throw new ForbiddenException("Campaign not linked to acting Party");
 
     }
 
@@ -260,10 +262,10 @@ public abstract class TableHelper {
         assertPrincipal(principal);
 
         if (group == null)
-            throw new IllegalArgumentException("Group does not exist");
+            throw new IllegalArgumentException("ObservationGroup does not exist");
 
         if (!group.getEntityType().equals(pluginPlus.etGroup))
-            throw new IllegalArgumentException("Entity not of type Group");
+            throw new IllegalArgumentException("Entity not of type ObservationGroup");
 
         // We can get the username from the Principal
         String userId = principal.getName();
@@ -278,12 +280,12 @@ public abstract class TableHelper {
         }
 
         if (party == null)
-            throw new IllegalArgumentException("Group not linked to a Party");
+            throw new IllegalArgumentException("ObservationGroup not linked to a Party");
 
         String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getId().toString();
 
         if (!partyId.equalsIgnoreCase(userId))
-            throw new ForbiddenException("Group not linked to acting Party");
+            throw new ForbiddenException("ObservationGroup not linked to acting Party");
 
     }
 
@@ -313,10 +315,10 @@ public abstract class TableHelper {
 
     protected void assertLicenseGroup(JooqPersistenceManager pm, Entity group) {
         if (group == null)
-            throw new IllegalArgumentException("Group does not exist");
+            throw new IllegalArgumentException("ObservationGroup does not exist");
 
         if (!group.getEntityType().equals(pluginPlus.etGroup))
-            throw new IllegalArgumentException("Entity not of type Group");
+            throw new IllegalArgumentException("Entity not of type ObservationGroup");
 
         if (group.isSetProperty(pluginPlus.npLicenseGroup)) {
             // The Datastream has License inline
@@ -332,32 +334,32 @@ public abstract class TableHelper {
             }
         }
         if (license == null)
-            throw new IllegalArgumentException("Group not linked to a License");
+            throw new IllegalArgumentException("ObservationGroup not linked to a License");
 
     }
 
-    protected void assertLicenseProject(JooqPersistenceManager pm, Entity project) {
+    protected void assertLicenseCampaign(JooqPersistenceManager pm, Entity project) {
         if (project == null)
-            throw new IllegalArgumentException("Project does not exist");
+            throw new IllegalArgumentException("Campaign does not exist");
 
-        if (!project.getEntityType().equals(pluginPlus.etProject))
-            throw new IllegalArgumentException("Entity not of type Project");
+        if (!project.getEntityType().equals(pluginPlus.etCampaign))
+            throw new IllegalArgumentException("Entity not of type Campaign");
 
-        if (project.isSetProperty(pluginPlus.npLicenseProject)) {
+        if (project.isSetProperty(pluginPlus.npLicenseCampaign)) {
             // The Datastream has License inline
             return;
         }
 
-        // Ensure License for Project
-        Entity license = project.getProperty(pluginPlus.npLicenseProject);
+        // Ensure License for Campaign
+        Entity license = project.getProperty(pluginPlus.npLicenseCampaign);
         if (license == null && project.getId() != null) {
             project = pm.get(pluginPlus.etLicense, project.getId());
             if (project != null) {
-                license = project.getProperty(pluginPlus.npLicenseProject);
+                license = project.getProperty(pluginPlus.npLicenseCampaign);
             }
         }
         if (license == null)
-            throw new IllegalArgumentException("Project not linked to a License");
+            throw new IllegalArgumentException("Campaign not linked to a License");
 
     }
 
@@ -465,10 +467,10 @@ public abstract class TableHelper {
 
     protected void assertEmptyGroup(JooqPersistenceManager pm, Entity group) {
         if (group == null)
-            throw new IllegalArgumentException("Group does not exist");
+            throw new IllegalArgumentException("ObservationGroup does not exist");
 
         if (!group.getEntityType().equals(pluginPlus.etGroup))
-            throw new IllegalArgumentException("Entity not of type Group");
+            throw new IllegalArgumentException("Entity not of type ObservationGroup");
 
         if (group.isSetProperty(pluginPlus.npObservationGroups)) {
             // Observations are inline and part of creating a Datastream from scratch -> That's OK
@@ -483,31 +485,149 @@ public abstract class TableHelper {
             query.validate();
             EntitySet obs = (EntitySet) pm.get(rp, query);
             if (!obs.isEmpty()) {
-                throw new IllegalArgumentException("Referenced Group already contains observations.");
+                throw new IllegalArgumentException("Referenced ObservationGroup already contains observations.");
             }
         }
     }
 
-    protected void assertEmptyProject(JooqPersistenceManager pm, Entity project) {
+    protected void assertEmptyCampaign(JooqPersistenceManager pm, Entity project) {
         if (project == null)
-            throw new IllegalArgumentException("Project does not exist");
+            throw new IllegalArgumentException("Campaign does not exist");
 
-        if (!project.getEntityType().equals(pluginPlus.etProject))
-            throw new IllegalArgumentException("Entity not of type Project");
+        if (!project.getEntityType().equals(pluginPlus.etCampaign))
+            throw new IllegalArgumentException("Entity not of type Campaign");
 
-        // Ensure Project by reference has no Datastreams and no MultiDatastreams
+        // Ensure Campaign by reference has no Datastreams and no MultiDatastreams
         if (project.getId() != null) {
             Id id = ParserUtils.idFromObject(project.getId());
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Projects(" + id.getUrl() + ")");
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Campaigns(" + id.getUrl() + ")");
             Query query = QueryParser.parseQuery("$expand=Datastreams($top=0;$count=true),MultiDatastreams($top=0;$count=true)", pm.getCoreSettings(), rp);
             query.validate();
             project = (Entity) pm.get(rp, query);
-            if (project.getProperty(pluginPlus.npDatastreamsProject).getCount() != 0) {
-                throw new IllegalArgumentException("Referenced Project already contains Datastream(s).");
+            if (project.getProperty(pluginPlus.npDatastreamsCampaign).getCount() != 0) {
+                throw new IllegalArgumentException("Referenced Campaign already contains Datastream(s).");
             }
-            if (project.getProperty(pluginPlus.npMultiDatastreamsProject).getCount() != 0) {
-                throw new IllegalArgumentException("Referenced Project already contains MultiDatastream(s).");
+            if (project.getProperty(pluginPlus.npMultiDatastreamsCampaign).getCount() != 0) {
+                throw new IllegalArgumentException("Referenced Campaign already contains MultiDatastream(s).");
             }
         }
     }
+
+    protected void assertLicenseCompatibilty(String sourceId, String targetId) {
+        boolean compatible = false;
+        switch (sourceId) {
+            case CC_PD_ID:
+                compatible = contains(CC_PD, targetId);
+                break;
+            case CC_BY_ID:
+                compatible = contains(CC_BY, targetId);
+                break;
+            case CC_BY_NC_ID:
+                compatible = contains(CC_BY_NC, targetId);
+                break;
+            case CC_BY_SA_ID:
+                compatible = contains(CC_BY_SA, targetId);
+                break;
+            case CC_BY_ND_ID:
+                compatible = contains(CC_BY_ND, targetId);
+                break;
+            case CC_BY_NC_SA_ID:
+                compatible = contains(CC_BY_NC_SA, targetId);
+                break;
+            case CC_BY_NC_ND_ID:
+                compatible = contains(CC_BY_NC_ND_SA, targetId);
+                break;
+        }
+
+        if (!compatible)
+            throw new IllegalArgumentException("Observation License not compatible with Group License.");
+    }
+
+    private boolean contains(String[] haystack, String needle) {
+        for (String s : haystack) {
+            if (s.equalsIgnoreCase(needle))
+                return true;
+        }
+
+        return false;
+    }
+
+    protected void assertLicenseCompatibilty(JooqPersistenceManager pm, Entity entity) {
+
+        Entity group = null;
+        if (entity.isSetProperty(pluginPlus.npObservationGroups)) {
+            EntitySet groups = entity.getProperty(pluginPlus.npObservationGroups);
+            if ((groups == null) || (groups.getCount() > 1))
+                throw new IllegalArgumentException("Cannot check license of Observation for more than one Group");
+
+            group = groups.iterator().next();
+        } else {
+            group = null;
+        }
+
+        if (group != null) {
+            // The Observation is added to a group
+            Entity groupLicense = null;
+            if (group.isSetProperty(pluginPlus.npLicenseGroup))
+                groupLicense = group.getProperty(pluginPlus.npLicenseGroup);
+            else {
+                group = pm.get(pluginPlus.etGroup, entity.getId());
+                if ((group != null) && group.isSetProperty(pluginPlus.npLicenseGroup))
+                    groupLicense = pm.get(pluginPlus.etLicense,
+                            group.getProperty(pluginPlus.npLicenseGroup).getId());
+                else
+                    groupLicense = null;
+            }
+
+            if (groupLicense != null) {
+                // The Group has a License so we need to check the compatibility with the license for the Datastream of the Observation
+                String groupLicenseId = groupLicense.getProperty(pluginPlus.epIdLicense).toString();
+
+                Entity datastream = null;
+                Entity multiDatastream = null;
+
+                if (entity.isSetProperty(pluginCoreModel.npDatastreamObservation))
+                    datastream = entity.getProperty(pluginCoreModel.npDatastreamObservation);
+                else if ((pluginMultiDatastream != null) && (entity.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation)))
+                    multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
+
+                if ((datastream == null) && (multiDatastream == null)) {
+                    Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
+                    if ((observation != null) && observation.isSetProperty(pluginCoreModel.npDatastreamObservation))
+                        datastream = pm.get(pluginCoreModel.etDatastream,
+                                observation.getProperty(pluginCoreModel.npDatastreamObservation).getId());
+                    else
+                        datastream = null;
+                }
+
+                if ((datastream == null) && (multiDatastream == null)) {
+                    Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
+                    if ((observation != null)
+                            && observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
+                        multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream,
+                                observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
+                    else
+                        multiDatastream = null;
+                }
+
+                if (datastream != null)
+                    if (datastream.isSetProperty(pluginPlus.npLicenseDatastream)) {
+                        assertLicenseCompatibilty(datastream.getProperty(pluginPlus.npLicenseDatastream).getId().toString(), groupLicenseId);
+                    } else {
+                        datastream = pm.get(pluginCoreModel.etDatastream, datastream.getId());
+                        assertLicenseCompatibilty(datastream.getProperty(pluginPlus.npLicenseDatastream).getId().toString(), groupLicenseId);
+                    }
+
+                if (multiDatastream != null)
+                    if (multiDatastream.isSetProperty(pluginPlus.npLicenseMultiDatastream)) {
+                        assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getId().toString(), groupLicenseId);
+                    } else {
+                        multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
+                        assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getId().toString(), groupLicenseId);
+
+                    }
+            }
+        }
+    }
+
 }

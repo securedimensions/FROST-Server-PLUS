@@ -29,19 +29,19 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import de.securedimensions.frostserver.plugin.staplus.TableImpRelations;
+import de.securedimensions.frostserver.plugin.staplus.TableImpRelation;
 import java.security.Principal;
 import java.util.Map;
 import org.jooq.Field;
 
 public class TableHelperRelation extends TableHelper {
 
-    private final TableImpRelations tableRelations;
+    private final TableImpRelation tableRelations;
 
     public TableHelperRelation(CoreSettings settings, JooqPersistenceManager ppm) {
         super(settings, ppm);
 
-        this.tableRelations = tables.getTableForClass(TableImpRelations.class);
+        this.tableRelations = tables.getTableForClass(TableImpRelation.class);
     }
 
     @Override

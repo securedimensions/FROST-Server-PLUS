@@ -33,11 +33,28 @@ import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.TableImpLicense;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jooq.Field;
 
 public class TableHelperLicense extends TableHelper {
+
+    public static final String CC_PD_ID = "CC_PD";
+    public static final String CC_BY_ID = "CC_BY";
+    public static final String CC_BY_SA_ID = "CC_BY_SA";
+    public static final String CC_BY_NC_ID = "CC_BY_NC";
+    public static final String CC_BY_ND_ID = "CC_BY_ND";
+    public static final String CC_BY_NC_SA_ID = "CC_BY_NC_SA";
+    public static final String CC_BY_NC_ND_ID = "CC_BY_NC_ND";
+    public static final Map<String, String> LICENSES = new HashMap<String, String>(7);
+    public static final String[] CC_PD = {CC_PD_ID, CC_BY_ID, CC_BY_SA_ID, CC_BY_NC_ID, CC_BY_ND_ID, CC_BY_NC_ND_ID, CC_BY_NC_SA_ID};
+    public static final String[] CC_BY = {CC_BY_ID, CC_BY_SA_ID, CC_BY_NC_ID, CC_BY_NC_SA_ID};
+    public static final String[] CC_BY_SA = {CC_BY_ID, CC_BY_SA_ID};
+    public static final String[] CC_BY_NC = {CC_BY_ID, CC_BY_NC_ID, CC_BY_NC_SA_ID};
+    public static final String[] CC_BY_ND = {};
+    public static final String[] CC_BY_NC_SA = {CC_BY_ID, CC_BY_NC_ID, CC_BY_NC_SA_ID};
+    public static final String[] CC_BY_NC_ND_SA = {};
 
     private final PluginPLUS pluginPlus;
     private final TableImpLicense tableLicenses;
@@ -107,15 +124,15 @@ public class TableHelperLicense extends TableHelper {
                         assertOwnershipMultiDatastream(pm, md, principal);
                         assertEmptyMultiDatastream(pm, md);
                     }
-                } else if (license.isSetProperty(pluginPlus.npProjectsLicense)) {
-                    EntitySet ps = license.getProperty(pluginPlus.npProjectsLicense);
+                } else if (license.isSetProperty(pluginPlus.npCampaignsLicense)) {
+                    EntitySet ps = license.getProperty(pluginPlus.npCampaignsLicense);
                     if (ps == null) {
-                        throw new IllegalArgumentException("Projects do not exist.");
+                        throw new IllegalArgumentException("Campaigns do not exist.");
                     }
                     for (Entity p : ps) {
-                        assertLicenseProject(pm, p);
-                        assertOwnershipProject(pm, p, principal);
-                        assertEmptyProject(pm, p);
+                        assertLicenseCampaign(pm, p);
+                        assertOwnershipCampaign(pm, p, principal);
+                        assertEmptyCampaign(pm, p);
                     }
                 } else if (license.isSetProperty(pluginPlus.npGroupsLicense)) {
                     EntitySet gs = license.getProperty(pluginPlus.npGroupsLicense);
@@ -128,7 +145,7 @@ public class TableHelperLicense extends TableHelper {
                         assertEmptyGroup(pm, g);
                     }
                 } else
-                    ;//throw new IllegalArgumentException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
+                    ;//throw new IllegalArgumentException("License must be associated with `Datastream`, `MultiDatastream`, `Campaign` or `Group`.");
 
                 return true;
             }
@@ -171,15 +188,15 @@ public class TableHelperLicense extends TableHelper {
                         assertOwnershipMultiDatastream(pm, md, principal);
                         assertEmptyMultiDatastream(pm, md);
                     }
-                } else if (license.isSetProperty(pluginPlus.npProjectsLicense)) {
-                    EntitySet ps = license.getProperty(pluginPlus.npProjectsLicense);
+                } else if (license.isSetProperty(pluginPlus.npCampaignsLicense)) {
+                    EntitySet ps = license.getProperty(pluginPlus.npCampaignsLicense);
                     if (ps == null) {
-                        throw new IllegalArgumentException("Projects do not exist.");
+                        throw new IllegalArgumentException("Campaigns do not exist.");
                     }
                     for (Entity p : ps) {
-                        assertLicenseProject(pm, p);
-                        assertOwnershipProject(pm, p, principal);
-                        assertEmptyProject(pm, p);
+                        assertLicenseCampaign(pm, p);
+                        assertOwnershipCampaign(pm, p, principal);
+                        assertEmptyCampaign(pm, p);
                     }
                 } else if (license.isSetProperty(pluginPlus.npGroupsLicense)) {
                     EntitySet gs = license.getProperty(pluginPlus.npGroupsLicense);
@@ -192,7 +209,7 @@ public class TableHelperLicense extends TableHelper {
                         assertEmptyGroup(pm, g);
                     }
                 } else
-                    throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Project` or `Group`.");
+                    throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Campaign` or `Group`.");
             }
         });
 

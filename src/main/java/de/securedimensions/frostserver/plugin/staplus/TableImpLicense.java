@@ -109,7 +109,7 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
         initDatastreams(tables);
         initMultiDatastreams(tables);
         initGroups(tables);
-        initProject(tables);
+        initCampaign(tables);
     }
 
     private void initDatastreams(TableCollection tables) {
@@ -144,17 +144,17 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
     }
 
     private void initGroups(TableCollection tables) {
-        TableImpGroups tableGroups = tables.getTableForClass(TableImpGroups.class);
+        TableImpGroup tableGroups = tables.getTableForClass(TableImpGroup.class);
         registerRelation(new RelationOneToMany<>(pluginPLUS.npGroupsLicense, this, tableGroups)
                 .setSourceFieldAccessor(TableImpLicense::getId)
-                .setTargetFieldAccessor(TableImpGroups::getLicenseId));
+                .setTargetFieldAccessor(TableImpGroup::getLicenseId));
     }
 
-    private void initProject(TableCollection tables) {
-        TableImpProject tableProject = tables.getTableForClass(TableImpProject.class);
-        registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectsLicense, this, tableProject)
+    private void initCampaign(TableCollection tables) {
+        TableImpCampaign tableCampaign = tables.getTableForClass(TableImpCampaign.class);
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npCampaignsLicense, this, tableCampaign)
                 .setSourceFieldAccessor(TableImpLicense::getId)
-                .setTargetFieldAccessor(TableImpProject::getLicenseId));
+                .setTargetFieldAccessor(TableImpCampaign::getLicenseId));
     }
 
     @Override
@@ -173,8 +173,8 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
         // We register a navigationProperty on the Groups table.
         pfReg.addEntry(pluginPLUS.npGroupsLicense, TableImpLicense::getId);
 
-        // We register a navigationProperty on the Project table.
-        pfReg.addEntry(pluginPLUS.npProjectsLicense, TableImpLicense::getId);
+        // We register a navigationProperty on the Campaign table.
+        pfReg.addEntry(pluginPLUS.npCampaignsLicense, TableImpLicense::getId);
 
         TableImpDatastreams datastreamsTable = tables.getTableForClass(TableImpDatastreams.class);
         final int licenseDatastreamsIdIdx = datastreamsTable.registerField(DSL.name("LICENSE_ID"), getIdType());

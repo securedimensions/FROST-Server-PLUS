@@ -24,42 +24,42 @@ import org.jooq.Record;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-public class TableImpProjectsDatastreams extends StaLinkTable<TableImpProjectsDatastreams> {
+public class TableImpCampaignsDatastreams extends StaLinkTable<TableImpCampaignsDatastreams> {
 
-    public static final String NAME_TABLE = "PROJECTS_DATASTREAMS";
+    public static final String NAME_TABLE = "CAMPAIGNS_DATASTREAMS";
     private static final long serialVersionUID = 1626971276;
 
     /**
-     * The column <code>public.PROJECTS_DATASTREAMS.PROJECT_ID</code>.
+     * The column <code>public.CAMPAIGNS_DATASTREAMS.CAMPAIGN_ID</code>.
      */
-    public final TableField<Record, ?> colProjectId;
+    public final TableField<Record, ?> colCampaignId;
 
     /**
-     * The column <code>public.PROJECTS_DATASTREAMS.DATASTREAM_ID</code>.
+     * The column <code>public.CAMPAIGNS_DATASTREAMS.DATASTREAM_ID</code>.
      */
     public final TableField<Record, ?> colDatastreamId;
 
     /**
-     * Create a <code>public.PROJECTS_DATASTREAMS</code> table reference.
+     * Create a <code>public.CAMPAIGNS_DATASTREAMS</code> table reference.
      *
-     * @param idTypeProject The (SQL)DataType of the Id columns used in the actual
+     * @param idTypeCampaign The (SQL)DataType of the Id columns used in the actual
      * database.
      * @param idTypeDatastream
      */
-    public TableImpProjectsDatastreams(DataType<?> idTypeProject, DataType<?> idTypeDatastream) {
+    public TableImpCampaignsDatastreams(DataType<?> idTypeCampaign, DataType<?> idTypeDatastream) {
         super(DSL.name(NAME_TABLE), null);
-        colProjectId = createField(DSL.name("PROJECT_ID"), idTypeProject);
+        colCampaignId = createField(DSL.name("CAMPAIGN_ID"), idTypeCampaign);
         colDatastreamId = createField(DSL.name("DATASTREAM_ID"), idTypeDatastream);
     }
 
-    private TableImpProjectsDatastreams(Name alias, TableImpProjectsDatastreams aliased) {
+    private TableImpCampaignsDatastreams(Name alias, TableImpCampaignsDatastreams aliased) {
         super(alias, aliased);
-        colProjectId = createField(DSL.name("PROJECT_ID"), aliased.colProjectId.getDataType());
+        colCampaignId = createField(DSL.name("CAMPAIGN_ID"), aliased.colCampaignId.getDataType());
         colDatastreamId = createField(DSL.name("DATASTREAM_ID"), aliased.colDatastreamId.getDataType());
     }
 
-    public TableField<Record, ?> getProjectId() {
-        return colProjectId;
+    public TableField<Record, ?> getCampaignId() {
+        return colCampaignId;
     }
 
     public TableField<Record, ?> getDatastreamId() {
@@ -67,12 +67,12 @@ public class TableImpProjectsDatastreams extends StaLinkTable<TableImpProjectsDa
     }
 
     @Override
-    public TableImpProjectsDatastreams as(Name alias) {
-        return new TableImpProjectsDatastreams(alias, this).initCustomFields();
+    public TableImpCampaignsDatastreams as(Name alias) {
+        return new TableImpCampaignsDatastreams(alias, this).initCustomFields();
     }
 
     @Override
-    public TableImpProjectsDatastreams getThis() {
+    public TableImpCampaignsDatastreams getThis() {
         return this;
     }
 

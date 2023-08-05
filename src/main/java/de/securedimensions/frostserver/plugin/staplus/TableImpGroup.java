@@ -48,7 +48,7 @@ import org.jooq.impl.SQLDataType;
  * @author am
  * @author scf
  */
-public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
+public class TableImpGroup extends StaTableAbstract<TableImpGroup> {
 
     /**
      * The column <code>public.GROUPS.EP_DESCRIPTION</code>.
@@ -117,7 +117,7 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
      * to.
      * @param pluginMultiDatastream
      */
-    public TableImpGroups(DataType<?> idType, DataType<?> idTypeParty, DataType<?> idTypeLicense, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+    public TableImpGroup(DataType<?> idType, DataType<?> idTypeParty, DataType<?> idTypeLicense, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         //StaTableAbstract(DataType<?> idType, Name alias, StaTableAbstract<T> aliasedBase, Table updatedSql)
         super(idType, DSL.name("GROUPS"), null, null);
         this.pluginPLUS = pluginPLUS;
@@ -128,11 +128,11 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
         colLicenseId = createField(DSL.name("LICENSE_ID"), idTypeLicense.nullable(true));
     }
 
-    private TableImpGroups(Name alias, TableImpGroups aliased, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+    private TableImpGroup(Name alias, TableImpGroup aliased, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         this(alias, aliased, aliased, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
     }
 
-    private TableImpGroups(Name alias, TableImpGroups aliased, Table updatedSql, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
+    private TableImpGroup(Name alias, TableImpGroup aliased, Table updatedSql, PluginPLUS pluginPLUS, PluginCoreModel pluginCoreModel, PluginMultiDatastream pluginMultiDatastream) {
         super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginPLUS;
         this.pluginCoreModel = pluginCoreModel;
@@ -152,12 +152,12 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
 
         // We add the relation to Party table.
         registerRelation(new RelationOneToMany<>(pluginPLUS.npPartyGroup, this, tables.getTableForClass(TableImpParty.class))
-                .setSourceFieldAccessor(TableImpGroups::getPartyId)
+                .setSourceFieldAccessor(TableImpGroup::getPartyId)
                 .setTargetFieldAccessor(TableImpParty::getId));
 
         // We add the relation to License table.
         registerRelation(new RelationOneToMany<>(pluginPLUS.npLicenseGroup, this, tables.getTableForClass(TableImpLicense.class))
-                .setSourceFieldAccessor(TableImpGroups::getLicenseId)
+                .setSourceFieldAccessor(TableImpGroup::getLicenseId)
                 .setTargetFieldAccessor(TableImpLicense::getId));
     }
 
@@ -166,7 +166,7 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
         TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
 
         registerRelation(new RelationManyToMany<>(pluginPLUS.npObservationsGroup, this, tableGroupObservations, tableObservations)
-                .setSourceFieldAcc(TableImpGroups::getId)
+                .setSourceFieldAcc(TableImpGroup::getId)
                 .setSourceLinkFieldAcc(TableImpGroupsObservations::getGroupId)
                 .setTargetLinkFieldAcc(TableImpGroupsObservations::getObservationId)
                 .setTargetFieldAcc(TableImpObservations::getId));
@@ -174,54 +174,54 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
                 .setSourceFieldAcc(TableImpObservations::getId)
                 .setSourceLinkFieldAcc(TableImpGroupsObservations::getObservationId)
                 .setTargetLinkFieldAcc(TableImpGroupsObservations::getGroupId)
-                .setTargetFieldAcc(TableImpGroups::getId));
+                .setTargetFieldAcc(TableImpGroup::getId));
 
     }
 
     private void initGroupsRelations(TableCollection tables) {
         final TableImpGroupsRelations tableGroupRelations = tables.getTableForClass(TableImpGroupsRelations.class);
-        TableImpRelations tableRelations = tables.getTableForClass(TableImpRelations.class);
+        TableImpRelation tableRelations = tables.getTableForClass(TableImpRelation.class);
 
         registerRelation(new RelationManyToMany<>(pluginPLUS.npRelationsGroup, this, tableGroupRelations, tableRelations)
-                .setSourceFieldAcc(TableImpGroups::getId)
+                .setSourceFieldAcc(TableImpGroup::getId)
                 .setSourceLinkFieldAcc(TableImpGroupsRelations::getGroupId)
                 .setTargetLinkFieldAcc(TableImpGroupsRelations::getRelationId)
-                .setTargetFieldAcc(TableImpRelations::getId));
+                .setTargetFieldAcc(TableImpRelation::getId));
         tableRelations.registerRelation(new RelationManyToMany<>(pluginPLUS.npRelationGroups, tableRelations, tableGroupRelations, this)
-                .setSourceFieldAcc(TableImpRelations::getId)
+                .setSourceFieldAcc(TableImpRelation::getId)
                 .setSourceLinkFieldAcc(TableImpGroupsRelations::getRelationId)
                 .setTargetLinkFieldAcc(TableImpGroupsRelations::getGroupId)
-                .setTargetFieldAcc(TableImpGroups::getId));
+                .setTargetFieldAcc(TableImpGroup::getId));
 
     }
 
     private void initGroupsProjects(TableCollection tables) {
-        final TableImpGroupsProjects tableGroupProjects = tables.getTableForClass(TableImpGroupsProjects.class);
-        TableImpProject tableProjects = tables.getTableForClass(TableImpProject.class);
+        final TableImpGroupsCampaigns tableGroupProjects = tables.getTableForClass(TableImpGroupsCampaigns.class);
+        TableImpCampaign tableProjects = tables.getTableForClass(TableImpCampaign.class);
 
-        registerRelation(new RelationManyToMany<>(pluginPLUS.npProjectsGroup, this, tableGroupProjects, tableProjects)
-                .setSourceFieldAcc(TableImpGroups::getId)
-                .setSourceLinkFieldAcc(TableImpGroupsProjects::getGroupId)
-                .setTargetLinkFieldAcc(TableImpGroupsProjects::getProjectId)
-                .setTargetFieldAcc(TableImpProject::getId));
-        tableProjects.registerRelation(new RelationManyToMany<>(pluginPLUS.npGroupsProject, tableProjects, tableGroupProjects, this)
-                .setSourceFieldAcc(TableImpProject::getId)
-                .setSourceLinkFieldAcc(TableImpGroupsProjects::getProjectId)
-                .setTargetLinkFieldAcc(TableImpGroupsProjects::getGroupId)
-                .setTargetFieldAcc(TableImpGroups::getId));
+        registerRelation(new RelationManyToMany<>(pluginPLUS.npCampaignsGroup, this, tableGroupProjects, tableProjects)
+                .setSourceFieldAcc(TableImpGroup::getId)
+                .setSourceLinkFieldAcc(TableImpGroupsCampaigns::getGroupId)
+                .setTargetLinkFieldAcc(TableImpGroupsCampaigns::getCampaignId)
+                .setTargetFieldAcc(TableImpCampaign::getId));
+        tableProjects.registerRelation(new RelationManyToMany<>(pluginPLUS.npGroupsCampaign, tableProjects, tableGroupProjects, this)
+                .setSourceFieldAcc(TableImpCampaign::getId)
+                .setSourceLinkFieldAcc(TableImpGroupsCampaigns::getCampaignId)
+                .setTargetLinkFieldAcc(TableImpGroupsCampaigns::getGroupId)
+                .setTargetFieldAcc(TableImpGroup::getId));
 
     }
 
     @Override
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
-        pfReg.addEntryId(TableImpGroups::getId);
+        pfReg.addEntryId(TableImpGroup::getId);
         pfReg.addEntryString(pluginCoreModel.epName, table -> table.colName);
         pfReg.addEntryString(pluginCoreModel.epDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
         pfReg.addEntryString(pluginPLUS.epGroupPurpose, table -> table.colPurpose);
-        pfReg.addEntryString(pluginPLUS.epProjectTermsOfUse, table -> table.colTermsOfUse);
-        pfReg.addEntryString(pluginPLUS.epProjectPrivacyPolicy, table -> table.colPrivacyPolicy);
+        pfReg.addEntryString(pluginPLUS.epCampaignTermsOfUse, table -> table.colTermsOfUse);
+        pfReg.addEntryString(pluginPLUS.epCampaignPrivacyPolicy, table -> table.colPrivacyPolicy);
         pfReg.addEntryMap(pluginPLUS.epGroupDataQuality, table -> table.colDataQuality);
 
         pfReg.addEntry(pluginPLUS.epGroupCreationTime, table -> table.colCreationTime,
@@ -230,23 +230,23 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
                 new ConverterTimeInstant<>(pluginPLUS.epGroupEndTime, table -> table.colEndTime));
 
         // Register with Observations
-        pfReg.addEntry(pluginPLUS.npObservationsGroup, TableImpGroups::getId);
+        pfReg.addEntry(pluginPLUS.npObservationsGroup, TableImpGroup::getId);
 
         TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
         tableObservations.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npObservationGroups, TableImpObservations::getId);
 
         // Register with Relations
-        pfReg.addEntry(pluginPLUS.npRelationsGroup, TableImpGroups::getId);
+        pfReg.addEntry(pluginPLUS.npRelationsGroup, TableImpGroup::getId);
 
         // Register with Parties
-        pfReg.addEntry(pluginPLUS.npPartyGroup, TableImpGroups::getPartyId);
+        pfReg.addEntry(pluginPLUS.npPartyGroup, TableImpGroup::getPartyId);
 
         // Register with Licenses
-        pfReg.addEntry(pluginPLUS.npLicenseGroup, TableImpGroups::getLicenseId);
+        pfReg.addEntry(pluginPLUS.npLicenseGroup, TableImpGroup::getLicenseId);
 
         // Register with Groups
-        pfReg.addEntry(pluginPLUS.npProjectsGroup, TableImpGroups::getId);
+        pfReg.addEntry(pluginPLUS.npCampaignsGroup, TableImpGroup::getId);
     }
 
     @Override
@@ -268,22 +268,22 @@ public class TableImpGroups extends StaTableAbstract<TableImpGroups> {
     }
 
     @Override
-    public TableImpGroups as(Name alias) {
-        return new TableImpGroups(alias, this, pluginPLUS, pluginCoreModel, pluginMultiDatastream).initCustomFields();
+    public TableImpGroup as(Name alias) {
+        return new TableImpGroup(alias, this, pluginPLUS, pluginCoreModel, pluginMultiDatastream).initCustomFields();
     }
 
     @Override
-    public StaMainTable<TableImpGroups> asSecure(String name, JooqPersistenceManager pm) {
+    public StaMainTable<TableImpGroup> asSecure(String name, JooqPersistenceManager pm) {
         final SecurityTableWrapper securityWrapper = getSecurityWrapper();
         if (securityWrapper == null) {
             return as(name);
         }
         final Table wrappedTable = securityWrapper.wrap(this, pm);
-        return new TableImpGroups(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
+        return new TableImpGroup(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel, pluginMultiDatastream);
     }
 
     @Override
-    public TableImpGroups getThis() {
+    public TableImpGroup getThis() {
         return this;
     }
 

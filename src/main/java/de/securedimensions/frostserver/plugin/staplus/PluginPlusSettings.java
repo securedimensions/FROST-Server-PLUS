@@ -36,15 +36,15 @@ public final class PluginPlusSettings implements ConfigDefaults {
     @DefaultValueBoolean(false)
     public static final String TAG_ENABLE_ENFORCE_LICENSING = "staplus.enable.enforceLicensing";
     @DefaultValueBoolean(false)
-    public static final String TAG_ENABLE_ENFORCE_GROUP_LICENSING = "staplus.enable.enforceGroupLicensing";
+    public static final String TAG_ENABLE_ENFORCE_GROUP_LICENSING = "staplus.enable.enforceObservationGroupLicensing";
     @DefaultValue("https://creativecommons.org")
     public static final String TAG_ENABLE_LICENSE_DOMAIN = "staplus.licenseDomain";
     @DefaultValue("")
-    public static final String TAG_ID_TYPE_GROUP = "staplus.idType.group";
+    public static final String TAG_ID_TYPE_GROUP = "staplus.idType.observation_group";
     @DefaultValue("")
     public static final String TAG_ID_TYPE_LICENSE = "staplus.idType.license";
     @DefaultValue("")
-    public static final String TAG_ID_TYPE_PROJECT = "staplus.idType.project";
+    public static final String TAG_ID_TYPE_CAMPAIGN = "staplus.idType.campaign";
     @DefaultValue("")
     public static final String TAG_ID_TYPE_RELATION = "staplus.idType.relation";
 
@@ -52,14 +52,14 @@ public final class PluginPlusSettings implements ConfigDefaults {
     public final String idTypeGroup;
     public final String idTypeLicense = "STRING"; /* fixed */
     public final String idTypeParty = "STRING"; /* fixed */
-    public final String idTypeProject;
+    public final String idTypeCampaign;
     public final String idTypeRelation;
 
     public PluginPlusSettings(CoreSettings settings) {
         Settings pluginSettings = settings.getPluginSettings();
         idTypeDefault = pluginSettings.get(CoreModelSettings.TAG_ID_TYPE_DEFAULT, PluginPlusSettings.class).toUpperCase();
         idTypeGroup = pluginSettings.get(TAG_ID_TYPE_GROUP, idTypeDefault).toUpperCase();
-        idTypeProject = pluginSettings.get(TAG_ID_TYPE_PROJECT, idTypeDefault).toUpperCase();
+        idTypeCampaign = pluginSettings.get(TAG_ID_TYPE_CAMPAIGN, idTypeDefault).toUpperCase();
         idTypeRelation = pluginSettings.get(TAG_ID_TYPE_RELATION, idTypeDefault).toUpperCase();
     }
 }

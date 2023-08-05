@@ -20,30 +20,30 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2023-07-17-PLUS-PROJECTS_MULTI_DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-08-03-PLUS-CAMPAIGNS_DATASTREAMS" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="PROJECTS_MULTI_DATASTREAMS" />
+                <tableExists tableName="CAMPAIGNS_DATASTREAMS" />
             </not>
         </preConditions>
 
-        <createTable tableName="PROJECTS_MULTI_DATASTREAMS">
-            <column name="PROJECT_ID" type="${idType-Project}">
+        <createTable tableName="CAMPAIGNS_DATASTREAMS">
+            <column name="CAMPAIGN_ID" type="${idType-Campaign}">
                 <constraints nullable="true"/>
             </column>
-            <column name="MULTI_DATASTREAM_ID" type="${idType-MultiDatastream}">
+            <column name="DATASTREAM_ID" type="${idType-Datastream}">
                 <constraints nullable="true"/>
             </column>
         </createTable>
         
-        <addPrimaryKey columnNames="PROJECT_ID, MULTI_DATASTREAM_ID" constraintName="PROJECTS_MULTI_DATASTREAMS_PKEY" tableName="PROJECTS_MULTI_DATASTREAMS"/>
+        <addPrimaryKey columnNames="CAMPAIGN_ID, DATASTREAM_ID" constraintName="CAMPAIGNS_DATASTREAMS_PKEY" tableName="CAMPAIGNS_DATASTREAMS"/>
         
-        <createIndex tableName="PROJECTS_MULTI_DATASTREAMS" indexName="PROJECTS_MULTI_DATASTREAMS_PROJECT_ID">
-            <column name="PROJECT_ID" />
+        <createIndex tableName="CAMPAIGNS_DATASTREAMS" indexName="CAMPAIGNS_DATASTREAMS_CAMPAIGN_ID">
+            <column name="CAMPAIGN_ID" />
         </createIndex>
         
-        <createIndex tableName="PROJECTS_MULTI_DATASTREAMS" indexName="PROJECTS_MULTI_DATASTREAMS_MULTI_DATASTREAM_ID">
-            <column name="MULTI_DATASTREAM_ID" />
+        <createIndex tableName="CAMPAIGNS_DATASTREAMS" indexName="CAMPAIGNS_DATASTREAMS_DATASTREAM_ID">
+            <column name="DATASTREAM_ID" />
         </createIndex>
     </changeSet>
 

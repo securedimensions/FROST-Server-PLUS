@@ -61,18 +61,18 @@ A `Sensor` must be associated to a `Datastream` or `MultiDatasteam`. In a multi-
 to have anonymous `Sensor` entities because it cannot be controlled which user may attach the sensor to their
 `Datastream` or `MultiDatasteam`.
 
-### Project
+### Campaign
 
-A `Project` can only be created if linked to the `Party` that represents the acting user. 
+A `Campaign` can only be created if linked to the `Party` that represents the acting user. 
 
-The associated `Party` can add/remove `Datastream`, `MultiDatasteam`, and `Group` entities to the Project.
+The associated `Party` can add/remove `Datastream`, `MultiDatasteam`, and `Group` entities to the Campaign.
 
 The associated `Party` has the exclusive right to update properties and in particular set the `endTime`. Once the 
 `endTime` is set and reached, no more modifications can be done by the associated user.
 
-### Group
+### ObservationGroup
 
-The functional behavior for the `Group` is similar to the `Project` entity type. The difference is that `Observations`
+The functional behavior for the `Group` is similar to the `Campaign` entity type. The difference is that `Observations`
 (and not `Datastream` or `MultiDatasteam`) can be added by the associated `Party`.
 
 ### Relation
@@ -109,7 +109,7 @@ property set and use one of allowed definitions for the supported Create Commons
 - https://creativecommons.org/licenses/by-nd/3.0/deed.en
 - https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en
 
-A `License` entity can only be created by a user when associated to either a `Datastream`, `MultiDatastream`, `Project` 
+A `License` entity can only be created by a user when associated to either a `Datastream`, `MultiDatastream`, `Campaign` 
 or `Group`.
 
 ### Datastream / MultiDatastream
@@ -120,6 +120,6 @@ license association can not be changed afterwards. This ensures consistent licen
 A `Group` may get associated with an `License` until the first `Observation` is associated. That
 license association can not be changed afterwards. This ensures consistent licensing.
 
-### Project
-A `Project` may get associated with a `License` until the first `Datastream` or `MultiDatastream` is pushed. That
+### Campaign
+A `Campaign` may get associated with a `License` until the first `Datastream` or `MultiDatastream` is pushed. That
 license association can not be changed afterwards. This ensures consistent licensing.

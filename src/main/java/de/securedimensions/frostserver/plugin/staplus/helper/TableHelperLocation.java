@@ -28,7 +28,6 @@ import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceMana
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
-import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpLocations;
 import de.fraunhofer.iosb.ilt.frostserver.query.Query;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
@@ -63,7 +62,7 @@ public class TableHelperLocation extends TableHelper {
                  * Select Phase
                  */
                 if (phase == Phase.PRE_RELATIONS) {
-                    final String encodingType = (String)entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
+                    final String encodingType = (String) entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
                     if (!encodingType.equalsIgnoreCase("application/geo+json"))
                         throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
                 }
@@ -86,7 +85,7 @@ public class TableHelperLocation extends TableHelper {
             public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
-                final String encodingType = (String)entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
+                final String encodingType = (String) entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
                 if (encodingType != null && !encodingType.equalsIgnoreCase("application/geo+json"))
                     throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
 

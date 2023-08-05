@@ -24,6 +24,10 @@ import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
+import java.io.IOException;
+import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
@@ -37,11 +41,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Tests for the encodingType of Location and FeatureOfInterest entity types.
@@ -197,7 +196,6 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
             + "    }\n"
             + "}";
 
-
     private static final String FOI = "{\n"
             + "    \"id\": \"%d\",\n"
             + "    \"name\": \"My Garden\",\n"
@@ -253,7 +251,6 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
     private static final String CREATE_LOCATION_WRONG_ENCODING_TYPE = "Create Location with wrong encodingType=wkt.";
     private static final String CREATE_LOCATION_NO_ENCODING_TYPE = "Create Location with no encodingType.";
 
-
     private static final String UPDATE_LOCATION_WITH_GEOJSON = "Update Location with encodingType=application/geo+json.";
     private static final String UPDATE_LOCATION_WRONG_ENCODING_TYPE = "Update Location with encodingType=wkt.";
     private static final String UPDATE_LOCATION_NO_ENCODING_TYPE = "Update Location with no encodingType.";
@@ -265,7 +262,6 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
     private static final String UPDATE_FOI_WITH_GEOJSON = "Update FeatureOfInterest with encodingType=application/geo+json.";
     private static final String UPDATE_FOI_WRONG_ENCODING_TYPE = "Update FeatureOfInterest with encodingType=wkt.";
     private static final String UPDATE_FOI_NO_ENCODING_TYPE = "Update FeatureOfInterest with no encodingType.";
-
 
     private static final int HTTP_CODE_200 = 200;
     private static final int HTTP_CODE_201 = 201;
@@ -354,7 +350,7 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
     }
 
     /*
-    Location Tests
+     * Location Tests
      */
 
     @Test
@@ -481,7 +477,7 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
     }
 
     /*
-    FeatureOfInterest Tests
+     * FeatureOfInterest Tests
      */
     @Test
     public void testCreateFoI() throws ClientProtocolException, IOException {

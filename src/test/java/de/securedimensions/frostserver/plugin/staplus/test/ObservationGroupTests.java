@@ -45,23 +45,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tests for the Group class properties. According to the ownership concept, a
- * Group's properties can only be changed by the user that 'owns' the Group
+ * Tests for the ObservationGroup class properties. According to the ownership concept, a
+ * ObservationGroup's properties can only be changed by the user that 'owns' the ObservationGroup
  * instance. That user has the same UUID as the Party's authId property.
  *
  * @author Andreas Matheus
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public abstract class GroupTests extends AbstractStaPlusTestClass {
+public abstract class ObservationGroupTests extends AbstractStaPlusTestClass {
 
-    public static class Imp10Tests extends GroupTests {
+    public static class Imp10Tests extends ObservationGroupTests {
 
         public Imp10Tests() {
             super(ServerVersion.v_1_0);
         }
     }
 
-    public static class Imp11Tests extends GroupTests {
+    public static class Imp11Tests extends ObservationGroupTests {
 
         public Imp11Tests() {
             super(ServerVersion.v_1_1);
@@ -71,22 +71,22 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
     /**
      * The logger for this class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(GroupTests.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObservationGroupTests.class);
 
     private static final long serialVersionUID = 1639739965;
 
-    private static final String GROUP_MUST_HAVE_A_PARTY = "Group must have a Party.";
+    private static final String GROUP_MUST_HAVE_A_PARTY = "ObservationGroup must have a Party.";
 
     private static final String ADMIN_SHOULD_BE_ABLE_TO_CREATE = "Admin should be able to create.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE = "Admin should be able to update.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_UPDATE_PARTY = "Admin should be able to update Party.";
     private static final String ADMIN_SHOULD_BE_ABLE_TO_DELETE = "Admin should be able to delete.";
-    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY = "Same user should be able to create Group associated with Party in request.";
-    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY = "Same user should be able to create Group associated with existing Party.";
+    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY = "Same user should be able to create ObservationGroup associated with Party in request.";
+    private static final String SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY = "Same user should be able to create ObservationGroup associated with existing Party.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_UPDATE = "Same user should be able to update.";
     private static final String SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_OTHER_PARTY = "Same user should not be able to update with other existing Party.";
     private static final String SAME_USER_SHOULD_BE_ABLE_TO_DELETE = "Same User should NOT be able to delete.";
-    private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create Group.";
+    private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE = "Other user should NOT be able to create ObservationGroup.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE = "Other user should NOT be able to update.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY = "Other user should NOT be able to update Party.";
     private static final String OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE = "Other user should NOT be able to delete.";
@@ -96,13 +96,13 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
     private static final String ANY_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION = "Any user should be able to add Observation.";
 
     private static String GROUP = "{\n"
-            + "	\"name\": \"Group\",\n"
+            + "	\"name\": \"ObservationGroup\",\n"
             + "	\"description\": \"none\",\n"
             + "	\"creationTime\": \"2021-12-12T12:12:12Z\"\n"
             + "}";
 
     private static String GROUP_INLINE_PARTY = "{\n"
-            + "	 \"name\": \"Group with Party inline\",\n"
+            + "	 \"name\": \"ObservationGroup with Party inline\",\n"
             + "  \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
             + "    \"Party\": {\n"
@@ -114,7 +114,7 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
             + "}";
 
     private static String GROUP_EXISTING_PARTY = "{\n"
-            + "	 \"name\": \"Group with Party external\",\n"
+            + "	 \"name\": \"ObservationGroup with Party external\",\n"
             + "	 \"description\": \"none\",\n"
             + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
             + "    \"Party\": {\n"
@@ -231,7 +231,7 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
     //private static SensorThingsService service;
     private String partyLJS, partyALICE;
 
-    public GroupTests(ServerVersion version) {
+    public ObservationGroupTests(ServerVersion version) {
         super(version, SERVER_PROPERTIES);
         // This is the party that we are going to apply the Update and Delete tests
         // on...
@@ -270,11 +270,11 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * GROUP_MUST_HAVE_A_PARTY Success: 400 Fail: n/a
      */
     @Test
-    public void test00GroupMustHaveAParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test00GroupMustHaveAParty");
+    public void test00ObservationGroupMustHaveAParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test00ObservationGroupMustHaveAParty");
         String request = GROUP;
 
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/ObservationGroups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
@@ -292,10 +292,10 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_CREATE_INLINE_PARTY Success: 201 Fail: n/a
      */
     @Test
-    public void test01SameUserCreateGroupInlineParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test01SameUserCreateGroupInlineParty");
+    public void test01SameUserCreateObservationGroupInlineParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateObservationGroupInlineParty");
         String request = String.format(GROUP_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/ObservationGroups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
@@ -320,12 +320,12 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_CREATE_EXISTING_PARTY Success: 201 Fail: n/a
      */
     @Test
-    public void test01SameUserCreateGroupExistingParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test01SameUserCreateGroupExistingParty");
+    public void test01SameUserCreateObservationGroupExistingParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test01SameUserCreateObservationGroupExistingParty");
         createParty(LJS);
 
         String request = String.format(GROUP_EXISTING_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/ObservationGroups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
@@ -350,10 +350,10 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 403 Fail: 201
      */
     @Test
-    public void test02OtherUserCreateGroupAssoc() throws ClientProtocolException, IOException {
-        LOGGER.info("  test02OtherUserCreateGroupAssoc");
+    public void test02OtherUserCreateObservationGroupAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02OtherUserCreateObservationGroupAssoc");
         String request = String.format(GROUP_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/ObservationGroups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
@@ -371,17 +371,17 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
      */
     @Test
-    public void test03AdminCreateGroupAssoc() throws ClientProtocolException, IOException {
-        LOGGER.info("  test03AdminCreateGroupAssoc");
+    public void test03AdminCreateObservationGroupAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test03AdminCreateObservationGroupAssoc");
         String request = String.format(GROUP_INLINE_PARTY, ALICE);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/ObservationGroups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
-                // we need to make sure that the Group is associated with Alice
+                // we need to make sure that the ObservationGroup is associated with Alice
                 String location = response.getFirstHeader("Location").getValue();
                 HttpGet httpGet = new HttpGet(location + "/Party");
                 try (CloseableHttpResponse response2 = serviceSTAplus.execute(httpGet)) {
@@ -400,10 +400,10 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * ANON_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 401 Fail: 201
      */
     @Test
-    public void test02AnonCreateGroupAssoc() throws ClientProtocolException, IOException {
-        LOGGER.info("  test02AnonCreateGroupAssoc");
+    public void test02AnonCreateObservationGroupAssoc() throws ClientProtocolException, IOException {
+        LOGGER.info("  test02AnonCreateObservationGroupAssoc");
         String request = String.format(GROUP_INLINE_PARTY, LJS);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/ObservationGroups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
@@ -422,9 +422,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * ANY_USER_SHOULD_BE_ABLE_TO_ADD_OBSERVATION
      */
     @Test
-    public void test10AnyUserAddGroupObservation() throws ClientProtocolException, IOException {
-        LOGGER.info("  test10AnyUserAddGroupObservation");
-        String groupUrl = createGroupParty(ALICE);
+    public void test10AnyUserAddObservationGroupObservation() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10AnyUserAddObservationGroupObservation");
+        String groupUrl = createObservationGroupParty(ALICE);
 
         String request = OBSERVATION_LJS;
         HttpPost httpPost = new HttpPost(groupUrl + "/Observations");
@@ -444,9 +444,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
     /*
      * UPDATE Tests
      */
-    private String createGroupParty(String userId) throws IOException {
+    private String createObservationGroupParty(String userId) throws IOException {
         String request = String.format(GROUP_INLINE_PARTY, userId);
-        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Groups");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/ObservationGroups");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, userId, "");
@@ -460,9 +460,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
      */
     @Test
-    public void test12SameUserUpdateGroup() throws ClientProtocolException, IOException {
-        LOGGER.info("  test12SameUserUpdateGroup");
-        String groupUrl = createGroupParty(LJS);
+    public void test12SameUserUpdateObservationGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test12SameUserUpdateObservationGroup");
+        String groupUrl = createObservationGroupParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -484,10 +484,10 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 403 Fail: n/a
      */
     @Test
-    public void test10SameUserUpdateGroupOtherParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test10SameUserUpdateGroupOtherParty");
+    public void test10SameUserUpdateObservationGroupOtherParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10SameUserUpdateObservationGroupOtherParty");
         createParty(ALICE);
-        String groupUrl = createGroupParty(LJS);
+        String groupUrl = createObservationGroupParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -508,9 +508,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE Success: 403 Fail: n/a
      */
     @Test
-    public void test12OtherUserUpdateGroup() throws ClientProtocolException, IOException {
-        LOGGER.info("  test12OtherUserUpdateGroup");
-        String groupUrl = createGroupParty(LJS);
+    public void test12OtherUserUpdateObservationGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test12OtherUserUpdateObservationGroup");
+        String groupUrl = createObservationGroupParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -531,11 +531,11 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_UPDATE_PARTY Success: 403 Fail: n/a
      */
     @Test
-    public void test10OtherUserUpdateGroupParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test10OtherUserUpdateGroupParty");
+    public void test10OtherUserUpdateObservationGroupParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10OtherUserUpdateObservationGroupParty");
         createParty(ALICE);
 
-        String groupUrl = createGroupParty(LJS);
+        String groupUrl = createObservationGroupParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -556,9 +556,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_UPDATE Success: 200 Fail: n/a
      */
     @Test
-    public void test13AdminUpdateGroup() throws ClientProtocolException, IOException {
-        LOGGER.info("  test13AdminUpdateGroup");
-        String groupUrl = createGroupParty(LJS);
+    public void test13AdminUpdateObservationGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test13AdminUpdateObservationGroup");
+        String groupUrl = createObservationGroupParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -579,11 +579,11 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_UPDATE_PARTY Success: 200 Fail: n/a
      */
     @Test
-    public void test10AdminUpdateGroupParty() throws ClientProtocolException, IOException {
-        LOGGER.info("  test10AdminUpdateGroupParty");
+    public void test10AdminUpdateObservationGroupParty() throws ClientProtocolException, IOException {
+        LOGGER.info("  test10AdminUpdateObservationGroupParty");
         createParty(ALICE);
 
-        String groupUrl = createGroupParty(LJS);
+        String groupUrl = createObservationGroupParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -604,9 +604,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * ANON_SHOULD_NOT_BE_ABLE_TO_UPDATE Success: 401 Fail: n/a
      */
     @Test
-    public void test14AnonUpdateGroup() throws ClientProtocolException, IOException {
-        LOGGER.info("  test14AnonUpdateGroup");
-        String groupUrl = createGroupParty(LJS);
+    public void test14AnonUpdateObservationGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test14AnonUpdateObservationGroup");
+        String groupUrl = createObservationGroupParty(LJS);
 
         String request = "{\"name\": \"foo bar\"}";
         HttpPatch httpPatch = new HttpPatch(groupUrl);
@@ -630,9 +630,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * SAME_USER_SHOULD_BE_ABLE_TO_DELETE Success: 200 Fail: n/a
      */
     @Test
-    public void test20SameUserDeleteGroup() throws ClientProtocolException, IOException {
-        LOGGER.info("  test20SameUserDeleteGroup");
-        String groupUrl = createGroupParty(LJS);
+    public void test20SameUserDeleteObservationGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test20SameUserDeleteObservationGroup");
+        String groupUrl = createObservationGroupParty(LJS);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, LJS, "");
 
@@ -649,9 +649,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_DELETE Success: 403 Fail: n/a
      */
     @Test
-    public void test21OtherUserDeleteGroup() throws ClientProtocolException, IOException {
-        LOGGER.info("  test21OtherUserDeleteGroup");
-        String groupUrl = createGroupParty(LJS);
+    public void test21OtherUserDeleteObservationGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test21OtherUserDeleteObservationGroup");
+        String groupUrl = createObservationGroupParty(LJS);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ALICE, "");
 
@@ -668,9 +668,9 @@ public abstract class GroupTests extends AbstractStaPlusTestClass {
      * ADMIN_SHOULD_BE_ABLE_TO_DELETE Success: 200 Fail: n/a
      */
     @Test
-    public void test22AdminDeleteGroup() throws ClientProtocolException, IOException {
-        LOGGER.info("  test22AdminDeleteGroup");
-        String groupUrl = createGroupParty(ALICE);
+    public void test22AdminDeleteObservationGroup() throws ClientProtocolException, IOException {
+        LOGGER.info("  test22AdminDeleteObservationGroup");
+        String groupUrl = createObservationGroupParty(ALICE);
         HttpDelete httpDelete = new HttpDelete(groupUrl);
         setAuth(httpDelete, ADMIN, "");
 

@@ -20,26 +20,18 @@ package de.securedimensions.frostserver.plugin.staplus.helper;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
-import de.fraunhofer.iosb.ilt.frostserver.parser.path.PathParser;
-import de.fraunhofer.iosb.ilt.frostserver.parser.query.QueryParser;
-import de.fraunhofer.iosb.ilt.frostserver.path.ResourcePath;
-import de.fraunhofer.iosb.ilt.frostserver.path.Version;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpFeatures;
-import de.fraunhofer.iosb.ilt.frostserver.query.Query;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import org.jooq.Field;
-
 import java.security.Principal;
 import java.util.Map;
+import org.jooq.Field;
 
 public class TableHelperFeatureOfInterest extends TableHelper {
 
@@ -64,7 +56,7 @@ public class TableHelperFeatureOfInterest extends TableHelper {
                  * Select Phase
                  */
                 if (phase == Phase.PRE_RELATIONS) {
-                    final String encodingType = (String)entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
+                    final String encodingType = (String) entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
                     if (!encodingType.equalsIgnoreCase("application/geo+json"))
                         throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
                 }
@@ -87,7 +79,7 @@ public class TableHelperFeatureOfInterest extends TableHelper {
             public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
-                final String encodingType = (String)entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
+                final String encodingType = (String) entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
                 if ((encodingType != null) && !encodingType.equalsIgnoreCase("application/geo+json"))
                     throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
 

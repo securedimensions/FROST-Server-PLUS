@@ -20,7 +20,7 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2023-05-15-PLUS-RELATIONS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-08-03-PLUS-RELATIONS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
                 <or>
@@ -32,14 +32,11 @@
             <column name="DESCRIPTION" type="TEXT"/>
             <column name="PROPERTIES" type="JSONB"/>
             <column name="ROLE" type="TEXT"/>
-            <column name="EXTERNAL_OBJECT" type="TEXT"/>
+            <column name="EXTERNAL_RESOURCE" type="TEXT"/>
             <column name="SUBJECT_ID" type="${idType-Observation}">
                 <constraints nullable="false"/>
             </column>
             <column name="OBJECT_ID" type="${idType-Observation}">
-                <constraints nullable="true"/>
-            </column>
-            <column name="GROUP_ID" type="${idType-Group}">
                 <constraints nullable="true"/>
             </column>
         </createTable>
@@ -76,17 +73,12 @@
         </addColumn>
     </changeSet>
 
-    <changeSet author="am" id="2021-07-23-PLUS-RELATIONS-4" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2021-08-03-PLUS-RELATIONS-4" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <createIndex tableName="RELATIONS" indexName="RELATIONS_OBJECT_ID">
             <column name="OBJECT_ID" />
         </createIndex>
-        
         <createIndex tableName="RELATIONS" indexName="RELATIONS_SUBJECT_ID">
             <column name="SUBJECT_ID" />
-        </createIndex>
-        
-        <createIndex tableName="RELATIONS" indexName="RELATIONS_GROUP_ID">
-            <column name="GROUP_ID" />
         </createIndex>
     </changeSet>
 

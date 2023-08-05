@@ -20,7 +20,7 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2023-07-14-PLUS-ForeignKeys" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-08-03-PLUS-ForeignKeys" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
 
         <addForeignKeyConstraint
             constraintName="THINGS_PARTY_ID_FKEY"
@@ -43,12 +43,12 @@
             deferrable="false" initiallyDeferred="false"
             onDelete="CASCADE" onUpdate="CASCADE"/>
 
-        <addForeignKeyConstraint
-            constraintName="DATASTREAMS_PROJECT_ID_FKEY"
-            baseTableName="DATASTREAMS" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECTS" referencedColumnNames="ID"
+        <!--addForeignKeyConstraint
+            constraintName="DATASTREAMS_CAMPAIGN_ID_FKEY"
+            baseTableName="DATASTREAMS" baseColumnNames="CAMPAIGN_ID"
+            referencedTableName="CAMPAIGNS" referencedColumnNames="ID"
             deferrable="false" initiallyDeferred="false"
-            onDelete="CASCADE" onUpdate="CASCADE"/>
+            onDelete="CASCADE" onUpdate="CASCADE"/-->
 
         <addForeignKeyConstraint
             constraintName="GROUPS_LICENSE_ID_FKEY"
@@ -65,8 +65,8 @@
             onDelete="CASCADE" onUpdate="CASCADE"/>
 
         <addForeignKeyConstraint
-                constraintName="PROJECTS_PARTY_ID_FKEY"
-                baseTableName="PROJECTS" baseColumnNames="PARTY_ID"
+                constraintName="CAMPAIGNS_PARTY_ID_FKEY"
+                baseTableName="CAMPAIGNS" baseColumnNames="PARTY_ID"
                 referencedTableName="PARTIES" referencedColumnNames="ID"
                 deferrable="false" initiallyDeferred="false"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
@@ -85,12 +85,12 @@
             deferrable="false" initiallyDeferred="false"
             onDelete="CASCADE" onUpdate="CASCADE"/>
 
-        <addForeignKeyConstraint
+        <!--addForeignKeyConstraint
             constraintName="RELATIONS_GROUP_ID_FKEY"
             baseTableName="RELATIONS" baseColumnNames="GROUP_ID"
             referencedTableName="GROUPS" referencedColumnNames="ID"
             deferrable="false" initiallyDeferred="false"
-            onDelete="CASCADE" onUpdate="CASCADE"/>
+            onDelete="CASCADE" onUpdate="CASCADE"/-->
 
         <addForeignKeyConstraint
                 constraintName="GROUPS_OBSERVATIONS_OBSERVATION_ID_FKEY"
@@ -107,29 +107,29 @@
                 onDelete="CASCADE" onUpdate="CASCADE"/>
 
         <addForeignKeyConstraint
-                constraintName="GROUPS_PROJECTS_PROJECT_ID_FKEY"
-                baseTableName="GROUPS_PROJECTS" baseColumnNames="PROJECT_ID"
-                referencedTableName="PROJECTS" referencedColumnNames="ID"
+                constraintName="GROUPS_CAMPAIGNS_CAMPAIGN_ID_FKEY"
+                baseTableName="GROUPS_CAMPAIGNS" baseColumnNames="CAMPAIGN_ID"
+                referencedTableName="CAMPAIGNS" referencedColumnNames="ID"
                 deferrable="false" initiallyDeferred="false"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
 
         <addForeignKeyConstraint
-                constraintName="GROUPS_PROJECTS_GROUP_ID_FKEY"
-                baseTableName="GROUPS_PROJECTS" baseColumnNames="GROUP_ID"
+                constraintName="GROUPS_CAMPAIGNS_GROUP_ID_FKEY"
+                baseTableName="GROUPS_CAMPAIGNS" baseColumnNames="GROUP_ID"
                 referencedTableName="GROUPS" referencedColumnNames="ID"
                 deferrable="false" initiallyDeferred="false"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
 
         <addForeignKeyConstraint
-                constraintName="PROJECTS_DATASTREAMS_PROJECT_ID_FKEY"
-                baseTableName="PROJECTS_DATASTREAMS" baseColumnNames="PROJECT_ID"
-                referencedTableName="PROJECTS" referencedColumnNames="ID"
+                constraintName="CAMPAIGNS_DATASTREAMS_CAMPAIGN_ID_FKEY"
+                baseTableName="CAMPAIGNS_DATASTREAMS" baseColumnNames="CAMPAIGN_ID"
+                referencedTableName="CAMPAIGNS" referencedColumnNames="ID"
                 deferrable="false" initiallyDeferred="false"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
 
         <addForeignKeyConstraint
-                constraintName="PROJECTS_DATASTREAMS_DATASTREAM_ID_FKEY"
-                baseTableName="PROJECTS_DATASTREAMS" baseColumnNames="DATASTREAM_ID"
+                constraintName="CAMPAIGNS_DATASTREAMS_DATASTREAM_ID_FKEY"
+                baseTableName="CAMPAIGNS_DATASTREAMS" baseColumnNames="DATASTREAM_ID"
                 referencedTableName="DATASTREAMS" referencedColumnNames="ID"
                 deferrable="false" initiallyDeferred="false"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
@@ -149,7 +149,7 @@
             onDelete="CASCADE" onUpdate="CASCADE"/>
     </changeSet>
 
-    <changeSet author="am" id="2023-07-17-PLUS-MULTI_DATASTREAMS-ForeignKeys" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-08-03-PLUS-MULTI_DATASTREAMS-ForeignKeys" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="MULTI_DATASTREAMS" />
        </preConditions>
@@ -168,23 +168,23 @@
             deferrable="false" initiallyDeferred="false"
             onDelete="CASCADE" onUpdate="CASCADE"/>
 
-        <addForeignKeyConstraint
-            constraintName="MULTI_DATASTREAMS_PROJECT_ID_FKEY"
-            baseTableName="MULTI_DATASTREAMS" baseColumnNames="PROJECT_ID"
-            referencedTableName="PROJECTS" referencedColumnNames="ID"
+        <!--addForeignKeyConstraint
+            constraintName="MULTI_DATASTREAMS_CAMPAIGN_ID_FKEY"
+            baseTableName="MULTI_DATASTREAMS" baseColumnNames="CAMPAIGN_ID"
+            referencedTableName="CAMPAIGNS" referencedColumnNames="ID"
             deferrable="false" initiallyDeferred="false"
-            onDelete="CASCADE" onUpdate="CASCADE"/>
+            onDelete="CASCADE" onUpdate="CASCADE"/-->
 
         <addForeignKeyConstraint
-                constraintName="PROJECTS_MULTI_DATASTREAMS_PROJECT_ID_FKEY"
-                baseTableName="PROJECTS_MULTI_DATASTREAMS" baseColumnNames="PROJECT_ID"
-                referencedTableName="PROJECTS" referencedColumnNames="ID"
+                constraintName="CAMPAIGNS_MULTI_DATASTREAMS_CAMPAIGN_ID_FKEY"
+                baseTableName="CAMPAIGNS_MULTI_DATASTREAMS" baseColumnNames="CAMPAIGN_ID"
+                referencedTableName="CAMPAIGNS" referencedColumnNames="ID"
                 deferrable="false" initiallyDeferred="false"
                 onDelete="CASCADE" onUpdate="CASCADE"/>
 
         <addForeignKeyConstraint
-                constraintName="PROJECTS_MULTI_DATASTREAMS_MULTI_DATASTREAM_ID_FKEY"
-                baseTableName="PROJECTS_MULTI_DATASTREAMS" baseColumnNames="MULTI_DATASTREAM_ID"
+                constraintName="CAMPAIGNS_MULTI_DATASTREAMS_MULTI_DATASTREAM_ID_FKEY"
+                baseTableName="CAMPAIGNS_MULTI_DATASTREAMS" baseColumnNames="MULTI_DATASTREAM_ID"
                 referencedTableName="MULTI_DATASTREAMS" referencedColumnNames="ID"
                 deferrable="false" initiallyDeferred="false"
                 onDelete="CASCADE" onUpdate="CASCADE"/>

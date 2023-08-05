@@ -20,22 +20,22 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
-    <changeSet author="am" id="2023-05-15-PLUS-PROJECTS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="am" id="2023-08-03-PLUS-CAMPAIGNS-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
                 <or>
-                    <tableExists tableName="PROJECTS" />
+                    <tableExists tableName="CAMPAIGNS" />
                 </or>
             </not>
         </preConditions>
 
-        <createTable tableName="PROJECTS">
+        <createTable tableName="CAMPAIGNS">
             <column name="NAME" type="TEXT"/>
             <column name="DESCRIPTION" type="TEXT"/>
             <column name="PROPERTIES" type="JSONB"/>
             <column name="CLASSIFICATION" type="TEXT"/>
-            <column name="TERMSOFUSE" type="TEXT"/>
-            <column name="PRIVACYPOLICY" type="TEXT"/>
+            <column name="TERMS_OF_USE" type="TEXT"/>
+            <column name="PRIVACY_POLICY" type="TEXT"/>
             <column name="URL" type="TEXT"/>
             <column name="CREATION_TIME" type="TIMESTAMP WITH TIME ZONE"/>
             <column name="START_TIME" type="TIMESTAMP WITH TIME ZONE"/>
@@ -49,33 +49,33 @@
         </createTable>
     </changeSet>
 
-    <changeSet author="scf" id="2021-05-11-PLUS-PROJECTS-2" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="scf" id="2021-08-03-PLUS-CAMPAIGNS-2" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
-            <changeLogPropertyDefined property="id-Project" value="LONG" />
+            <changeLogPropertyDefined property="id-Campaign" value="LONG" />
             <not>
-                <columnExists columnName="ID" tableName="PROJECTS" />
+                <columnExists columnName="ID" tableName="CAMPAIGNS" />
             </not>
         </preConditions>
-        <addColumn tableName="PROJECTS">
+        <addColumn tableName="CAMPAIGNS">
             <column name="ID" type="${idTypeLong}" autoIncrement="true" >
-                <constraints primaryKey="true" primaryKeyName="PROJECTS_PKEY" />
+                <constraints primaryKey="true" primaryKeyName="CAMPAIGNS_PKEY" />
             </column>
         </addColumn>
     </changeSet>
 
-    <changeSet author="scf" id="2021-05-11-PLUS-PROJECTS-3" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+    <changeSet author="scf" id="2021-08-03-PLUS-CAMPAIGNS-3" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <or>
-                <changeLogPropertyDefined property="id-Project" value="STRING" />
-                <changeLogPropertyDefined property="id-Project" value="UUID" />
+                <changeLogPropertyDefined property="id-Campaign" value="STRING" />
+                <changeLogPropertyDefined property="id-Campaign" value="UUID" />
             </or>
             <not>
-                <columnExists columnName="ID" tableName="PROJECTS" />
+                <columnExists columnName="ID" tableName="CAMPAIGNS" />
             </not>
         </preConditions>
-        <addColumn tableName="PROJECTS">
-            <column name="ID" type="${idType-Project}" defaultValueComputed="${defaultValueComputed-Project}" >
-                <constraints primaryKey="true" primaryKeyName="PROJECTS_PKEY"/>
+        <addColumn tableName="CAMPAIGNS">
+            <column name="ID" type="${idType-Campaign}" defaultValueComputed="${defaultValueComputed-Campaign}" >
+                <constraints primaryKey="true" primaryKeyName="CAMPAIGNS_PKEY"/>
             </column>
         </addColumn>
     </changeSet>

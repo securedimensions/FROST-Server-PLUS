@@ -27,28 +27,28 @@ import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import de.securedimensions.frostserver.plugin.staplus.TableImpProject;
+import de.securedimensions.frostserver.plugin.staplus.TableImpCampaign;
 import java.security.Principal;
 import java.util.Map;
 import org.jooq.Field;
 
-public class TableHelperProject extends TableHelper {
+public class TableHelperCampaign extends TableHelper {
 
-    private final TableImpProject tableProject;
+    private final TableImpCampaign tableCampaign;
 
-    public TableHelperProject(CoreSettings settings, JooqPersistenceManager ppm) {
+    public TableHelperCampaign(CoreSettings settings, JooqPersistenceManager ppm) {
         super(settings, ppm);
 
-        this.tableProject = tables.getTableForClass(TableImpProject.class);
+        this.tableCampaign = tables.getTableForClass(TableImpCampaign.class);
     }
 
     @Override
     public void registerPreHooks() {
 
-        tableProject.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableCampaign.registerHookPreInsert(-10.0, new HookPreInsert() {
 
             @Override
-            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity project,
+            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity campaign,
                     Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
 
                 /*
@@ -65,21 +65,22 @@ public class TableHelperProject extends TableHelper {
                 if (isAdmin(principal))
                     return true;
 
-                assertOwnershipProject(pm, project, principal);
+                assertOwnershipCampaign(pm, campaign, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled()) {
-                    assertLicenseProject(pm, project);
-                    assertEmptyProject(pm, project);
+                    assertLicenseCampaign(pm, campaign);
+                    if (campaign.isSetProperty(pluginPlus.npLicenseCampaign))
+                        assertEmptyCampaign(pm, campaign);
                 }
 
                 return true;
             }
         });
 
-        tableProject.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+        tableCampaign.registerHookPreUpdate(-10.0, new HookPreUpdate() {
 
             @Override
-            public void updateInDatabase(JooqPersistenceManager pm, Entity project, Id entityId)
+            public void updateInDatabase(JooqPersistenceManager pm, Entity campaign, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
                 if (!pluginPlus.isEnforceOwnershipEnabled())
@@ -90,19 +91,20 @@ public class TableHelperProject extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                // We need to assert on the existing Project that is to be updated
-                project = pm.get(pluginPlus.etProject, project.getId());
-                assertOwnershipProject(pm, project, principal);
+                // We need to assert on the existing Campaign that is to be updated
+                Entity storedCampaign = pm.get(pluginPlus.etCampaign, campaign.getId());
+                assertOwnershipCampaign(pm, storedCampaign, principal);
 
                 if (pluginPlus.isEnforceLicensingEnabled()) {
-                    assertLicenseProject(pm, project);
-                    assertEmptyProject(pm, project);
+                    assertLicenseCampaign(pm, storedCampaign);
+                    if (campaign.isSetProperty(pluginPlus.npLicenseCampaign))
+                        assertEmptyCampaign(pm, storedCampaign);
                 }
 
             }
         });
 
-        tableProject.registerHookPreDelete(-10.0, new HookPreDelete() {
+        tableCampaign.registerHookPreDelete(-10.0, new HookPreDelete() {
 
             @Override
             public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
@@ -115,8 +117,8 @@ public class TableHelperProject extends TableHelper {
                 if (isAdmin(principal))
                     return;
 
-                Entity project = pm.get(pluginPlus.etProject, entityId);
-                assertOwnershipProject(pm, project, principal);
+                Entity campaign = pm.get(pluginPlus.etCampaign, entityId);
+                assertOwnershipCampaign(pm, campaign, principal);
             }
         });
 

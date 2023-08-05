@@ -106,19 +106,19 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         final TableCollection tables = getTables();
 
         TableImpDatastreams tableDatastreams = tables.getTableForClass(TableImpDatastreams.class);
-        TableImpGroups tableGroups = tables.getTableForClass(TableImpGroups.class);
+        TableImpGroup tableGroups = tables.getTableForClass(TableImpGroup.class);
         TableImpThings tableThings = tables.getTableForClass(TableImpThings.class);
-        TableImpProject tableProjects = tables.getTableForClass(TableImpProject.class);
+        TableImpCampaign tableCampaigns = tables.getTableForClass(TableImpCampaign.class);
 
         // We add relation to the Groups table
         registerRelation(new RelationOneToMany<>(pluginPLUS.npGroupsParty, this, tableGroups)
                 .setSourceFieldAccessor(TableImpParty::getId)
-                .setTargetFieldAccessor(TableImpGroups::getPartyId));
+                .setTargetFieldAccessor(TableImpGroup::getPartyId));
 
-        // We add relation to the Projects table
-        registerRelation(new RelationOneToMany<>(pluginPLUS.npProjectsParty, this, tableProjects)
+        // We add relation to the Campaigns table
+        registerRelation(new RelationOneToMany<>(pluginPLUS.npCampaignsParty, this, tableCampaigns)
                 .setSourceFieldAccessor(TableImpParty::getId)
-                .setTargetFieldAccessor(TableImpProject::getPartyId));
+                .setTargetFieldAccessor(TableImpCampaign::getPartyId));
 
         // We add relation to the Things table
         registerRelation(new RelationOneToMany<>(pluginPLUS.npThingsParty, this, tableThings)
@@ -169,8 +169,8 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
         // We register a navigationProperty on the Groups table.
         pfReg.addEntry(pluginPLUS.npGroupsParty, TableImpParty::getId);
 
-        // We register a navigationProperty on the Projects table.
-        pfReg.addEntry(pluginPLUS.npProjectsParty, TableImpParty::getId);
+        // We register a navigationProperty on the Campaigns table.
+        pfReg.addEntry(pluginPLUS.npCampaignsParty, TableImpParty::getId);
 
         // We register a navigationProperty on the Datastreams table.
         pfReg.addEntry(pluginPLUS.npDatastreamsParty, TableImpParty::getId);

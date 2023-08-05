@@ -17,6 +17,8 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.test;
 
+import static de.securedimensions.frostserver.plugin.staplus.helper.TableHelperLicense.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
@@ -25,7 +27,6 @@ import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
-import de.securedimensions.frostserver.plugin.staplus.helper.TableHelperObservation;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
 import java.net.URL;
@@ -78,7 +79,7 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
 
     private static String GROUP(String license) {
         return String.format("{\n"
-                + "	\"name\": \"Group\",\n"
+                + "	\"name\": \"ObservationGroup\",\n"
                 + "	\"description\": \"with license\",\n"
                 + "  \"creationTime\": \"2021-12-12T12:12:12Z\",\n"
                 + "    \"Party\": " + PARTY_ALICE + ",\n"
@@ -229,7 +230,7 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
                 + "        \"speed\": \"1/400\"\n"
                 + "    },\n"
                 + "    \"Datastream\": %s,\n"
-                + "    \"Groups\": [%s],\n"
+                + "    \"ObservationGroups\": [%s],\n"
                 + "    \"FeatureOfInterest\": {\n"
                 + "        \"name\": \"The observed boundary\",\n"
                 + "        \"description\": \"The actual real worl area observed\",\n"
@@ -261,7 +262,7 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
         SERVER_PROPERTIES.put("plugins.staplus.enable", "true");
         SERVER_PROPERTIES.put("plugins.staplus.enable.enforceOwnership", "true");
         SERVER_PROPERTIES.put("plugins.staplus.enable.enforceLicensing", "true");
-        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceGroupLicensing", "false");
+        SERVER_PROPERTIES.put("plugins.staplus.enable.enforceObservationGroupLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
@@ -288,9 +289,9 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
             pMdl = new SensorThingsPlus(sMdl);
             serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
 
-            for (String k : TableHelperObservation.LICENSES.keySet()) {
+            for (String k : LICENSES.keySet()) {
                 if (!existLicense(k)) {
-                    createEntity("/Licenses", TableHelperObservation.LICENSES.get(k));
+                    createEntity("/Licenses", LICENSES.get(k));
                 }
             }
 
@@ -341,56 +342,56 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
 
     public static List<Object[]> data() {
         return Arrays.asList(new Object[][]{
-            // Datastream.License, Group.License, status code
-            {TableHelperObservation.CC_PD_ID, TableHelperObservation.CC_PD_ID, 201},
-            {TableHelperObservation.CC_PD_ID, TableHelperObservation.CC_BY_ID, 201},
-            {TableHelperObservation.CC_PD_ID, TableHelperObservation.CC_BY_SA_ID, 201},
-            {TableHelperObservation.CC_PD_ID, TableHelperObservation.CC_BY_NC_ID, 201},
-            {TableHelperObservation.CC_PD_ID, TableHelperObservation.CC_BY_ND_ID, 201},
-            {TableHelperObservation.CC_PD_ID, TableHelperObservation.CC_BY_NC_SA_ID, 201},
-            {TableHelperObservation.CC_PD_ID, TableHelperObservation.CC_BY_NC_ND_ID, 201},
-            {TableHelperObservation.CC_BY_ID, TableHelperObservation.CC_PD_ID, 400},
-            {TableHelperObservation.CC_BY_ID, TableHelperObservation.CC_BY_ID, 201},
-            {TableHelperObservation.CC_BY_ID, TableHelperObservation.CC_BY_SA_ID, 201},
-            {TableHelperObservation.CC_BY_ID, TableHelperObservation.CC_BY_NC_ID, 201},
-            {TableHelperObservation.CC_BY_ID, TableHelperObservation.CC_BY_ND_ID, 400},
-            {TableHelperObservation.CC_BY_ID, TableHelperObservation.CC_BY_NC_SA_ID, 201},
-            {TableHelperObservation.CC_BY_ID, TableHelperObservation.CC_BY_NC_ND_ID, 400},
-            {TableHelperObservation.CC_BY_SA_ID, TableHelperObservation.CC_PD_ID, 400},
-            {TableHelperObservation.CC_BY_SA_ID, TableHelperObservation.CC_BY_ID, 201},
-            {TableHelperObservation.CC_BY_SA_ID, TableHelperObservation.CC_BY_SA_ID, 201},
-            {TableHelperObservation.CC_BY_SA_ID, TableHelperObservation.CC_BY_NC_ID, 400},
-            {TableHelperObservation.CC_BY_SA_ID, TableHelperObservation.CC_BY_ND_ID, 400},
-            {TableHelperObservation.CC_BY_SA_ID, TableHelperObservation.CC_BY_NC_SA_ID, 400},
-            {TableHelperObservation.CC_BY_SA_ID, TableHelperObservation.CC_BY_NC_ND_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ID, TableHelperObservation.CC_PD_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ID, TableHelperObservation.CC_BY_ID, 201},
-            {TableHelperObservation.CC_BY_NC_ID, TableHelperObservation.CC_BY_SA_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ID, TableHelperObservation.CC_BY_NC_ID, 201},
-            {TableHelperObservation.CC_BY_NC_ID, TableHelperObservation.CC_BY_ND_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ID, TableHelperObservation.CC_BY_NC_SA_ID, 201},
-            {TableHelperObservation.CC_BY_NC_ID, TableHelperObservation.CC_BY_NC_ND_ID, 400},
-            {TableHelperObservation.CC_BY_ND_ID, TableHelperObservation.CC_PD_ID, 400},
-            {TableHelperObservation.CC_BY_ND_ID, TableHelperObservation.CC_BY_ID, 400},
-            {TableHelperObservation.CC_BY_ND_ID, TableHelperObservation.CC_BY_SA_ID, 400},
-            {TableHelperObservation.CC_BY_ND_ID, TableHelperObservation.CC_BY_NC_ID, 400},
-            {TableHelperObservation.CC_BY_ND_ID, TableHelperObservation.CC_BY_ND_ID, 400},
-            {TableHelperObservation.CC_BY_ND_ID, TableHelperObservation.CC_BY_NC_SA_ID, 400},
-            {TableHelperObservation.CC_BY_ND_ID, TableHelperObservation.CC_BY_NC_ND_ID, 400},
-            {TableHelperObservation.CC_BY_NC_SA_ID, TableHelperObservation.CC_PD_ID, 400},
-            {TableHelperObservation.CC_BY_NC_SA_ID, TableHelperObservation.CC_BY_ID, 201},
-            {TableHelperObservation.CC_BY_NC_SA_ID, TableHelperObservation.CC_BY_SA_ID, 400},
-            {TableHelperObservation.CC_BY_NC_SA_ID, TableHelperObservation.CC_BY_NC_ID, 201},
-            {TableHelperObservation.CC_BY_NC_SA_ID, TableHelperObservation.CC_BY_ND_ID, 400},
-            {TableHelperObservation.CC_BY_NC_SA_ID, TableHelperObservation.CC_BY_NC_SA_ID, 201},
-            {TableHelperObservation.CC_BY_NC_SA_ID, TableHelperObservation.CC_BY_NC_ND_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ND_ID, TableHelperObservation.CC_PD_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ND_ID, TableHelperObservation.CC_BY_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ND_ID, TableHelperObservation.CC_BY_SA_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ND_ID, TableHelperObservation.CC_BY_NC_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ND_ID, TableHelperObservation.CC_BY_ND_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ND_ID, TableHelperObservation.CC_BY_NC_SA_ID, 400},
-            {TableHelperObservation.CC_BY_NC_ND_ID, TableHelperObservation.CC_BY_NC_ND_ID, 400},});
+            // Datastream.License, ObservationGroup.License, status code
+            {CC_PD_ID, CC_PD_ID, 201},
+            {CC_PD_ID, CC_BY_ID, 201},
+            {CC_PD_ID, CC_BY_SA_ID, 201},
+            {CC_PD_ID, CC_BY_NC_ID, 201},
+            {CC_PD_ID, CC_BY_ND_ID, 201},
+            {CC_PD_ID, CC_BY_NC_SA_ID, 201},
+            {CC_PD_ID, CC_BY_NC_ND_ID, 201},
+            {CC_BY_ID, CC_PD_ID, 400},
+            {CC_BY_ID, CC_BY_ID, 201},
+            {CC_BY_ID, CC_BY_SA_ID, 201},
+            {CC_BY_ID, CC_BY_NC_ID, 201},
+            {CC_BY_ID, CC_BY_ND_ID, 400},
+            {CC_BY_ID, CC_BY_NC_SA_ID, 201},
+            {CC_BY_ID, CC_BY_NC_ND_ID, 400},
+            {CC_BY_SA_ID, CC_PD_ID, 400},
+            {CC_BY_SA_ID, CC_BY_ID, 201},
+            {CC_BY_SA_ID, CC_BY_SA_ID, 201},
+            {CC_BY_SA_ID, CC_BY_NC_ID, 400},
+            {CC_BY_SA_ID, CC_BY_ND_ID, 400},
+            {CC_BY_SA_ID, CC_BY_NC_SA_ID, 400},
+            {CC_BY_SA_ID, CC_BY_NC_ND_ID, 400},
+            {CC_BY_NC_ID, CC_PD_ID, 400},
+            {CC_BY_NC_ID, CC_BY_ID, 201},
+            {CC_BY_NC_ID, CC_BY_SA_ID, 400},
+            {CC_BY_NC_ID, CC_BY_NC_ID, 201},
+            {CC_BY_NC_ID, CC_BY_ND_ID, 400},
+            {CC_BY_NC_ID, CC_BY_NC_SA_ID, 201},
+            {CC_BY_NC_ID, CC_BY_NC_ND_ID, 400},
+            {CC_BY_ND_ID, CC_PD_ID, 400},
+            {CC_BY_ND_ID, CC_BY_ID, 400},
+            {CC_BY_ND_ID, CC_BY_SA_ID, 400},
+            {CC_BY_ND_ID, CC_BY_NC_ID, 400},
+            {CC_BY_ND_ID, CC_BY_ND_ID, 400},
+            {CC_BY_ND_ID, CC_BY_NC_SA_ID, 400},
+            {CC_BY_ND_ID, CC_BY_NC_ND_ID, 400},
+            {CC_BY_NC_SA_ID, CC_PD_ID, 400},
+            {CC_BY_NC_SA_ID, CC_BY_ID, 201},
+            {CC_BY_NC_SA_ID, CC_BY_SA_ID, 400},
+            {CC_BY_NC_SA_ID, CC_BY_NC_ID, 201},
+            {CC_BY_NC_SA_ID, CC_BY_ND_ID, 400},
+            {CC_BY_NC_SA_ID, CC_BY_NC_SA_ID, 201},
+            {CC_BY_NC_SA_ID, CC_BY_NC_ND_ID, 400},
+            {CC_BY_NC_ND_ID, CC_PD_ID, 400},
+            {CC_BY_NC_ND_ID, CC_BY_ID, 400},
+            {CC_BY_NC_ND_ID, CC_BY_SA_ID, 400},
+            {CC_BY_NC_ND_ID, CC_BY_NC_ID, 400},
+            {CC_BY_NC_ND_ID, CC_BY_ND_ID, 400},
+            {CC_BY_NC_ND_ID, CC_BY_NC_SA_ID, 400},
+            {CC_BY_NC_ND_ID, CC_BY_NC_ND_ID, 400},});
     }
 
     @Test
@@ -402,7 +403,7 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
             int expectedStatus = (int) d[2];
 
             int actualStatus = testIdId(datastreamLicenseId, groupLicenseId);
-            String test = "TestIdId: Datastream.License(@iot.id=" + datastreamLicenseId + ") - Group.License(@iot.id=" + groupLicenseId + ")";
+            String test = "TestIdId: Datastream.License(@iot.id=" + datastreamLicenseId + ") - ObservationGroup.License(@iot.id=" + groupLicenseId + ")";
             LOGGER.info(test);
             Assertions.assertTrue(expectedStatus == actualStatus, test);
             if (expectedStatus != actualStatus) {

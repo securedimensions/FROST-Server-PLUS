@@ -27,19 +27,19 @@ import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import de.securedimensions.frostserver.plugin.staplus.TableImpGroups;
+import de.securedimensions.frostserver.plugin.staplus.TableImpGroup;
 import java.security.Principal;
 import java.util.Map;
 import org.jooq.Field;
 
 public class TableHelperGroup extends TableHelper {
 
-    private final TableImpGroups tableGroups;
+    private final TableImpGroup tableGroups;
 
     public TableHelperGroup(CoreSettings settings, JooqPersistenceManager ppm) {
         super(settings, ppm);
 
-        this.tableGroups = tables.getTableForClass(TableImpGroups.class);
+        this.tableGroups = tables.getTableForClass(TableImpGroup.class);
     }
 
     @Override

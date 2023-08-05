@@ -44,7 +44,7 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 
-public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
+public class TableImpRelation extends StaTableAbstract<TableImpRelation> {
 
     /**
      * The column <code>public.GROUPS.EP_DESCRIPTION</code>.
@@ -62,9 +62,9 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     public final TableField<Record, String> colRole = createField(DSL.name("ROLE"), SQLDataType.CLOB, this);
 
     /**
-     * The column <code>public.RELATIONS.EP_EXTERNAL_OBJECT</code>.
+     * The column <code>public.RELATIONS.EP_EXTERNAL_RESOURCE</code>.
      */
-    public final TableField<Record, String> colExternalObject = createField(DSL.name("EXTERNAL_OBJECT"), SQLDataType.CLOB, this);
+    public final TableField<Record, String> colExternalObject = createField(DSL.name("EXTERNAL_RESOURCE"), SQLDataType.CLOB, this);
 
     /**
      * The column <code>public.RELATIONS.EP_ID</code>.
@@ -101,7 +101,7 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
      * @param pluginCoreModel the coreModel plugin that this data model links
      * to.
      */
-    public TableImpRelations(DataType<?> idType, DataType<?> idTypeObs, DataType<?> idTypeGroup, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
+    public TableImpRelation(DataType<?> idType, DataType<?> idTypeObs, DataType<?> idTypeGroup, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
         super(idType, DSL.name("RELATIONS"), null, null);
         this.pluginPLUS = pluginGrouping;
         this.pluginCoreModel = pluginCoreModel;
@@ -110,11 +110,11 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
         colGroupId = createField(DSL.name("GROUP_ID"), idTypeGroup);
     }
 
-    private TableImpRelations(Name alias, TableImpRelations aliased, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
+    private TableImpRelation(Name alias, TableImpRelation aliased, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
         this(alias, aliased, aliased, pluginGrouping, pluginCoreModel);
     }
 
-    private TableImpRelations(Name alias, TableImpRelations aliased, Table updatedSql, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
+    private TableImpRelation(Name alias, TableImpRelation aliased, Table updatedSql, PluginPLUS pluginGrouping, PluginCoreModel pluginCoreModel) {
         super(aliased.getIdType(), alias, aliased, updatedSql);
         this.pluginPLUS = pluginGrouping;
         this.pluginCoreModel = pluginCoreModel;
@@ -129,18 +129,18 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
         final TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
 
         registerRelation(new RelationOneToMany<>(pluginPLUS.npSubjectRelation, this, tableObservations)
-                .setSourceFieldAccessor(TableImpRelations::getSubjectId)
+                .setSourceFieldAccessor(TableImpRelation::getSubjectId)
                 .setTargetFieldAccessor(TableImpObservations::getId));
         tableObservations.registerRelation(new RelationOneToMany<>(pluginPLUS.npObjectsObservation, tableObservations, this)
                 .setSourceFieldAccessor(TableImpObservations::getId)
-                .setTargetFieldAccessor(TableImpRelations::getSubjectId));
+                .setTargetFieldAccessor(TableImpRelation::getSubjectId));
 
         registerRelation(new RelationOneToMany<>(pluginPLUS.npObjectRelation, this, tableObservations)
-                .setSourceFieldAccessor(TableImpRelations::getObjectId)
+                .setSourceFieldAccessor(TableImpRelation::getObjectId)
                 .setTargetFieldAccessor(TableImpObservations::getId));
         tableObservations.registerRelation(new RelationOneToMany<>(pluginPLUS.npSubjectsObservation, tableObservations, this)
                 .setSourceFieldAccessor(TableImpObservations::getId)
-                .setTargetFieldAccessor(TableImpRelations::getObjectId));
+                .setTargetFieldAccessor(TableImpRelation::getObjectId));
 
     }
 
@@ -148,17 +148,17 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     public void initProperties(final EntityFactories entityFactories) {
         final TableCollection tables = getTables();
         final TableImpObservations tableObservations = tables.getTableForClass(TableImpObservations.class);
-        pfReg.addEntryId(TableImpRelations::getId);
+        pfReg.addEntryId(TableImpRelation::getId);
         pfReg.addEntryString(pluginPLUS.epRelationDescription, table -> table.colDescription);
         pfReg.addEntryMap(ModelRegistry.EP_PROPERTIES, table -> table.colProperties);
 
         pfReg.addEntryString(pluginPLUS.epRelationRole, table -> table.colRole);
         pfReg.addEntryString(pluginPLUS.epExternalObject, table -> table.colExternalObject);
 
-        pfReg.addEntry(pluginPLUS.npSubjectRelation, TableImpRelations::getSubjectId);
-        pfReg.addEntry(pluginPLUS.npObjectRelation, TableImpRelations::getObjectId);
+        pfReg.addEntry(pluginPLUS.npSubjectRelation, TableImpRelation::getSubjectId);
+        pfReg.addEntry(pluginPLUS.npObjectRelation, TableImpRelation::getObjectId);
 
-        pfReg.addEntry(pluginPLUS.npRelationGroups, TableImpRelations::getId);
+        pfReg.addEntry(pluginPLUS.npRelationGroups, TableImpRelation::getId);
 
         // We register a navigationProperty for Subject on the Observations table.
         tableObservations.getPropertyFieldRegistry()
@@ -197,22 +197,22 @@ public class TableImpRelations extends StaTableAbstract<TableImpRelations> {
     }
 
     @Override
-    public TableImpRelations as(Name alias) {
-        return new TableImpRelations(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
+    public TableImpRelation as(Name alias) {
+        return new TableImpRelation(alias, this, pluginPLUS, pluginCoreModel).initCustomFields();
     }
 
     @Override
-    public StaMainTable<TableImpRelations> asSecure(String name, JooqPersistenceManager pm) {
+    public StaMainTable<TableImpRelation> asSecure(String name, JooqPersistenceManager pm) {
         final SecurityTableWrapper securityWrapper = getSecurityWrapper();
         if (securityWrapper == null) {
             return as(name);
         }
         final Table wrappedTable = securityWrapper.wrap(this, pm);
-        return new TableImpRelations(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
+        return new TableImpRelation(DSL.name(name), this, wrappedTable, pluginPLUS, pluginCoreModel);
     }
 
     @Override
-    public TableImpRelations getThis() {
+    public TableImpRelation getThis() {
         return this;
     }
 
