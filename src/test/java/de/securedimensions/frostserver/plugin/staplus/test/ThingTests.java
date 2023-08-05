@@ -219,20 +219,6 @@ public abstract class ThingTests extends AbstractStaPlusTestClass {
             + "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
             + "        \"role\": \"individual\",\n"
             + "        \"authId\": \"%s\"\n"
-            + "    },\n"
-            + "    \"Thing\": {\n"
-            + "         \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
-            + "        \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
-            + "        \"properties\": {\n"
-            + "            \"CPU\": \"1.4GHz\",\n"
-            + "            \"RAM\": \"4GB\"\n"
-            + "        },\n"
-            + "    \"Party\": {\n"
-            + "        \"displayName\": \"Long John Silver Citizen Scientist\",\n"
-            + "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
-            + "        \"role\": \"individual\",\n"
-            + "        \"authId\": \"%s\"\n"
-            + "    }\n"
             + "    }\n"
             + "}";
 
@@ -268,20 +254,6 @@ public abstract class ThingTests extends AbstractStaPlusTestClass {
             + "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
             + "        \"role\": \"individual\",\n"
             + "        \"authId\": \"%s\"\n"
-            + "    },\n"
-            + "    \"Thing\": {\n"
-            + "         \"name\": \"Raspberry Pi 4 B, 4x 1,5 GHz, 4 GB RAM, WLAN, BT\",\n"
-            + "        \"description\": \"Raspberry Pi 4 Model B is the latest product in the popular Raspberry Pi range of computers\",\n"
-            + "        \"properties\": {\n"
-            + "            \"CPU\": \"1.4GHz\",\n"
-            + "            \"RAM\": \"4GB\"\n"
-            + "        },\n"
-            + "    \"Party\": {\n"
-            + "        \"displayName\": \"Long John Silver Citizen Scientist\",\n"
-            + "        \"description\": \"The opportunistic pirate by Robert Louis Stevenson\",\n"
-            + "        \"role\": \"individual\",\n"
-            + "        \"authId\": \"%s\"\n"
-            + "    }\n"
             + "    }\n"
             + "}";
 
@@ -320,8 +292,8 @@ public abstract class ThingTests extends AbstractStaPlusTestClass {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
             sMdl = new SensorThingsSensingV11();
-            pMdl = new SensorThingsPlus(sMdl);
-            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
+            pMdl = new SensorThingsPlus();
+            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)), sMdl, pMdl);
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }

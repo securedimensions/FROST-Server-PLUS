@@ -298,8 +298,8 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
             sMdl = new SensorThingsSensingV11();
-            pMdl = new SensorThingsPlus(sMdl);
-            serviceSTAplus = new SensorThingsService(pMdl.getModelRegistry(), new URL(serverSettings.getServiceUrl(version)));
+            pMdl = new SensorThingsPlus();
+            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)), sMdl, pMdl);
 
             createEntity("/Parties", PARTY_ALICE, ALICE);
             createEntity("/Things", THING_EXISTING_PARTY.formatted(ALICE), ALICE);
