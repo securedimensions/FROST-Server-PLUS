@@ -160,7 +160,7 @@ public abstract class TableHelper {
         if (multiDatastream == null)
             throw new IllegalArgumentException("MultiDatastream does not exist");
 
-        if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled() && !multiDatastream.getEntityType().equals(pluginMultiDatastream.etMultiDatastream))
+        if ((pluginMultiDatastream != null) && !multiDatastream.getEntityType().equals(pluginMultiDatastream.etMultiDatastream))
             throw new IllegalArgumentException("Entity not of type MultiDatastream");
 
         // We can get the username from the Principal
@@ -393,7 +393,7 @@ public abstract class TableHelper {
         if (multiDatastream == null)
             throw new IllegalArgumentException("MultiDatastream does not exist");
 
-        if ((pluginMultiDatastream != null) && pluginMultiDatastream.isEnabled() && !multiDatastream.getEntityType().equals(pluginMultiDatastream.etMultiDatastream))
+        if ((pluginMultiDatastream != null) && !multiDatastream.getEntityType().equals(pluginMultiDatastream.etMultiDatastream))
             throw new IllegalArgumentException("Entity not of type MultiDatastream");
 
         if (multiDatastream.isSetProperty(pluginPlus.npLicenseMultiDatastream)) {
