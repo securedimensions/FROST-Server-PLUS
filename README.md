@@ -75,7 +75,7 @@ A user can `update` or `delete` any object owned. However, the user *cannot* del
 
 ### Settings
 
-**plugins.plus.enable.enforceOwnership:**  
+**plugins.staplus.enable.enforceOwnership:**  
 Set to `true` to enable the enforcement of ownership. Default: `false`.
 
 ## Party Singleton
@@ -106,7 +106,7 @@ The file `insertCCLicenses.xml` contains the set of licenses that are generated 
 
 You can change this configuration accordingly to load a different set of licenses.
 
-**plugins.plus.enable.enforceLicensing:**
+**plugins.staplus.enable.enforceLicensing:**
 Set to `true` to enable the enforcement of licensing. Default: `false`.
 
 
@@ -121,7 +121,7 @@ The plugin creates the different Creative Commons Licenses in read-only mode as 
 
 ### Settings
 
-**plugins.plus.enable.enforceObservationGroupLicensing:**  
+**plugins.staplus.enable.enforceObservationGroupLicensing:**  
 Set to `true` to enable the enforcement of licensing on `ObservationGroup` entity. Default: `false`. 
 
 ## Appreciation
