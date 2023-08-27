@@ -88,6 +88,9 @@ public class TableHelperDatastream extends TableHelper {
             public void updateInDatabase(JooqPersistenceManager pm, Entity datastream, Id entityId)
                     throws NoSuchEntityException, IncompleteEntityException {
 
+                if (!pluginPlus.isEnforceOwnershipEnabled())
+                    return;
+
                 Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
                 if (isAdmin(principal))
