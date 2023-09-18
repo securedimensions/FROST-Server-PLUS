@@ -98,7 +98,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     public final NavigationPropertyEntity npLicenseMultiDatastream = new NavigationPropertyEntity("License", false);
     public final NavigationPropertyEntitySet npMultiDatastreamsLicense = new NavigationPropertyEntitySet("MultiDatastreams", npLicenseMultiDatastream);
     public final NavigationPropertyEntity npLicenseGroup = new NavigationPropertyEntity("License", false);
-    public final NavigationPropertyEntitySet npGroupsLicense = new NavigationPropertyEntitySet("Groups", npLicenseGroup);
+    public final NavigationPropertyEntitySet npGroupsLicense = new NavigationPropertyEntitySet("ObservationGroups", npLicenseGroup);
     public final NavigationPropertyEntity npLicenseCampaign = new NavigationPropertyEntity("License", false);
     public final NavigationPropertyEntitySet npCampaignsLicense = new NavigationPropertyEntitySet("Campaigns", npLicenseCampaign);
     public final EntityType etLicense = new EntityType("License", "Licenses");
