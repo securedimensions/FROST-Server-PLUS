@@ -6,7 +6,7 @@ This repository contains an open source reference implementation of STAplus.
 **_INPORTANT_: Do not yet use in production!**
 
 ## About the OGC STAplus Standard
-STAplus is an [OGC Implementation Standard](https://docs.ogc.org/is/22-022r1/22-022r1.html) that extends the suite of OGC SensorThings API [v1.0](https://docs.ogc.org/is/15-078r6/15-078r6.html) and [v1.1](https://docs.ogc.org/is/18-088/18-088.html) Standards.
+[STAplus](https://docs.ogc.org/is/22-022r1/22-022r1.html) is an OGC Implementation Standard that extends the suite of OGC SensorThings API [v1.0](https://docs.ogc.org/is/15-078r6/15-078r6.html) and [v1.1](https://docs.ogc.org/is/18-088/18-088.html) Standards.
 
 <cite>"STAplus - SensorThings API extension PLUS - defines a SensorThings data model extension to improve FAIR principles when exchanging sensor data including licensing and ownership information. The STAplus extension is fully backwards compatible to the existing OGC SensorThings API Part 1: Sensing Version 1.0 and 1.1 and thereby offers existing deployments to easily upgrade to STAplus."</cite>[^22_022r1]
 
