@@ -164,7 +164,7 @@
                             <eclipseWtp>
                                 <type>XML</type>
                                 <files>
-                                    <file>${root.basedir}/scripts/codestyle/xml.prefs</file>
+                                    <file>scripts/codestyle/xml.prefs</file>
                                 </files>
                             </eclipseWtp>
                         </format>
@@ -192,7 +192,7 @@
                     <java>
                         <eclipse>
                             <version>4.21</version>
-                            <file>${root.basedir}/scripts/codestyle/formatter.xml</file>
+                            <file>scripts/codestyle/formatter.xml</file>
                         </eclipse>
                         <importOrder/>
                         <removeUnusedImports/>
