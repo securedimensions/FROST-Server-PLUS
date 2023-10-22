@@ -26,7 +26,7 @@ The following UML diagrams illustrate the data model extension towards SensorThi
 ## About the Implementation
 This repository contains an open source reference implementation of STAplus as a [FROST-Server](https://github.com/FraunhoferIOSB/FROST-Server) plugin.
 
-This implementation supports the conformance classes `Core`, `Authentication` and `Business Logic`  as defined in the STAplus Candidate Standard. The `API` conformance class is already supported by the FROST-Server implementation.
+This implementation supports the conformance classes `Core`, `Authentication` and `Business Logic`  as defined in the STAplus Standard. The `API` conformance class is already supported by the FROST-Server implementation.
 
 ### Business Logic
 This implementation enforces the concept of ownership as explained in detail below. Please see [Business Logic](/BUSINESS-LOGIC.md) for more details.
