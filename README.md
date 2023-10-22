@@ -12,10 +12,7 @@ This repository contains an open source reference implementation of STAplus.
 
 [^22_022r1]: [OGC SensorThings API Extension: STAplus 1.0](https://docs.ogc.org/is/22-022r1/22-022r1.html)
 
-The following simplified[^simplified]  UML diagrams illustrate the data model extension towards SensorThings API `Datastream` and `MultiDatastream`.
-
-[^simplified]: The SensorThings API classes are empty. Please see [Sensor Things API standard - Sensing Entities diagram](https://docs.ogc.org/is/18-088/18-088.html#fig-sensing-entities) and
-[Sensor Things API standard - MultiDatastream Extension Entities diagram](https://docs.ogc.org/is/18-088/18-088.html#fig-sensing-entities-multi) for details.
+The following UML diagrams illustrate the data model extension towards SensorThings API `Datastream` and `MultiDatastream`.
 
 **_NOTE:_** The yellow colored classes belong to the SensorThings API data model.
 
