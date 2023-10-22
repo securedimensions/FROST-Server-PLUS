@@ -77,11 +77,11 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/core",
             "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/create",
             "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/update",
-            "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/delete",
-            "https://github.com/securedimensions/FROST-Server-PLUS/BUSINESS-LOGIC.md");
+            "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/delete");
     private static final String REQUIREMENT_ENFORCE_OWNERSHIP = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceOwnership";
     private static final String REQUIREMENT_ENFORCE_LICENSING = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceLicensing";
     private static final String REQUIREMENT_ENFORCE_GROUP_LICENSING = "https://github.com/securedimensions/FROST-Server-PLUS#EnforceGroupLicensing";
+    private static final String REQUIREMENT_AUTH = "http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/authentication";
 
     public static final List<String> LICENSE_IDS = Arrays.asList(
             "CC_PD", "CC_BY", "CC_BY_NC", "CC_BY_SA", "CC_BY_NC_SA", "CC_BY_ND", "CC_BY_NC_ND");
@@ -179,6 +179,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     private boolean fullyInitialised;
     private URL licenseDomain;
 
+    private boolean authEnabled;
+
     public PluginPLUS() {
         LOGGER.info("Creating new STAplus Plugin.");
     }
@@ -192,7 +194,6 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             return;
         }
         enforceOwnership = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_OWNERSHIP, PluginPlusSettings.class);
-
         enforceLicensing = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_LICENSING, PluginPlusSettings.class);
         enforceGroupLicensing = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_GROUP_LICENSING, PluginPlusSettings.class);
 
@@ -205,6 +206,9 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                 LOGGER.error("value for '" + PluginPlusSettings.TAG_ENABLE_LICENSE_DOMAIN + "' not a valid URL");
             }
         }
+
+        Settings authSettings = settings.getAuthSettings();
+        authEnabled = (!authSettings.get("provider", "").equalsIgnoreCase(""));
 
         plusSettings = new PluginPlusSettings(settings);
         settings.getPluginManager().registerPlugin(this);
@@ -640,14 +644,19 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         Set<String> extensionList = (Set<String>) serverSettings.get(Service.KEY_CONFORMANCE_LIST);
         extensionList.addAll(REQUIREMENTS_PLUS);
 
-        if (this.enforceOwnership)
-            extensionList.add(REQUIREMENT_ENFORCE_OWNERSHIP);
+        if (this.enforceOwnership) {
+            extensionList.add("http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/business-logic");
+            serverSettings.put("http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/business-logic",new HashMap<>(Map.of("href",REQUIREMENT_ENFORCE_OWNERSHIP)));
+        }
 
         if (this.enforceLicensing)
             extensionList.add(REQUIREMENT_ENFORCE_LICENSING);
 
         if (this.enforceGroupLicensing)
             extensionList.add(REQUIREMENT_ENFORCE_GROUP_LICENSING);
+
+        if (this.authEnabled)
+            extensionList.add(REQUIREMENT_AUTH);
     }
 
     @Override
