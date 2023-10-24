@@ -646,7 +646,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
         if (this.enforceOwnership) {
             extensionList.add("http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/business-logic");
-            serverSettings.put("http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/business-logic",new HashMap<>(Map.of("href",REQUIREMENT_ENFORCE_OWNERSHIP)));
+            serverSettings.put("http://www.opengis.net/spec/sensorthings-staplus/1.0/conf/business-logic", new HashMap<>(Map.of("href", REQUIREMENT_ENFORCE_OWNERSHIP)));
         }
 
         if (this.enforceLicensing)
