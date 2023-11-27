@@ -4,13 +4,13 @@
     <parent>
         <groupId>de.fraunhofer.iosb.ilt.FROST-Server</groupId>
         <artifactId>FROST-Server.Plugins</artifactId>
-        <version>2.2.0-SNAPSHOT</version>
+        <version>2.2.0</version>
     </parent>
     <groupId>de.securedimensions.FROST-Server</groupId>
     <artifactId>FROST-Server.Plugin.STAplus</artifactId>
     <packaging>jar</packaging>
 
-    <name>FROST-Server.Plugin.PLUS</name>
+    <name>FROST-Server.Plugin.STAplus</name>
     <description>A plugin that adds a data model extension to represent Project, License, User and Semantics via Groups and Relationship.</description>
     <url>https://github.com/securedimensions/FROST-Server-PLUS</url>
 
@@ -140,15 +140,11 @@
     </dependencies>
     <repositories>
         <repository>
-            <id>FROST-Snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>Maven Central</id>
+            <id>central</id>
+            <name>Maven Central</name>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
-
     <build>
         <plugins>
             <plugin>

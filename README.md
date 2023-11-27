@@ -26,22 +26,46 @@ The following UML diagrams illustrate the data model extension towards SensorThi
 ## About the Implementation
 This repository contains an open source reference implementation of STAplus as a [FROST-Server](https://github.com/FraunhoferIOSB/FROST-Server) plugin.
 
+This repository builds with the FROST-Server v2.2.0.
+
 This implementation supports the conformance classes `Core`, `Authentication` and `Business Logic`  as defined in the STAplus Standard. The `API` conformance class is already supported by the FROST-Server implementation.
 
 ### Business Logic
 This implementation enforces the concept of ownership as explained in detail below. Please see [Business Logic](/BUSINESS-LOGIC.md) for more details.
 
-## Deployment
-The deployment of the STAplus plugin requires a working deployment of the FROST-Server. You can follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FROST-Server/) to run your instance.
+## Deployment for existing FROST-Server
+The deployment of the STAplus plugin can integrated into a working deployment of the FROST-Server. You can follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FROST-Server/) to run your instance.
 
-### Build STAplus
-This repository builds with the FROST-Server 2.2.0 SNAPSHOT.
+### Build and deploy STAplus standalone
+Clone this directory via `git clone https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
 
-### Deploy STAplus
-Follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FROST-Server/deployment/architecture-packages.html)
-applicable to your deployment strategy. 
+Make sure you copy the `FROST-Server.Plugin.STAplus-2.2.0.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
 
-Make sure you copy the `FROST-Server.Plugin.STAplus-2.2.0-SNAPSHOT.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below.
+## Deployment with FROST-Server
+Use `git clone -b v2.2.x https://github.com/FraunhoferIOSB/FROST-Server.git FROST-Server.v2.2.x` to create the FROST-Server directory structure.
+
+Then cd `FROST-Server/Plugins` and `git clone https://github.com/securedimensions/FROST-Server-PLUS.git STAplus`.
+
+Add the `STAplus` plugin to the `FROST-Server/Plugins/pom.xml`.
+
+```xml
+<modules>
+        <module>Actuation</module>
+        <module>BatchProcessing</module>
+        <module>CoreModel</module>
+        <module>FormatCsv</module>
+        <module>FormatDataArray</module>
+        <module>FormatGeoJson</module>
+        <module>ModelLoader</module>
+        <module>MultiDatastream</module>
+        <module>OData</module>
+        <module>OpenApi</module>
+        <module>STAplus</module>
+    </modules>
+```
+
+Then follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FROST-Server/deployment/architecture-packages.html) applicable to your deployment strategy.  
+
 
 ## Configuration
 Different features of the STAplus plugin can be activated / deactivated using FROST-Server alike configuration variables:
@@ -94,6 +118,8 @@ This configuration overwrites the `id` generation for the `Party` entity only.
 ## <a name="EnforceLicensing"></a>Enforcement of Licensing
 According to the STAplus Data Model, a `Datastream`, `ObservationGroup` and `Campaign` may have a `License` association. In order to ensure the use of compatible licenses, this implementations generates a given set of configured licenses.
 
+A user can clone a global license to set the `attributionText` and associate that license to a `Datastream` or `MultiDatestream`. But, when creating a new License, the `definition` URI must remain the same.
+
 ### Settings
 The file `resources/tables.xml` contains as the last constructor for table generation the entry 
 ```xml
@@ -108,6 +134,9 @@ Set to `true` to enable the enforcement of licensing. Default: `false`.
 
 
 ## <a name="EnforceGroupLicensing"></a>Enforcement of ObservationGroup Licensing
+
+**_NOTE:_** This is not yet implemented.
+
 When adding (an) `Observation(s)` to an `ObservationGroup`, the `Enforcement of Licensing` ensures that the `License`, associated to (an) `Observation(s)` is compatible to the `License` associated to an `ObservationGroup`.
 
 When activating the `Enforcement of Licensing`, the plugin enforces licenses compatibility based on the Creative Commons v3 licensing model an the license compatibility according to the official cart. 
