@@ -3,11 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>de.fraunhofer.iosb.ilt.FROST-Server</groupId>
-        <artifactId>FROST-Server.Plugins</artifactId>
-        <version>2.2.0</version>
+        <artifactId>FROST-ServerParent</artifactId>
+        <version>2.4.0-SNAPSHOT</version>
     </parent>
     <groupId>de.securedimensions.FROST-Server</groupId>
     <artifactId>FROST-Server.Plugin.STAplus</artifactId>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>FROST-Server.Plugin.STAplus</name>
@@ -16,7 +17,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <root.basedir>${project.parent.parent.basedir}</root.basedir>
+        <root.basedir>${project.basedir}</root.basedir>
         <version.FROST-Client>2.4</version.FROST-Client>
     </properties>
 
@@ -30,36 +31,43 @@
         <dependency>
             <groupId>${parent.groupId}</groupId>
             <artifactId>FROST-Server.HTTP.Common</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${parent.groupId}</groupId>
             <artifactId>FROST-Server.MQTT</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${parent.groupId}</groupId>
-            <artifactId>FROST-Server.SQLjooq</artifactId>
-            <version>${parent.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>${parent.groupId}</groupId>
-            <artifactId>FROST-Server.Util</artifactId>
-            <version>${parent.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
             <artifactId>FROST-Server.Plugin.CoreModel</artifactId>
             <version>${project.parent.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>${project.parent.groupId}</groupId>
+            <groupId>${parent.groupId}</groupId>
             <artifactId>FROST-Server.Plugin.MultiDatastream</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${parent.groupId}</groupId>
+            <artifactId>FROST-Server.SQLjooq</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${parent.groupId}</groupId>
+            <artifactId>FROST-Server.Tests</artifactId>
+            <version>${project.parent.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${parent.groupId}</groupId>
+            <artifactId>FROST-Server.Util</artifactId>
             <version>${project.parent.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -77,13 +85,6 @@
             <groupId>de.fraunhofer.iosb.ilt</groupId>
             <artifactId>FROST-Client-Dynamic</artifactId>
             <version>${version.FROST-Client}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.fraunhofer.iosb.ilt.FROST-Server</groupId>
-            <artifactId>FROST-Server.Tests</artifactId>
-            <version>${parent.version}</version>
-            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -105,6 +106,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
+            <version>${version.org.json}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -144,8 +146,19 @@
             <name>Maven Central</name>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
+        <repository>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
     </repositories>
     <build>
+        <finalName>FROST-Server-${project.parent.version}.Plugin.STAplus-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>

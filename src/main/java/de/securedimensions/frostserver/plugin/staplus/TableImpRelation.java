@@ -35,11 +35,10 @@ import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
 import de.fraunhofer.iosb.ilt.frostserver.service.UpdateMode;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
-import org.jooq.DataType;
-import org.jooq.Name;
+import java.util.Arrays;
+import java.util.List;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.Table;
-import org.jooq.TableField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
@@ -54,7 +53,7 @@ public class TableImpRelation extends StaTableAbstract<TableImpRelation> {
     /**
      * The column <code>public.GROUPS.EP_PROPERTIES</code>.
      */
-    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
+    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", JsonBinding.instance());
 
     /**
      * The column <code>public.RELATIONS.EP_ROLE</code>.
@@ -180,6 +179,10 @@ public class TableImpRelation extends StaTableAbstract<TableImpRelation> {
     }
 
     @Override
+    public List<Field> getPkFields() {
+        return Arrays.asList(colId);
+    }
+
     public TableField<Record, ?> getId() {
         return colId;
     }

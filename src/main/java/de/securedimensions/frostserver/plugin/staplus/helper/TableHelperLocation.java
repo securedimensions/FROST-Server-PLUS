@@ -17,27 +17,21 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.parser.path.PathParser;
 import de.fraunhofer.iosb.ilt.frostserver.parser.query.QueryParser;
 import de.fraunhofer.iosb.ilt.frostserver.path.ResourcePath;
 import de.fraunhofer.iosb.ilt.frostserver.path.Version;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpLocations;
 import de.fraunhofer.iosb.ilt.frostserver.query.Query;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import java.security.Principal;
-import java.util.Map;
-import org.jooq.Field;
 
 public class TableHelperLocation extends TableHelper {
 
@@ -52,74 +46,62 @@ public class TableHelperLocation extends TableHelper {
     @Override
     public void registerPreHooks() {
 
-        tableLocations.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableLocations.registerHookPreInsert(-1,
+                (phase, pm, entity, insertFields) -> {
 
-            @Override
-            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
-                    Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+                    /*
+                     * Select Phase
+                     */
+                    if (phase == PRE_RELATIONS) {
+                        final String encodingType = (String) entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
+                        if (!encodingType.equalsIgnoreCase("application/geo+json"))
+                            throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
+                    }
 
-                /*
-                 * Select Phase
-                 */
-                if (phase == Phase.PRE_RELATIONS) {
-                    final String encodingType = (String) entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
-                    if (!encodingType.equalsIgnoreCase("application/geo+json"))
-                        throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
-                }
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                    if (isAdmin(principal))
+                        return true;
 
-                if (isAdmin(principal))
+                    if (pluginPlus.isEnforceOwnershipEnabled())
+                        assertOwnershipLocation(pm, entity, principal);
+
                     return true;
+                });
 
-                if (pluginPlus.isEnforceOwnershipEnabled())
-                    assertOwnershipLocation(pm, entity, principal);
+        tableLocations.registerHookPreUpdate(-1,
+                (pm, entity, entityId, updateMode) -> {
 
-                return true;
-            }
-        });
+                    final String encodingType = (String) entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
+                    if (encodingType != null && !encodingType.equalsIgnoreCase("application/geo+json"))
+                        throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
 
-        tableLocations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-            @Override
-            public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
-                    throws NoSuchEntityException, IncompleteEntityException {
+                    if (isAdmin(principal))
+                        return;
 
-                final String encodingType = (String) entity.getProperty(pluginCoreModel.etLocation.getProperty("encodingType"));
-                if (encodingType != null && !encodingType.equalsIgnoreCase("application/geo+json"))
-                    throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
+                    if (pluginPlus.isEnforceOwnershipEnabled())
+                        assertOwnershipLocation(pm, entity, principal);
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                });
 
-                if (isAdmin(principal))
-                    return;
+        tableLocations.registerHookPreDelete(-1, (pm, entityId) -> {
 
-                if (pluginPlus.isEnforceOwnershipEnabled())
-                    assertOwnershipLocation(pm, entity, principal);
-            }
-        });
+            if (!pluginPlus.isEnforceOwnershipEnabled())
+                return;
 
-        tableLocations.registerHookPreDelete(-10.0, new HookPreDelete() {
+            Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-            @Override
-            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
+            if (isAdmin(principal))
+                return;
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Locations(" + entityId.get(0) + ")");
+            Query query = QueryParser.parseQuery("$expand=Things", pm.getCoreSettings(), rp);
+            query.validate();
+            Entity location = (Entity) pm.get(rp, query);
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
-                    return;
-
-                Id id = ParserUtils.idFromObject(entityId);
-                ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Locations(" + id.getUrl() + ")");
-                Query query = QueryParser.parseQuery("$expand=Things", pm.getCoreSettings(), rp);
-                query.validate();
-                Entity location = (Entity) pm.get(rp, query);
-
-                assertOwnershipLocation(pm, location, principal);
-            }
+            assertOwnershipLocation(pm, location, principal);
         });
 
     }
@@ -130,7 +112,7 @@ public class TableHelperLocation extends TableHelper {
             throw new IllegalArgumentException("Cannot check ownership of Location for more than one Thing");
 
         if (things != null) {
-            Entity thing = pm.get(pluginCoreModel.etThing, things.iterator().next().getId());
+            Entity thing = pm.get(pluginCoreModel.etThing, things.iterator().next().getPrimaryKeyValues());
             assertOwnershipThing(pm, thing, principal);
         }
     }

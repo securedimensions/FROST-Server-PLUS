@@ -17,21 +17,15 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
 import java.security.Principal;
-import java.util.Map;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
@@ -54,78 +48,67 @@ public class TableHelperMultiDatastream extends TableHelper {
             tableMultiDatastreams.getPropertyFieldRegistry()
                     .addEntry(pluginPlus.npPartyMultiDatastream, table -> ((TableLike<Record>) table).field(partyMDIdIdx));
 
-            tableMultiDatastreams.registerHookPreInsert(-10.0, new HookPreInsert() {
+            tableMultiDatastreams.registerHookPreInsert(-1,
+                    (phase, pm, entity, insertFields) -> {
 
-                @Override
-                public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity multiDatastream,
-                        Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+                        /*
+                         * Select Phase
+                         */
+                        if (phase == PRE_RELATIONS)
+                            return true;
 
-                    /*
-                     * Select Phase
-                     */
-                    if (phase == Phase.PRE_RELATIONS)
+                        if (!pluginPlus.isEnforceOwnershipEnabled())
+                            return true;
+
+                        Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+
+                        if (isAdmin(principal))
+                            return true;
+
+                        assertOwnershipMultiDatastream(pm, entity, principal);
+
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertLicenseMultiDatastream(pm, entity);
+                            assertEmptyMultiDatastream(pm, entity);
+                        }
+
                         return true;
+                    });
 
-                    if (!pluginPlus.isEnforceOwnershipEnabled())
-                        return true;
+            tableMultiDatastreams.registerHookPreUpdate(-1,
+                    (pm, entity, entityId, updateMode) -> {
 
-                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                        if (!pluginPlus.isEnforceOwnershipEnabled())
+                            return;
 
-                    if (isAdmin(principal))
-                        return true;
+                        Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                    assertOwnershipMultiDatastream(pm, multiDatastream, principal);
+                        if (isAdmin(principal))
+                            return;
 
-                    if (pluginPlus.isEnforceLicensingEnabled()) {
-                        assertLicenseMultiDatastream(pm, multiDatastream);
-                        assertEmptyMultiDatastream(pm, multiDatastream);
-                    }
+                        // We need to assert on the existing Project that is to be updated
+                        entity = pm.get(pluginMultiDatastream.etMultiDatastream, entityId);
+                        assertOwnershipMultiDatastream(pm, entity, principal);
 
-                    return true;
-                }
-            });
+                        if (pluginPlus.isEnforceLicensingEnabled()) {
+                            assertLicenseMultiDatastream(pm, entity);
+                            assertEmptyMultiDatastream(pm, entity);
+                        }
 
-            tableMultiDatastreams.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+                    });
 
-                @Override
-                public void updateInDatabase(JooqPersistenceManager pm, Entity multiDatastream, Id entityId)
-                        throws NoSuchEntityException, IncompleteEntityException {
+            tableMultiDatastreams.registerHookPreDelete(-1, (pm, entityId) -> {
 
-                    if (!pluginPlus.isEnforceOwnershipEnabled())
-                        return;
+                if (!pluginPlus.isEnforceOwnershipEnabled())
+                    return;
 
-                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                    if (isAdmin(principal))
-                        return;
+                if (isAdmin(principal))
+                    return;
 
-                    // We need to assert on the existing Project that is to be updated
-                    multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
-                    assertOwnershipMultiDatastream(pm, multiDatastream, principal);
-
-                    if (pluginPlus.isEnforceLicensingEnabled()) {
-                        assertLicenseMultiDatastream(pm, multiDatastream);
-                        assertEmptyMultiDatastream(pm, multiDatastream);
-                    }
-                }
-            });
-
-            tableMultiDatastreams.registerHookPreDelete(-10.0, new HookPreDelete() {
-
-                @Override
-                public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
-
-                    if (!pluginPlus.isEnforceOwnershipEnabled())
-                        return;
-
-                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                    if (isAdmin(principal))
-                        return;
-
-                    Entity multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, entityId);
-                    assertOwnershipMultiDatastream(pm, multiDatastream, principal);
-                }
+                Entity multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, entityId);
+                assertOwnershipMultiDatastream(pm, multiDatastream, principal);
             });
 
         }

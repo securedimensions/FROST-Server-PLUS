@@ -21,7 +21,7 @@ import static de.securedimensions.frostserver.plugin.staplus.helper.TableHelperL
 
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.PkValue;
 import de.fraunhofer.iosb.ilt.frostserver.parser.path.PathParser;
 import de.fraunhofer.iosb.ilt.frostserver.parser.query.QueryParser;
 import de.fraunhofer.iosb.ilt.frostserver.path.ResourcePath;
@@ -33,7 +33,6 @@ import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.PluginCoreModel;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.query.Query;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.UnauthorizedException;
 import de.fraunhofer.iosb.ilt.frostserver.util.user.PrincipalExtended;
@@ -90,22 +89,22 @@ public abstract class TableHelper {
             multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
 
         // Test if Observation needs to be loaded - first from Datastream
-        if ((datastream == null) && (multiDatastream == null) && (entity.getId() != null)) {
-            Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
+        if ((datastream == null) && (multiDatastream == null) && (entity.getPrimaryKeyValues().get(0) != null)) {
+            Entity observation = pm.get(pluginCoreModel.etObservation, entity.getPrimaryKeyValues());
             if ((observation != null) && observation.isSetProperty(pluginCoreModel.npDatastreamObservation))
                 datastream = pm.get(pluginCoreModel.etDatastream,
-                        observation.getProperty(pluginCoreModel.npDatastreamObservation).getId());
+                        observation.getProperty(pluginCoreModel.npDatastreamObservation).getPrimaryKeyValues());
             else
                 datastream = null;
         }
 
         // Test if Observation needs to be loaded - now from MultiDatastream
-        if ((datastream == null) && (multiDatastream == null) && (entity.getId() != null)) {
-            Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
+        if ((datastream == null) && (multiDatastream == null) && (entity.getPrimaryKeyValues().get(0) != null)) {
+            Entity observation = pm.get(pluginCoreModel.etObservation, entity.getPrimaryKeyValues());
             if ((observation != null)
                     && observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
                 multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream,
-                        observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
+                        observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getPrimaryKeyValues());
             else
                 multiDatastream = null;
         }
@@ -137,8 +136,8 @@ public abstract class TableHelper {
         if (datastream != null)
             party = datastream.getProperty(pluginPlus.npPartyDatastream);
 
-        if (party == null && datastream.getId() != null) {
-            datastream = pm.get(pluginCoreModel.etDatastream, datastream.getId());
+        if (party == null && datastream.getPrimaryKeyValues().get(0) != null) {
+            datastream = pm.get(pluginCoreModel.etDatastream, datastream.getPrimaryKeyValues());
             if (datastream != null) {
                 party = datastream.getProperty(pluginPlus.npPartyDatastream);
             }
@@ -147,7 +146,7 @@ public abstract class TableHelper {
         if (party == null)
             throw new IllegalArgumentException("Datastream not linked to a Party");
 
-        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getId().toString();
+        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getPrimaryKeyValues().get(0).toString();
 
         if (!partyId.equalsIgnoreCase(userId))
             throw new ForbiddenException("Datastream not linked to acting Party");
@@ -172,8 +171,8 @@ public abstract class TableHelper {
         if (multiDatastream != null)
             party = multiDatastream.getProperty(pluginPlus.npPartyMultiDatastream);
 
-        if (party == null && multiDatastream.getId() != null) {
-            multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
+        if (party == null && multiDatastream.getPrimaryKeyValues().get(0) != null) {
+            multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getPrimaryKeyValues());
             if (multiDatastream != null) {
                 party = multiDatastream.getProperty(pluginPlus.npPartyMultiDatastream);
             }
@@ -182,7 +181,7 @@ public abstract class TableHelper {
         if (party == null)
             throw new IllegalArgumentException("MultiDatastream not linked to a Party");
 
-        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getId().toString();
+        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getPrimaryKeyValues().get(0).toString();
         if (!partyId.equalsIgnoreCase(userId))
             throw new ForbiddenException("MultiDatastream not linked to acting Party");
 
@@ -206,8 +205,8 @@ public abstract class TableHelper {
         if (thing != null)
             party = thing.getProperty(pluginPlus.npPartyThing);
 
-        if (party == null && thing.getId() != null) {
-            thing = pm.get(pluginPlus.etGroup, thing.getId());
+        if (party == null && thing.getPrimaryKeyValues().get(0) != null) {
+            thing = pm.get(pluginCoreModel.etThing, thing.getPrimaryKeyValues());
             if (thing != null) {
                 party = thing.getProperty(pluginPlus.npPartyThing);
             }
@@ -216,7 +215,7 @@ public abstract class TableHelper {
         if (party == null)
             throw new IllegalArgumentException("Thing not linked to a Party");
 
-        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getId().toString();
+        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getPrimaryKeyValues().get(0).toString();
 
         if (!partyId.equalsIgnoreCase(userId))
             throw new ForbiddenException("Thing not linked to acting Party");
@@ -241,8 +240,8 @@ public abstract class TableHelper {
         if (project != null)
             party = project.getProperty(pluginPlus.npPartyCampaign);
 
-        if (party == null && project.getId() != null) {
-            project = pm.get(pluginPlus.etGroup, project.getId());
+        if (party == null && project.getPrimaryKeyValues().get(0) != null) {
+            project = pm.get(pluginPlus.etCampaign, project.getPrimaryKeyValues());
             if (project != null) {
                 party = project.getProperty(pluginPlus.npPartyGroup);
             }
@@ -251,7 +250,7 @@ public abstract class TableHelper {
         if (party == null)
             throw new IllegalArgumentException("Campaign not linked to a Party");
 
-        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getId().toString();
+        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getPrimaryKeyValues().get(0).toString();
 
         if (!partyId.equalsIgnoreCase(userId))
             throw new ForbiddenException("Campaign not linked to acting Party");
@@ -272,8 +271,8 @@ public abstract class TableHelper {
 
         // Ensure Ownership for Group
         Entity party = group.getProperty(pluginPlus.npPartyGroup);
-        if (party == null && group.getId() != null) {
-            group = pm.get(pluginPlus.etGroup, group.getId());
+        if (party == null && group.getPrimaryKeyValues().get(0) != null) {
+            group = pm.get(pluginPlus.etGroup, group.getPrimaryKeyValues());
             if (group != null) {
                 party = group.getProperty(pluginPlus.npPartyGroup);
             }
@@ -282,7 +281,7 @@ public abstract class TableHelper {
         if (party == null)
             throw new IllegalArgumentException("ObservationGroup not linked to a Party");
 
-        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getId().toString();
+        String partyId = (party.isSetProperty(pluginPlus.epAuthId)) ? party.getProperty(pluginPlus.epAuthId) : party.getPrimaryKeyValues().get(0).toString();
 
         if (!partyId.equalsIgnoreCase(userId))
             throw new ForbiddenException("ObservationGroup not linked to acting Party");
@@ -305,7 +304,7 @@ public abstract class TableHelper {
             // The authId is set by the plugin - it cannot be changed via a PATCH
             throw new ForbiddenException("Party not representing acting user");
         } else {
-            partyId = party.getId().toString();
+            partyId = party.getPrimaryKeyValues().get(0).toString();
             if ((partyId != null) && (!userId.equalsIgnoreCase(partyId))) {
                 // The authId is set by the plugin - it cannot be changed via a PATCH
                 throw new ForbiddenException("Party not representing acting user");
@@ -327,8 +326,8 @@ public abstract class TableHelper {
 
         // Ensure License for Group
         Entity license = group.getProperty(pluginPlus.npLicenseGroup);
-        if (license == null && group.getId() != null) {
-            group = pm.get(pluginPlus.etGroup, group.getId());
+        if (license == null && group.getPrimaryKeyValues().get(0) != null) {
+            group = pm.get(pluginPlus.etGroup, group.getPrimaryKeyValues());
             if (group != null) {
                 license = group.getProperty(pluginPlus.npLicenseGroup);
             }
@@ -352,8 +351,8 @@ public abstract class TableHelper {
 
         // Ensure License for Campaign
         Entity license = project.getProperty(pluginPlus.npLicenseCampaign);
-        if (license == null && project.getId() != null) {
-            project = pm.get(pluginPlus.etLicense, project.getId());
+        if (license == null && project.getPrimaryKeyValues().get(0) != null) {
+            project = pm.get(pluginPlus.etLicense, project.getPrimaryKeyValues());
             if (project != null) {
                 license = project.getProperty(pluginPlus.npLicenseCampaign);
             }
@@ -377,8 +376,8 @@ public abstract class TableHelper {
 
         // Ensure License for Datastream
         Entity license = datastream.getProperty(pluginPlus.npLicenseDatastream);
-        if (license == null && datastream.getId() != null) {
-            datastream = pm.get(pluginCoreModel.etDatastream, datastream.getId());
+        if (license == null && datastream.getPrimaryKeyValues().get(0) != null) {
+            datastream = pm.get(pluginCoreModel.etDatastream, datastream.getPrimaryKeyValues());
             if (datastream != null) {
                 license = datastream.getProperty(pluginPlus.npLicenseDatastream);
             }
@@ -403,8 +402,8 @@ public abstract class TableHelper {
 
         // Ensure License for MultiDatastream
         Entity license = multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream);
-        if (license == null && multiDatastream.getId() != null) {
-            multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
+        if (license == null && multiDatastream.getPrimaryKeyValues().get(0) != null) {
+            multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getPrimaryKeyValues());
             if (multiDatastream != null) {
                 license = multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream);
             }
@@ -428,9 +427,9 @@ public abstract class TableHelper {
         }
 
         // Ensure Datastream by reference has no Observations
-        if (datastream.getId() != null) {
-            Id id = ParserUtils.idFromObject(datastream.getId());
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Datastreams(" + id.getUrl() + ")/Observations");
+        if (datastream.getPrimaryKeyValues().get(0) != null) {
+            PkValue id = datastream.getPrimaryKeyValues();
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Datastreams(" + id.getUrl(datastream.getPrimaryKey()) + ")/Observations");
             Query query = QueryParser.parseQuery("", pm.getCoreSettings(), rp);
             query.validate();
             EntitySet obs = (EntitySet) pm.get(rp, query);
@@ -453,9 +452,9 @@ public abstract class TableHelper {
         }
 
         // Ensure Datastream by reference has no Observations
-        if (mds.getId() != null) {
-            Id id = ParserUtils.idFromObject(mds.getId());
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/MultiDatastreams(" + id.getUrl() + ")/Observations");
+        if (mds.getPrimaryKeyValues().get(0) != null) {
+            PkValue id = mds.getPrimaryKeyValues();
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/MultiDatastreams(" + id.getUrl(mds.getPrimaryKey()) + ")/Observations");
             Query query = QueryParser.parseQuery("", pm.getCoreSettings(), rp);
             query.validate();
             EntitySet obs = (EntitySet) pm.get(rp, query);
@@ -478,9 +477,9 @@ public abstract class TableHelper {
         }
 
         // Ensure Group by reference has no Observations
-        if (group.getId() != null) {
-            Id id = ParserUtils.idFromObject(group.getId());
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Groups(" + id.getUrl() + ")/Observations");
+        if (group.getPrimaryKeyValues().get(0) != null) {
+            PkValue id = group.getPrimaryKeyValues();
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Groups(" + id.getUrl(group.getPrimaryKey()) + ")/Observations");
             Query query = QueryParser.parseQuery("", pm.getCoreSettings(), rp);
             query.validate();
             EntitySet obs = (EntitySet) pm.get(rp, query);
@@ -498,9 +497,9 @@ public abstract class TableHelper {
             throw new IllegalArgumentException("Entity not of type Campaign");
 
         // Ensure Campaign by reference has no Datastreams and no MultiDatastreams
-        if (project.getId() != null) {
-            Id id = ParserUtils.idFromObject(project.getId());
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Campaigns(" + id.getUrl() + ")");
+        if (project.getPrimaryKeyValues().get(0) != null) {
+            PkValue id = project.getPrimaryKeyValues();
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Campaigns(" + id.getUrl(project.getPrimaryKey()) + ")");
             Query query = QueryParser.parseQuery("$expand=Datastreams($top=0;$count=true),MultiDatastreams($top=0;$count=true)", pm.getCoreSettings(), rp);
             query.validate();
             project = (Entity) pm.get(rp, query);
@@ -513,29 +512,29 @@ public abstract class TableHelper {
         }
     }
 
-    protected void assertLicenseCompatibilty(String sourceId, String targetId) {
+    protected void assertLicenseCompatibilty(String sourceId, String targetPrimaryKeyValues) {
         boolean compatible = false;
         switch (sourceId) {
             case CC_PD_ID:
-                compatible = contains(CC_PD, targetId);
+                compatible = contains(CC_PD, targetPrimaryKeyValues);
                 break;
             case CC_BY_ID:
-                compatible = contains(CC_BY, targetId);
+                compatible = contains(CC_BY, targetPrimaryKeyValues);
                 break;
             case CC_BY_NC_ID:
-                compatible = contains(CC_BY_NC, targetId);
+                compatible = contains(CC_BY_NC, targetPrimaryKeyValues);
                 break;
             case CC_BY_SA_ID:
-                compatible = contains(CC_BY_SA, targetId);
+                compatible = contains(CC_BY_SA, targetPrimaryKeyValues);
                 break;
             case CC_BY_ND_ID:
-                compatible = contains(CC_BY_ND, targetId);
+                compatible = contains(CC_BY_ND, targetPrimaryKeyValues);
                 break;
             case CC_BY_NC_SA_ID:
-                compatible = contains(CC_BY_NC_SA, targetId);
+                compatible = contains(CC_BY_NC_SA, targetPrimaryKeyValues);
                 break;
             case CC_BY_NC_ND_ID:
-                compatible = contains(CC_BY_NC_ND_SA, targetId);
+                compatible = contains(CC_BY_NC_ND_SA, targetPrimaryKeyValues);
                 break;
         }
 
@@ -571,10 +570,10 @@ public abstract class TableHelper {
             if (group.isSetProperty(pluginPlus.npLicenseGroup))
                 groupLicense = group.getProperty(pluginPlus.npLicenseGroup);
             else {
-                group = pm.get(pluginPlus.etGroup, entity.getId());
+                group = pm.get(pluginPlus.etGroup, entity.getPrimaryKeyValues());
                 if ((group != null) && group.isSetProperty(pluginPlus.npLicenseGroup))
                     groupLicense = pm.get(pluginPlus.etLicense,
-                            group.getProperty(pluginPlus.npLicenseGroup).getId());
+                            group.getProperty(pluginPlus.npLicenseGroup).getPrimaryKeyValues());
                 else
                     groupLicense = null;
             }
@@ -592,38 +591,38 @@ public abstract class TableHelper {
                     multiDatastream = entity.getProperty(pluginMultiDatastream.npMultiDatastreamObservation);
 
                 if ((datastream == null) && (multiDatastream == null)) {
-                    Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
+                    Entity observation = pm.get(pluginCoreModel.etObservation, entity.getPrimaryKeyValues());
                     if ((observation != null) && observation.isSetProperty(pluginCoreModel.npDatastreamObservation))
                         datastream = pm.get(pluginCoreModel.etDatastream,
-                                observation.getProperty(pluginCoreModel.npDatastreamObservation).getId());
+                                observation.getProperty(pluginCoreModel.npDatastreamObservation).getPrimaryKeyValues());
                     else
                         datastream = null;
                 }
 
                 if ((datastream == null) && (multiDatastream == null)) {
-                    Entity observation = pm.get(pluginCoreModel.etObservation, entity.getId());
+                    Entity observation = pm.get(pluginCoreModel.etObservation, entity.getPrimaryKeyValues());
                     if ((observation != null)
                             && observation.isSetProperty(pluginMultiDatastream.npMultiDatastreamObservation))
                         multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream,
-                                observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getId());
+                                observation.getProperty(pluginMultiDatastream.npMultiDatastreamObservation).getPrimaryKeyValues());
                     else
                         multiDatastream = null;
                 }
 
                 if (datastream != null)
                     if (datastream.isSetProperty(pluginPlus.npLicenseDatastream)) {
-                        assertLicenseCompatibilty(datastream.getProperty(pluginPlus.npLicenseDatastream).getId().toString(), groupLicenseId);
+                        assertLicenseCompatibilty(datastream.getProperty(pluginPlus.npLicenseDatastream).getPrimaryKeyValues().get(0).toString(), groupLicenseId);
                     } else {
-                        datastream = pm.get(pluginCoreModel.etDatastream, datastream.getId());
-                        assertLicenseCompatibilty(datastream.getProperty(pluginPlus.npLicenseDatastream).getId().toString(), groupLicenseId);
+                        datastream = pm.get(pluginCoreModel.etDatastream, datastream.getPrimaryKeyValues());
+                        assertLicenseCompatibilty(datastream.getProperty(pluginPlus.npLicenseDatastream).getPrimaryKeyValues().get(0).toString(), groupLicenseId);
                     }
 
                 if (multiDatastream != null)
                     if (multiDatastream.isSetProperty(pluginPlus.npLicenseMultiDatastream)) {
-                        assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getId().toString(), groupLicenseId);
+                        assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getPrimaryKeyValues().get(0).toString(), groupLicenseId);
                     } else {
-                        multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getId());
-                        assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getId().toString(), groupLicenseId);
+                        multiDatastream = pm.get(pluginMultiDatastream.etMultiDatastream, multiDatastream.getPrimaryKeyValues());
+                        assertLicenseCompatibilty(multiDatastream.getProperty(pluginPlus.npLicenseMultiDatastream).getPrimaryKeyValues().get(0).toString(), groupLicenseId);
 
                     }
             }

@@ -17,22 +17,16 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpRelation;
 import java.security.Principal;
-import java.util.Map;
-import org.jooq.Field;
 
 public class TableHelperRelation extends TableHelper {
 
@@ -47,117 +41,106 @@ public class TableHelperRelation extends TableHelper {
     @Override
     public void registerPreHooks() {
 
-        tableRelations.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableRelations.registerHookPreInsert(-1,
+                (phase, pm, entity, insertFields) -> {
 
-            @Override
-            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
-                    Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
-
-                /*
-                 * Select Phase
-                 */
-                if (phase == Phase.PRE_RELATIONS)
-                    return true;
-
-                Entity subject = entity.getProperty(pluginPlus.npSubjectRelation);
-                if (subject == null) {
-                    throw new IllegalArgumentException("A Relation must have a Subject.");
-                }
-
-                Entity object = entity.getProperty(pluginPlus.npObjectRelation);
-                String extObject = entity.getProperty(pluginPlus.epExternalObject);
-                if ((object == null) && (extObject == null)) {
-                    throw new IllegalArgumentException("A Relation must either have an Object or externalObject.");
-                }
-
-                if ((object != null) && (extObject != null)) {
-                    throw new IllegalArgumentException("A Relation must not have an Object and externalObject.");
-                }
-
-                if (!pluginPlus.isEnforceOwnershipEnabled()) {
-                    return true;
-                }
-
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-                if (isAdmin(principal)) {
-                    return true;
-                }
-
-                /*
-                 * Ownership concept: Subject must point to a Datastream owned by the acting user
-                 */
-                assertOwnershipObservation(pm, subject, principal);
-
-                /*
-                 * Ownership concept: All Group entities must be owned by the acting user
-                 */
-                EntitySet groups = entity.getProperty(pluginPlus.npRelationGroups);
-                if (groups == null) {
-                    return true;
-                }
-
-                for (Entity group : groups) {
                     /*
-                     * we need to check for each group
+                     * Select Phase
                      */
-                    assertOwnershipGroup(pm, group, principal);
-                }
+                    if (phase == PRE_RELATIONS)
+                        return true;
 
-                return true;
+                    Entity subject = entity.getProperty(pluginPlus.npSubjectRelation);
+                    if (subject == null) {
+                        throw new IllegalArgumentException("A Relation must have a Subject.");
+                    }
+
+                    Entity object = entity.getProperty(pluginPlus.npObjectRelation);
+                    String extObject = entity.getProperty(pluginPlus.epExternalObject);
+                    if ((object == null) && (extObject == null)) {
+                        throw new IllegalArgumentException("A Relation must either have an Object or externalObject.");
+                    }
+
+                    if ((object != null) && (extObject != null)) {
+                        throw new IllegalArgumentException("A Relation must not have an Object and externalObject.");
+                    }
+
+                    if (!pluginPlus.isEnforceOwnershipEnabled()) {
+                        return true;
+                    }
+
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                    if (isAdmin(principal)) {
+                        return true;
+                    }
+
+                    /*
+                     * Ownership concept: Subject must point to a Datastream owned by the acting user
+                     */
+                    assertOwnershipObservation(pm, subject, principal);
+
+                    /*
+                     * Ownership concept: All Group entities must be owned by the acting user
+                     */
+                    EntitySet groups = entity.getProperty(pluginPlus.npRelationGroups);
+                    if (groups == null) {
+                        return true;
+                    }
+
+                    for (Entity group : groups) {
+                        /*
+                         * we need to check for each group
+                         */
+                        assertOwnershipGroup(pm, group, principal);
+                    }
+
+                    return true;
+
+                });
+
+        tableRelations.registerHookPreUpdate(-1,
+                (pm, entity, entityId, updateMode) -> {
+
+                    if (!pluginPlus.isEnforceOwnershipEnabled()) {
+                        return;
+                    }
+
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                    if (isAdmin(principal)) {
+                        return;
+                    }
+
+                    /*
+                     * Ownership concept: Subject must point to a Datastream owned by the acting user
+                     */
+                    Entity subject = entity.getProperty(pluginPlus.npSubjectRelation);
+                    assertOwnershipObservation(pm, subject, principal);
+
+                });
+
+        tableRelations.registerHookPreDelete(-1, (pm, entityId) -> {
+
+            if (!pluginPlus.isEnforceOwnershipEnabled()) {
+                return;
             }
-        });
 
-        tableRelations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
-
-            @Override
-            public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
-                    throws NoSuchEntityException, IncompleteEntityException {
-
-                if (!pluginPlus.isEnforceOwnershipEnabled()) {
-                    return;
-                }
-
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-                if (isAdmin(principal)) {
-                    return;
-                }
-
-                /*
-                 * Ownership concept: Subject must point to a Datastream owned by the acting user
-                 */
-                Entity subject = entity.getProperty(pluginPlus.npSubjectRelation);
-                assertOwnershipObservation(pm, subject, principal);
-
+            Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+            if (isAdmin(principal)) {
+                return;
             }
-        });
 
-        tableRelations.registerHookPreDelete(-10.0, new HookPreDelete() {
+            Entity subject = pm.get(pluginPlus.etRelation, entityId).getProperty(pluginPlus.npSubjectRelation);
+            Entity ds = pm.get(pluginCoreModel.etObservation, subject.getPrimaryKeyValues()).getProperty(pluginCoreModel.npDatastreamObservation);
+            Entity party = pm.get(pluginCoreModel.etDatastream, ds.getPrimaryKeyValues()).getProperty(pluginPlus.npPartyDatastream);
 
-            @Override
-            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
-
-                if (!pluginPlus.isEnforceOwnershipEnabled()) {
-                    return;
-                }
-
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-                if (isAdmin(principal)) {
-                    return;
-                }
-
-                Entity subject = pm.get(pluginPlus.etRelation, entityId).getProperty(pluginPlus.npSubjectRelation);
-                Entity ds = pm.get(pluginCoreModel.etObservation, subject.getId()).getProperty(pluginCoreModel.npDatastreamObservation);
-                Entity party = pm.get(pluginCoreModel.etDatastream, ds.getId()).getProperty(pluginPlus.npPartyDatastream);
-
-                if (party == null) {
-                    throw new IllegalArgumentException("The Subject associated to the Relation must have a Datastream associated to a Party.");
-                }
-
-                if (!principal.getName().equalsIgnoreCase((String) party.getId().getValue())) {
-                    throw new ForbiddenException("A Relation can only be created to Subject associated to the acting Party.");
-                }
-
+            if (party == null) {
+                throw new IllegalArgumentException("The Subject associated to the Relation must have a Datastream associated to a Party.");
             }
+
+            if (!principal.getName().equalsIgnoreCase((String) party.getPrimaryKeyValues().get(0).toString())) {
+                throw new ForbiddenException("A Relation can only be created to Subject associated to the acting Party.");
+            }
+
         });
 
     }

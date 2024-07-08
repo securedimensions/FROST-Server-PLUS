@@ -23,8 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import de.fraunhofer.iosb.ilt.frostserver.model.EntityType;
 import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.IdUuid;
+import de.fraunhofer.iosb.ilt.frostserver.model.core.PkValue;
 import de.fraunhofer.iosb.ilt.frostserver.model.ext.TimeInstant;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManagerFactory;
@@ -38,6 +37,7 @@ import de.fraunhofer.iosb.ilt.frostserver.property.NavigationPropertyMain.Naviga
 import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeComplex;
 import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeEnumeration;
 import de.fraunhofer.iosb.ilt.frostserver.property.type.TypeSimplePrimitive;
+import de.fraunhofer.iosb.ilt.frostserver.service.InitResult;
 import de.fraunhofer.iosb.ilt.frostserver.service.PluginModel;
 import de.fraunhofer.iosb.ilt.frostserver.service.PluginRootDocument;
 import de.fraunhofer.iosb.ilt.frostserver.service.Service;
@@ -186,12 +186,12 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     }
 
     @Override
-    public void init(CoreSettings settings) {
+    public InitResult init(CoreSettings settings) {
         this.settings = settings;
         Settings pluginSettings = settings.getPluginSettings();
         enabled = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_PLUS, PluginPlusSettings.class);
         if (!enabled) {
-            return;
+            return InitResult.INIT_OK;
         }
         enforceOwnership = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_OWNERSHIP, PluginPlusSettings.class);
         enforceLicensing = pluginSettings.getBoolean(PluginPlusSettings.TAG_ENABLE_ENFORCE_LICENSING, PluginPlusSettings.class);
@@ -240,7 +240,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     if (!enforceLicensing)
                         return;
 
-                    if ((entity.getId() != null) && LICENSE_IDS.contains(entity.getId().getValue()))
+                    if ((entity.getPrimaryKeyValues().get(0) != null) && LICENSE_IDS.contains(entity.getPrimaryKeyValues().get(0).toString()))
                         throw new ForbiddenException("License with this `id` cannot be created.");
                 })
                 .addUpdateValidator(etParty.entityName + ".updateValidator", (entity) -> {
@@ -248,7 +248,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
                     if (!enforceLicensing)
                         return;
 
-                    if ((entity.getId() != null) && LICENSE_IDS.contains(entity.getId().getValue()))
+                    if ((entity.getPrimaryKeyValues().get(0) != null) && LICENSE_IDS.contains(entity.getPrimaryKeyValues().get(0).toString()))
                         throw new ForbiddenException("License with this `id` cannot be updated.");
                 });
 
@@ -621,7 +621,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
             etCampaign.registerProperty(npMultiDatastreamsCampaign);
         }
-
+        return InitResult.INIT_OK;
     }
 
     @Override
@@ -685,8 +685,8 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             final DataType dataTypeRelation = ppm.getDataTypeFor(plusSettings.idTypeRelation);
             final DataType dataTypeParty = ppm.getDataTypeFor(plusSettings.idTypeParty);
             final DataType dataTypeCampaign = ppm.getDataTypeFor(plusSettings.idTypeCampaign);
-            final DataType dataTypeObservation = tableCollection.getTableForType(pluginCoreModel.etObservation).getId().getDataType();
-            final DataType dataTypeDatastream = tableCollection.getTableForType(pluginCoreModel.etDatastream).getId().getDataType();
+            final DataType dataTypeObservation = tableCollection.getTableForType(pluginCoreModel.etObservation).getPkFields().get(0).getDataType();
+            final DataType dataTypeDatastream = tableCollection.getTableForType(pluginCoreModel.etDatastream).getPkFields().get(0).getDataType();
             /**
              * Class License
              */
@@ -716,7 +716,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             tableCollection.registerTable(etCampaign, new TableImpCampaign(dataTypeCampaign, dataTypeParty, dataTypeLicense, this, pluginCoreModel, pluginMultiDatastream));
             tableCollection.registerTable(new TableImpCampaignsDatastreams(dataTypeCampaign, dataTypeDatastream));
             if (pluginMultiDatastream != null) {
-                final DataType dataTypeMultiDatastream = tableCollection.getTableForType(pluginMultiDatastream.etMultiDatastream).getId().getDataType();
+                final DataType dataTypeMultiDatastream = tableCollection.getTableForType(pluginMultiDatastream.etMultiDatastream).getPkFields().get(0).getDataType();
                 tableCollection.registerTable(new TableImpCampaignsMultiDatastreams(dataTypeCampaign, dataTypeMultiDatastream));
             }
 
@@ -820,14 +820,14 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         String principalId = principal.getName();
 
         if (party != null) {
-            Id partyId = party.getId();
+            PkValue partyId = party.getPrimaryKeyValues();
             String authId = party.getProperty(epAuthId);
 
             if ((partyId == null) && (authId == null) && (principalId == null))
                 throw new IllegalArgumentException("Party not identified");
 
             if ((partyId == null) && (authId == null) && (principalId != null)) {
-                party.setId(new IdUuid(principalId));
+                party.setPrimaryKeyValues(PkValue.of(principalId));
                 return;
             }
 
@@ -836,10 +836,10 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
             }
 
             if (authId != null)
-                party.setId(new IdUuid(authId));
+                party.setPrimaryKeyValues(PkValue.of(authId));
 
             String userId = principal.getName();
-            if (!userId.equalsIgnoreCase(party.getId().toString())) {
+            if (!userId.equalsIgnoreCase(party.getPrimaryKeyValues().get(0).toString())) {
                 // The Id of the Party must match the userId
                 // Entity can only be associated to the Party identifying the acting user
                 throw new ForbiddenException(entity.getEntityType().entityName + " can only be associated with the Party identifying the acting user");
