@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,21 +17,14 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpObservations;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.ParserUtils;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import java.security.Principal;
-import java.util.Map;
-import org.jooq.Field;
 
 public class TableHelperObservation extends TableHelper {
 
@@ -47,76 +40,63 @@ public class TableHelperObservation extends TableHelper {
     @Override
     public void registerPreHooks() {
 
-        tableObservations.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableObservations.registerHookPreInsert(-1,
+                (phase, pm, entity, insertFields) -> {
 
-            @Override
-            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
-                    Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+                    /*
+                     * Select Phase
+                     */
+                    if (phase == PRE_RELATIONS)
+                        return true;
 
-                /*
-                 * Select Phase
-                 */
-                if (phase == Phase.PRE_RELATIONS)
+                    if (!pluginPlus.isEnforceOwnershipEnabled())
+                        return true;
+
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+
+                    if (isAdmin(principal))
+                        return true;
+
+                    assertOwnershipObservation(pm, entity, principal);
+
+                    if (pluginPlus.isEnforceLicensingEnabled())
+                        assertLicenseCompatibilty(pm, entity);
+
                     return true;
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return true;
+                });
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+        tableObservations.registerHookPreUpdate(-1,
+                (pm, entity, entityId, updateMode) -> {
 
-                if (isAdmin(principal))
-                    return true;
+                    if (!pluginPlus.isEnforceOwnershipEnabled())
+                        return;
 
-                assertOwnershipObservation(pm, entity, principal);
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                if (pluginPlus.isEnforceLicensingEnabled())
-                    assertLicenseCompatibilty(pm, entity);
+                    if (isAdmin(principal))
+                        return;
 
-                return true;
+                    // We need to assert on the existing Observation that is to be updated
+                    entity = pm.get(pluginCoreModel.etObservation, entityId);
+                    assertOwnershipObservation(pm, entity, principal);
 
-            }
-        });
+                });
 
-        tableObservations.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+        tableObservations.registerHookPreDelete(-1, (pm, entityId) -> {
 
-            @Override
-            public void updateInDatabase(JooqPersistenceManager pm, Entity observation, Id entityId)
-                    throws NoSuchEntityException, IncompleteEntityException {
+            if (!pluginPlus.isEnforceOwnershipEnabled())
+                return;
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
+            Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+            if (isAdmin(principal))
+                return;
 
-                if (isAdmin(principal))
-                    return;
+            // The Observation from the DB contains the Datastream
+            Entity observation = pm.get(pluginCoreModel.etObservation, entityId);
+            assertOwnershipObservation(pm, observation, principal);
 
-                // We need to assert on the existing Observation that is to be updated
-                observation = pm.get(pluginCoreModel.etObservation, observation.getId());
-                assertOwnershipObservation(pm, observation, principal);
-
-            }
-        });
-
-        tableObservations.registerHookPreDelete(-10.0, new HookPreDelete() {
-
-            @Override
-            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
-
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
-
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
-                    return;
-
-                // The Observation from the DB contains the Datastream
-                Entity observation = pm.get(pluginCoreModel.etObservation,
-                        ParserUtils.idFromObject((entityId)));
-                assertOwnershipObservation(pm, observation, principal);
-
-            }
         });
 
     }

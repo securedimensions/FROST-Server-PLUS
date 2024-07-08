@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,21 +17,16 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpFeatures;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import java.security.Principal;
-import java.util.Map;
-import org.jooq.Field;
 
 public class TableHelperFeatureOfInterest extends TableHelper {
 
@@ -46,68 +41,57 @@ public class TableHelperFeatureOfInterest extends TableHelper {
     @Override
     public void registerPreHooks() {
 
-        tableFoI.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableFoI.registerHookPreInsert(-1,
+                (phase, pm, entity, insertFields) -> {
 
-            @Override
-            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
-                    Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+                    /*
+                     * Select Phase
+                     */
+                    if (phase == PRE_RELATIONS) {
+                        final String encodingType = (String) entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
+                        if (!encodingType.equalsIgnoreCase("application/geo+json"))
+                            throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
+                    }
 
-                /*
-                 * Select Phase
-                 */
-                if (phase == Phase.PRE_RELATIONS) {
-                    final String encodingType = (String) entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
-                    if (!encodingType.equalsIgnoreCase("application/geo+json"))
-                        throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
-                }
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                    if (isAdmin(principal))
+                        return true;
 
-                if (isAdmin(principal))
+                    if (!pluginPlus.isEnforceOwnershipEnabled())
+                        assertOwnershipFeatureOfInterest(pm, entity, principal);
+
                     return true;
+                });
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    assertOwnershipFeatureOfInterest(pm, entity, principal);
+        tableFoI.registerHookPreUpdate(-1,
+                (pm, entity, entityId, updateMode) -> {
 
-                return true;
-            }
-        });
+                    final String encodingType = (String) entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
+                    if ((encodingType != null) && !encodingType.equalsIgnoreCase("application/geo+json"))
+                        throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
 
-        tableFoI.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-            @Override
-            public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
-                    throws NoSuchEntityException, IncompleteEntityException {
+                    if (isAdmin(principal))
+                        return;
 
-                final String encodingType = (String) entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
-                if ((encodingType != null) && !encodingType.equalsIgnoreCase("application/geo+json"))
-                    throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
+                    if (pluginPlus.isEnforceOwnershipEnabled()) {
+                        // Unpredictable implications as we don't know all the observations were this FeatureOfInterest is associated to
+                        throw new IllegalArgumentException("Updating a FeatureOfInterest is not supported");
+                    }
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                });
 
-                if (isAdmin(principal))
-                    return;
+        tableFoI.registerHookPreDelete(-1, (pm, entityId) -> {
 
-                if (pluginPlus.isEnforceOwnershipEnabled()) {
-                    // Unpredictable implications as we don't know all the observations were this FeatureOfInterest is associated to
-                    throw new IllegalArgumentException("Updating a FeatureOfInterest is not supported");
-                }
-            }
-        });
+            Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-        tableFoI.registerHookPreDelete(-10.0, new HookPreDelete() {
+            if (isAdmin(principal))
+                return;
 
-            @Override
-            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
-
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
-                    return;
-
-                // Unpredictable implications as we don't know all the observations were this FeatureOfInterest is associated to
-                throw new IllegalArgumentException("Deleting a FeatureOfInterest is not supported");
-            }
+            // Unpredictable implications as we don't know all the observations were this FeatureOfInterest is associated to
+            throw new IllegalArgumentException("Deleting a FeatureOfInterest is not supported");
         });
     }
 
@@ -117,7 +101,7 @@ public class TableHelperFeatureOfInterest extends TableHelper {
             throw new IllegalArgumentException("Cannot check ownership of FeatureOfInterest for more than one Observation");
 
         if (observations != null) {
-            Entity observation = pm.get(pluginCoreModel.etObservation, observations.iterator().next().getId());
+            Entity observation = pm.get(pluginCoreModel.etObservation, observations.iterator().next().getPrimaryKeyValues());
             assertOwnershipObservation(pm, observation, principal);
         }
     }

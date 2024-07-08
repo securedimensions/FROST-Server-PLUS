@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -561,10 +561,10 @@ public abstract class CampaignTests extends AbstractStaPlusTestClass {
         LOGGER.info("  test10AdminUpdateCampaignParty");
         createParty(ALICE);
 
-        String groupUrl = createCampaignParty(LJS);
+        String url = createCampaignParty(LJS);
 
         String request = "{\"Party\":" + String.format(PARTY_EXISTING, ALICE) + "}";
-        HttpPatch httpPatch = new HttpPatch(groupUrl);
+        HttpPatch httpPatch = new HttpPatch(url);
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ADMIN, "");

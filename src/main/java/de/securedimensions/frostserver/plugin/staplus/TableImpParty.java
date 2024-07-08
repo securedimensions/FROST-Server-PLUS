@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,11 +30,10 @@ import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpDatastreams;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.PluginMultiDatastream;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.multidatastream.TableImpMultiDatastreams;
-import org.jooq.DataType;
-import org.jooq.Name;
+import java.util.Arrays;
+import java.util.List;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.Table;
-import org.jooq.TableField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
@@ -188,6 +187,10 @@ public class TableImpParty extends StaTableAbstract<TableImpParty> {
     }
 
     @Override
+    public List<Field> getPkFields() {
+        return Arrays.asList(colId);
+    }
+
     public TableField<Record, ?> getId() {
         return colId;
     }

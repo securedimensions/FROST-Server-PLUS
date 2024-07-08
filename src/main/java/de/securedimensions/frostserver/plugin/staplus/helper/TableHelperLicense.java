@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,18 +17,14 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.TableImpLicense;
 import java.security.Principal;
@@ -36,7 +32,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jooq.Field;
 
 public class TableHelperLicense extends TableHelper {
 
@@ -77,158 +72,147 @@ public class TableHelperLicense extends TableHelper {
     @Override
     public void registerPreHooks() {
 
-        tableLicenses.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableLicenses.registerHookPreInsert(-1,
+                (phase, pm, entity, insertFields) -> {
 
-            @Override
-            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity license,
-                    Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+                    /*
+                     * Select Phase
+                     */
+                    if (phase == PRE_RELATIONS) {
+                        return true;
+                    }
 
-                /*
-                 * Select Phase
-                 */
-                if (phase == Phase.PRE_RELATIONS) {
+                    if (!pluginPlus.isEnforceLicensingEnabled())
+                        return true;
+
+                    String definition = (String) entity.getProperty(pluginPlus.etLicense.getProperty("definition"));
+                    if (!TableHelperLicense.LICENSE_DEFINITIONS.contains(definition)) {
+                        throw new IllegalArgumentException("This value for 'definition' is not allowed");
+                    }
+
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+
+                    if (isAdmin(principal)) {
+                        return (pm.get(pluginPlus.etLicense, entity.getPrimaryKeyValues()) == null);
+                    }
+
+                    if (entity.isSetProperty(pluginPlus.npDatastreamsLicense)) {
+                        EntitySet ds = entity.getProperty(pluginPlus.npDatastreamsLicense);
+                        if (ds == null) {
+                            throw new IllegalArgumentException("Datastreams do not exist.");
+                        }
+                        for (Entity d : ds) {
+                            assertLicenseDatastream(pm, d);
+                            assertOwnershipDatastream(pm, d, principal);
+                            assertEmptyDatastream(pm, d);
+                        }
+                    } else if (entity.isSetProperty(pluginPlus.npMultiDatastreamsLicense)) {
+                        EntitySet mds = entity.getProperty(pluginPlus.npMultiDatastreamsLicense);
+                        if (mds == null) {
+                            throw new IllegalArgumentException("MultiDatastreams do not exist.");
+                        }
+                        for (Entity md : mds) {
+                            assertLicenseMultiDatastream(pm, md);
+                            assertOwnershipMultiDatastream(pm, md, principal);
+                            assertEmptyMultiDatastream(pm, md);
+                        }
+                    } else if (entity.isSetProperty(pluginPlus.npCampaignsLicense)) {
+                        EntitySet ps = entity.getProperty(pluginPlus.npCampaignsLicense);
+                        if (ps == null) {
+                            throw new IllegalArgumentException("Campaigns do not exist.");
+                        }
+                        for (Entity p : ps) {
+                            assertLicenseCampaign(pm, p);
+                            assertOwnershipCampaign(pm, p, principal);
+                            assertEmptyCampaign(pm, p);
+                        }
+                    } else if (entity.isSetProperty(pluginPlus.npGroupsLicense)) {
+                        EntitySet gs = entity.getProperty(pluginPlus.npGroupsLicense);
+                        if (gs == null) {
+                            throw new IllegalArgumentException("Groups do not exist.");
+                        }
+                        for (Entity g : gs) {
+                            assertLicenseGroup(pm, g);
+                            assertOwnershipGroup(pm, g, principal);
+                            assertEmptyGroup(pm, g);
+                        }
+                    } else
+                        ;//throw new IllegalArgumentException("License must be associated with `Datastream`, `MultiDatastream`, `Campaign` or `Group`.");
+
                     return true;
-                }
+                });
 
-                if (!pluginPlus.isEnforceLicensingEnabled())
-                    return true;
+        tableLicenses.registerHookPreUpdate(-1,
+                (pm, entity, entityId, updateMode) -> {
 
-                String definition = (String) license.getProperty(pluginPlus.etLicense.getProperty("definition"));
-                if (!TableHelperLicense.LICENSE_DEFINITIONS.contains(definition)) {
-                    throw new IllegalArgumentException("The value for 'definition' is not allowed");
-                }
+                    if (!pluginPlus.isEnforceLicensingEnabled())
+                        return;
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                if (isAdmin(principal)) {
-                    return (pm.get(pluginPlus.etLicense, license.getId()) == null);
-                }
+                    if (isAdmin(principal))
+                        return;
 
-                if (license.isSetProperty(pluginPlus.npDatastreamsLicense)) {
-                    EntitySet ds = license.getProperty(pluginPlus.npDatastreamsLicense);
-                    if (ds == null) {
-                        throw new IllegalArgumentException("Datastreams do not exist.");
-                    }
-                    for (Entity d : ds) {
-                        assertLicenseDatastream(pm, d);
-                        assertOwnershipDatastream(pm, d, principal);
-                        assertEmptyDatastream(pm, d);
-                    }
-                } else if (license.isSetProperty(pluginPlus.npMultiDatastreamsLicense)) {
-                    EntitySet mds = license.getProperty(pluginPlus.npMultiDatastreamsLicense);
-                    if (mds == null) {
-                        throw new IllegalArgumentException("MultiDatastreams do not exist.");
-                    }
-                    for (Entity md : mds) {
-                        assertLicenseMultiDatastream(pm, md);
-                        assertOwnershipMultiDatastream(pm, md, principal);
-                        assertEmptyMultiDatastream(pm, md);
-                    }
-                } else if (license.isSetProperty(pluginPlus.npCampaignsLicense)) {
-                    EntitySet ps = license.getProperty(pluginPlus.npCampaignsLicense);
-                    if (ps == null) {
-                        throw new IllegalArgumentException("Campaigns do not exist.");
-                    }
-                    for (Entity p : ps) {
-                        assertLicenseCampaign(pm, p);
-                        assertOwnershipCampaign(pm, p, principal);
-                        assertEmptyCampaign(pm, p);
-                    }
-                } else if (license.isSetProperty(pluginPlus.npGroupsLicense)) {
-                    EntitySet gs = license.getProperty(pluginPlus.npGroupsLicense);
-                    if (gs == null) {
-                        throw new IllegalArgumentException("Groups do not exist.");
-                    }
-                    for (Entity g : gs) {
-                        assertLicenseGroup(pm, g);
-                        assertOwnershipGroup(pm, g, principal);
-                        assertEmptyGroup(pm, g);
-                    }
-                } else
-                    ;//throw new IllegalArgumentException("License must be associated with `Datastream`, `MultiDatastream`, `Campaign` or `Group`.");
+                    //if (LICENSE_IDS.contains(license.getId().getValue()))
+                    //throw new ForbiddenException("System license cannot be updated.");
 
-                return true;
-            }
-        });
+                    if (entity.isSetProperty(pluginPlus.npDatastreamsLicense)) {
+                        EntitySet ds = entity.getProperty(pluginPlus.npDatastreamsLicense);
+                        if (ds == null) {
+                            throw new IllegalArgumentException("Datastreams do not exist.");
+                        }
+                        for (Entity d : ds) {
+                            assertLicenseDatastream(pm, d);
+                            assertOwnershipDatastream(pm, d, principal);
+                            assertEmptyDatastream(pm, d);
+                        }
+                    } else if (entity.isSetProperty(pluginPlus.npMultiDatastreamsLicense)) {
+                        EntitySet mds = entity.getProperty(pluginPlus.npMultiDatastreamsLicense);
+                        if (mds == null) {
+                            throw new IllegalArgumentException("MultiDatastreams do not exist.");
+                        }
+                        for (Entity md : mds) {
+                            assertLicenseMultiDatastream(pm, md);
+                            assertOwnershipMultiDatastream(pm, md, principal);
+                            assertEmptyMultiDatastream(pm, md);
+                        }
+                    } else if (entity.isSetProperty(pluginPlus.npCampaignsLicense)) {
+                        EntitySet ps = entity.getProperty(pluginPlus.npCampaignsLicense);
+                        if (ps == null) {
+                            throw new IllegalArgumentException("Campaigns do not exist.");
+                        }
+                        for (Entity p : ps) {
+                            assertLicenseCampaign(pm, p);
+                            assertOwnershipCampaign(pm, p, principal);
+                            assertEmptyCampaign(pm, p);
+                        }
+                    } else if (entity.isSetProperty(pluginPlus.npGroupsLicense)) {
+                        EntitySet gs = entity.getProperty(pluginPlus.npGroupsLicense);
+                        if (gs == null) {
+                            throw new IllegalArgumentException("Groups do not exist.");
+                        }
+                        for (Entity g : gs) {
+                            assertLicenseGroup(pm, g);
+                            assertOwnershipGroup(pm, g, principal);
+                            assertEmptyGroup(pm, g);
+                        }
+                    } else
+                        throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Campaign` or `Group`.");
 
-        tableLicenses.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+                });
 
-            @Override
-            public void updateInDatabase(JooqPersistenceManager pm, Entity license, Id entityId)
-                    throws NoSuchEntityException, IncompleteEntityException {
+        tableLicenses.registerHookPreDelete(-1, (pm, entityId) -> {
 
-                if (!pluginPlus.isEnforceLicensingEnabled())
-                    return;
+            if (!pluginPlus.isEnforceLicensingEnabled())
+                return;
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+            Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                if (isAdmin(principal))
-                    return;
+            if (isAdmin(principal))
+                return;
 
-                //if (LICENSE_IDS.contains(license.getId().getValue()))
-                //throw new ForbiddenException("System license cannot be updated.");
+            throw new ForbiddenException("License cannot be deleted.");
 
-                if (license.isSetProperty(pluginPlus.npDatastreamsLicense)) {
-                    EntitySet ds = license.getProperty(pluginPlus.npDatastreamsLicense);
-                    if (ds == null) {
-                        throw new IllegalArgumentException("Datastreams do not exist.");
-                    }
-                    for (Entity d : ds) {
-                        assertLicenseDatastream(pm, d);
-                        assertOwnershipDatastream(pm, d, principal);
-                        assertEmptyDatastream(pm, d);
-                    }
-                } else if (license.isSetProperty(pluginPlus.npMultiDatastreamsLicense)) {
-                    EntitySet mds = license.getProperty(pluginPlus.npMultiDatastreamsLicense);
-                    if (mds == null) {
-                        throw new IllegalArgumentException("MultiDatastreams do not exist.");
-                    }
-                    for (Entity md : mds) {
-                        assertLicenseMultiDatastream(pm, md);
-                        assertOwnershipMultiDatastream(pm, md, principal);
-                        assertEmptyMultiDatastream(pm, md);
-                    }
-                } else if (license.isSetProperty(pluginPlus.npCampaignsLicense)) {
-                    EntitySet ps = license.getProperty(pluginPlus.npCampaignsLicense);
-                    if (ps == null) {
-                        throw new IllegalArgumentException("Campaigns do not exist.");
-                    }
-                    for (Entity p : ps) {
-                        assertLicenseCampaign(pm, p);
-                        assertOwnershipCampaign(pm, p, principal);
-                        assertEmptyCampaign(pm, p);
-                    }
-                } else if (license.isSetProperty(pluginPlus.npGroupsLicense)) {
-                    EntitySet gs = license.getProperty(pluginPlus.npGroupsLicense);
-                    if (gs == null) {
-                        throw new IllegalArgumentException("Groups do not exist.");
-                    }
-                    for (Entity g : gs) {
-                        assertLicenseGroup(pm, g);
-                        assertOwnershipGroup(pm, g, principal);
-                        assertEmptyGroup(pm, g);
-                    }
-                } else
-                    throw new ForbiddenException("License must be associated with `Datastream`, `MultiDatastream`, `Campaign` or `Group`.");
-            }
-        });
-
-        tableLicenses.registerHookPreDelete(-10.0, new HookPreDelete() {
-
-            @Override
-            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
-
-                if (!pluginPlus.isEnforceLicensingEnabled())
-                    return;
-
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
-                    return;
-
-                throw new ForbiddenException("License cannot be deleted.");
-
-            }
         });
     }
 

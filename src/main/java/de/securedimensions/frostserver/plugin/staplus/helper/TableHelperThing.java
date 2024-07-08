@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,21 +17,15 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpThings;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
 import java.security.Principal;
-import java.util.Map;
-import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class TableHelperThing extends TableHelper {
@@ -52,68 +46,57 @@ public class TableHelperThing extends TableHelper {
     @Override
     public void registerPreHooks() {
 
-        tableThings.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableThings.registerHookPreInsert(-1,
+                (phase, pm, entity, insertFields) -> {
 
-            @Override
-            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity entity,
-                    Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+                    /*
+                     * Select Phase
+                     */
+                    if (phase == PRE_RELATIONS)
+                        return true;
 
-                /*
-                 * Select Phase
-                 */
-                if (phase == Phase.PRE_RELATIONS)
+                    if (!pluginPlus.isEnforceOwnershipEnabled())
+                        return true;
+
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+
+                    if (isAdmin(principal))
+                        return true;
+
+                    assertOwnershipThing(pm, entity, principal);
+
                     return true;
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return true;
+                });
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+        tableThings.registerHookPreUpdate(-1,
+                (pm, entity, entityId, updateMode) -> {
 
-                if (isAdmin(principal))
-                    return true;
+                    if (!pluginPlus.isEnforceOwnershipEnabled())
+                        return;
 
-                assertOwnershipThing(pm, entity, principal);
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                return true;
-            }
-        });
+                    if (isAdmin(principal))
+                        return;
 
-        tableThings.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+                    Entity thing = pm.get(pluginCoreModel.etThing, entityId);
+                    assertOwnershipThing(pm, thing, principal);
 
-            @Override
-            public void updateInDatabase(JooqPersistenceManager pm, Entity entity, Id entityId)
-                    throws NoSuchEntityException, IncompleteEntityException {
+                });
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
+        tableThings.registerHookPreDelete(-1, (pm, entityId) -> {
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+            if (!pluginPlus.isEnforceOwnershipEnabled())
+                return;
 
-                if (isAdmin(principal))
-                    return;
+            Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                Entity thing = pm.get(pluginCoreModel.etThing, entityId);
-                assertOwnershipThing(pm, thing, principal);
+            if (isAdmin(principal))
+                return;
 
-            }
-        });
-
-        tableThings.registerHookPreDelete(-10.0, new HookPreDelete() {
-
-            @Override
-            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
-
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
-
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
-                    return;
-
-                Entity thing = pm.get(pluginCoreModel.etThing, entityId);
-                assertOwnershipThing(pm, thing, principal);
-            }
+            Entity thing = pm.get(pluginCoreModel.etThing, entityId);
+            assertOwnershipThing(pm, thing, principal);
         });
 
     }

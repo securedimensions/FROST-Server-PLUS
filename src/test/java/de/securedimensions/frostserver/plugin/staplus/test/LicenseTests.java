@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -76,6 +75,78 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
     private static final long serialVersionUID = 1639739965;
 
     private static String PARTY_ALICE = String.format("{\"displayName\": \"Alice in Wonderland\", \"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"displayName\": \"ALICE\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
+
+    private static final String USER_IS_NOT_ABLE_TO_CREATE_MANDATORY_LICENSE = "A user is not able to create any mandatory Licenses re-using the same identifier (@iot.id).";
+    private static final String USER_IS_ABLE_TO_CREATE_OWN_LICENSE_CC_BY = "A user is able to create it's own CC-BY License.";
+
+    private static final String USER_IS_NOT_ABLE_TO_CREATE_OWN_LICENSE_CC_PD = "A user is not able to create it's own CC-PD License re-using the same definition.";
+    private static String CC_PD_WITH_ID = "{\n" +
+            "        \"id\": \"CC_PD\",\n" +
+            "        \"name\": \"CC-PD\",\n" +
+            "        \"definition\": \"https://creativecommons.org/publicdomain/zero/1.0/\",\n" +
+            "        \"description\": \"CC0 1.0 Universal (CC0 1.0) Public Domain Dedication\",\n" +
+            "        \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/cc-zero.png\"\n" +
+            "    }";
+    private static String CC_PD = "{\n" +
+            "        \"name\": \"CC-PD\",\n" +
+            "        \"definition\": \"https://creativecommons.org/publicdomain/zero/1.0/\",\n" +
+            "        \"description\": \"CC0 1.0 Universal (CC0 1.0) Public Domain Dedication\",\n" +
+            "        \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/cc-zero.png\"\n" +
+            "    }";
+    private static String CC_PD_ALICE = "{\n" +
+            "        \"name\": \"CC-PD ALice\",\n" +
+            "        \"definition\": \"https://creativecommons.org/publicdomain/zero/1.0/\",\n" +
+            "        \"description\": \"CC0 1.0 Universal (CC0 1.0) Public Domain Dedication\",\n" +
+            "        \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/cc-zero.png\"\n" +
+            "    }";
+
+    private static String CC_BY_ALICE = "{\n" +
+            "  \"name\": \"CC-BY 3.0 ALice\",\n" +
+            "  \"description\": \"The Creative Commons Attribution license\",\n" +
+            "  \"definition\": \"https://creativecommons.org/licenses/by/3.0/deed.en\",\n" +
+            "  \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png\",\n" +
+            "  \"attributionText\": \"Alice`s cool CC-BY license\"\n" +
+            "}";
+
+    private static String CC_BY_NC_ALICE = "{\n" +
+            "  \"name\": \"CC BY-NC 3.0 Alice\",\n" +
+            "  \"description\": \"The Creative Commons Attribution-NonCommercial license\",\n" +
+            "  \"definition\": \"https://creativecommons.org/licenses/by-nc/3.0/deed.en\",\n" +
+            "  \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc.png\",\n" +
+            "  \"attributionText\": \"Alice`s cool CC-BY-NC license\"\n" +
+            "}\n";
+
+    private static String CC_BY_SA_ALICE = "{\n" +
+            "  \"name\": \"CC BY-SA 3.0 Alice\",\n" +
+            "  \"description\": \"The Creative Commons Attribution & Share-alike license\",\n" +
+            "  \"definition\": \"https://creativecommons.org/licenses/by-sa/3.0/deed.en\",\n" +
+            "  \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-sa.png\",\n" +
+            "  \"attributionText\": \"Alice`s cool CC-BY-SA license\"\n" +
+            "}";
+
+    private static String CC_BY_NC_SA_ALICE = "{\n" +
+            "  \"name\": \"CC BY-NC-SA 3.0 Alice\",\n" +
+            "  \"description\": \"The Creative Commons Attribution & Share-alike non-commercial license\",\n" +
+            "  \"definition\": \"https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en\",\n" +
+            "  \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png\",\n" +
+            "  \"attributionText\": \"Alice`s cool CC-BY-NC-SA license\"\n" +
+            "}\n";
+
+    private static String CC_BY_ND_ALICE = "{\n" +
+            "  \"name\": \"CC BY-ND 3.0 Alice\",\n" +
+            "  \"description\": \"The Creative Commons Attribution & NoDerivs license\",\n" +
+            "  \"definition\": \"https://creativecommons.org/licenses/by-nd/3.0/deed.en\",\n" +
+            "  \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nd.png\",\n" +
+            "  \"attributionText\": \"Alice`s cool CC-BY-ND license\"\n" +
+            "}\n";
+
+    private static String CC_BY_NC_ND_ALICE = "{\n" +
+            " \"name\": \"CC BY-NC-ND 3.0 Alice\",\n" +
+            "  \"description\": \"The Creative Commons Attribution & NonCommercial & NoDerivs license\",\n" +
+            "  \"definition\": \"https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en\",\n" +
+            "  \"logo\": \"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-nd.png\",\n" +
+            "  \"attributionText\": \"Alice`s cool CC-BY-NC-ND license\"\n" +
+            "}\n";
 
     private static String GROUP(String license) {
         return String.format("{\n"
@@ -265,14 +336,10 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
         SERVER_PROPERTIES.put("plugins.staplus.enable.enforceObservationGroupLicensing", "false");
         SERVER_PROPERTIES.put("plugins.staplus.idType.license", "String");
         SERVER_PROPERTIES.put("auth.provider", PrincipalAuthProvider.class.getName());
-        // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
-        // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
+        // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per EntityType
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
-        //SERVER_PROPERTIES.put("plugins.plus.idType.group", "String");
-        //SERVER_PROPERTIES.put("plugins.coreModel.idType.datastream", "String");
-        //SERVER_PROPERTIES.put("plugins.multiDatastream.idType.multiDatastream", "String");
         SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
 
     }
@@ -395,7 +462,7 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
     }
 
     @Test
-    public void testIdId() throws ClientProtocolException, IOException {
+    public void testIdId() throws IOException {
         LOGGER.info("  testIdId");
         for (Object[] d : data()) {
             String datastreamLicenseId = (String) d[0];
@@ -408,6 +475,78 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
             Assertions.assertTrue(expectedStatus == actualStatus, test);
             if (expectedStatus != actualStatus) {
                 LOGGER.info("FAIL: " + test + " expected status code: {} - actual status code: {}", expectedStatus, actualStatus);
+            }
+        }
+    }
+
+    @Test
+    public void testCreateNormativeLicense() throws IOException {
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Licenses");
+        HttpEntity stringEntity = new StringEntity(CC_PD_WITH_ID, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+        setAuth(httpPost, ALICE, "");
+
+        // Not allowed to re-use mandatory ids - here CC_PD
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+            if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
+                Assertions.assertTrue(true);
+            } else {
+                fail(response, USER_IS_NOT_ABLE_TO_CREATE_MANDATORY_LICENSE);
+            }
+        }
+    }
+
+    @Test
+    public void testCreateOwnLicenseCC_PD() throws IOException {
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Licenses");
+        HttpEntity stringEntity = new StringEntity(CC_PD, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+        setAuth(httpPost, ALICE, "");
+
+        // Not allowed to re-create a license with definition
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+            if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
+                Assertions.assertTrue(true);
+            } else {
+                fail(response, USER_IS_NOT_ABLE_TO_CREATE_OWN_LICENSE_CC_PD);
+            }
+        }
+    }
+
+    @Test
+    public void testCreateOwnLicenseCC_PD_ALICE() throws IOException {
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Licenses");
+        HttpEntity stringEntity = new StringEntity(CC_PD_ALICE, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+        setAuth(httpPost, ALICE, "");
+
+        // Not allowed to re-create a license with definition
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+            if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
+                Assertions.assertTrue(true);
+            } else {
+                fail(response, USER_IS_NOT_ABLE_TO_CREATE_OWN_LICENSE_CC_PD);
+            }
+        }
+    }
+
+    @Test
+    public void testCreateOwnLicenses() throws IOException {
+
+        String requests[] = {CC_BY_ALICE, CC_BY_NC_ALICE, CC_BY_SA_ALICE, CC_BY_NC_SA_ALICE, CC_BY_ND_ALICE, CC_BY_NC_ND_ALICE};
+
+        for (String request : requests) {
+            HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Licenses");
+            HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+            httpPost.setEntity(stringEntity);
+            setAuth(httpPost, ALICE, "");
+            // Allowed to re-create a CC-BY type license with own attributionText
+            try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+                if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
+                    Assertions.assertTrue(true);
+                } else {
+                    fail(response, USER_IS_ABLE_TO_CREATE_OWN_LICENSE_CC_BY);
+                }
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,7 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.test.auth;
 
+import de.fraunhofer.iosb.ilt.frostserver.service.InitResult;
 import de.fraunhofer.iosb.ilt.frostserver.settings.ConfigDefaults;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.AuthProvider;
@@ -39,8 +40,9 @@ public class PrincipalAuthProvider implements AuthProvider, ConfigDefaults {
     private CoreSettings coreSettings;
 
     @Override
-    public void init(CoreSettings coreSettings) {
+    public InitResult init(CoreSettings coreSettings) {
         this.coreSettings = coreSettings;
+        return InitResult.INIT_OK;
     }
 
     @Override

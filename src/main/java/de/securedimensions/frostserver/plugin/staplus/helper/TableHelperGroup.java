@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,20 +17,14 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.helper;
 
+import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
+
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
-import de.fraunhofer.iosb.ilt.frostserver.model.core.Id;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreDelete;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert;
-import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreUpdate;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.NoSuchEntityException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpGroup;
 import java.security.Principal;
-import java.util.Map;
-import org.jooq.Field;
 
 public class TableHelperGroup extends TableHelper {
 
@@ -45,79 +39,67 @@ public class TableHelperGroup extends TableHelper {
     @Override
     public void registerPreHooks() {
 
-        tableGroups.registerHookPreInsert(-10.0, new HookPreInsert() {
+        tableGroups.registerHookPreInsert(-1,
+                (phase, pm, entity, insertFields) -> {
 
-            @Override
-            public boolean insertIntoDatabase(Phase phase, JooqPersistenceManager pm, Entity group,
-                    Map<Field, Object> insertFields) throws NoSuchEntityException, IncompleteEntityException {
+                    /*
+                     * Select Phase
+                     */
+                    if (phase == PRE_RELATIONS)
+                        return true;
 
-                /*
-                 * Select Phase
-                 */
-                if (phase == Phase.PRE_RELATIONS)
+                    if (!pluginPlus.isEnforceOwnershipEnabled())
+                        return true;
+
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+
+                    if (isAdmin(principal))
+                        return true;
+
+                    assertOwnershipGroup(pm, entity, principal);
+
+                    if (pluginPlus.isEnforceLicensingEnabled()) {
+                        assertLicenseGroup(pm, entity);
+                        assertEmptyGroup(pm, entity);
+                    }
+
                     return true;
+                });
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return true;
+        tableGroups.registerHookPreUpdate(-1,
+                (pm, entity, entityId, updateMode) -> {
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                    if (!pluginPlus.isEnforceOwnershipEnabled())
+                        return;
 
-                if (isAdmin(principal))
-                    return true;
+                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                assertOwnershipGroup(pm, group, principal);
+                    if (isAdmin(principal))
+                        return;
 
-                if (pluginPlus.isEnforceLicensingEnabled()) {
-                    assertLicenseGroup(pm, group);
-                    assertEmptyGroup(pm, group);
-                }
+                    // We need to assert on the existing Group that is to be updated
+                    entity = pm.get(pluginPlus.etGroup, entityId);
+                    assertOwnershipGroup(pm, entity, principal);
 
-                return true;
-            }
-        });
+                    if (pluginPlus.isEnforceLicensingEnabled()) {
+                        assertLicenseGroup(pm, entity);
+                        assertEmptyGroup(pm, entity);
+                    }
 
-        tableGroups.registerHookPreUpdate(-10.0, new HookPreUpdate() {
+                });
 
-            @Override
-            public void updateInDatabase(JooqPersistenceManager pm, Entity group, Id entityId)
-                    throws NoSuchEntityException, IncompleteEntityException {
+        tableGroups.registerHookPreDelete(-1, (pm, entityId) -> {
 
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
+            if (!pluginPlus.isEnforceOwnershipEnabled())
+                return;
 
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+            Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
-                if (isAdmin(principal))
-                    return;
+            if (isAdmin(principal))
+                return;
 
-                // We need to assert on the existing Group that is to be updated
-                group = pm.get(pluginPlus.etGroup, group.getId());
-                assertOwnershipGroup(pm, group, principal);
-
-                if (pluginPlus.isEnforceLicensingEnabled()) {
-                    assertLicenseGroup(pm, group);
-                    assertEmptyGroup(pm, group);
-                }
-
-            }
-        });
-
-        tableGroups.registerHookPreDelete(-10.0, new HookPreDelete() {
-
-            @Override
-            public void delete(JooqPersistenceManager pm, Id entityId) throws NoSuchEntityException {
-
-                if (!pluginPlus.isEnforceOwnershipEnabled())
-                    return;
-
-                Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
-
-                if (isAdmin(principal))
-                    return;
-
-                Entity group = pm.get(pluginPlus.etGroup, entityId);
-                assertOwnershipGroup(pm, group, principal);
-            }
+            Entity group = pm.get(pluginPlus.etGroup, entityId);
+            assertOwnershipGroup(pm, group, principal);
         });
 
     }
