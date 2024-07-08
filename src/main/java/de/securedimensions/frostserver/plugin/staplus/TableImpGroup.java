@@ -63,7 +63,7 @@ public class TableImpGroup extends StaTableAbstract<TableImpGroup> {
     /**
      * The column <code>public.GROUPS.EP_PROPERTIES</code>.
      */
-    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
+    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", JsonBinding.instance());
 
     /**
      * The column <code>public.GROUPS.EP_CLASSIFICATION</code>.
@@ -73,17 +73,17 @@ public class TableImpGroup extends StaTableAbstract<TableImpGroup> {
     /**
      * The column <code>public.GROUPS.EP_END_TIME</code>.
      */
-    public final TableField<Record, Moment> colEndTime = createField(DSL.name("END_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
+    public final TableField<Record, Moment> colEndTime = createField(DSL.name("END_TIME"), SQLDataType.TIMESTAMP, this, "", MomentBinding.instance());
 
     /**
      * The column <code>public.GROUPS.EP_CREATION_TIME</code>.
      */
-    public final TableField<Record, Moment> colCreationTime = createField(DSL.name("CREATION_TIME"), SQLDataType.TIMESTAMP, this, "", new MomentBinding());
+    public final TableField<Record, Moment> colCreationTime = createField(DSL.name("CREATION_TIME"), SQLDataType.TIMESTAMP, this, "", MomentBinding.instance());
 
     /**
      * The column <code>public.GROUPS.EP_DATA_QUALITY</code>.
      */
-    public final TableField<Record, JsonValue> colDataQuality = createField(DSL.name("DATA_QUALITY"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
+    public final TableField<Record, JsonValue> colDataQuality = createField(DSL.name("DATA_QUALITY"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", JsonBinding.instance());
 
     /**
      * The column <code>public.GROUPS.EP_TERMS_OF_USE</code>.

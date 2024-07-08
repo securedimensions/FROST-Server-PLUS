@@ -54,7 +54,7 @@ public class TableImpRelation extends StaTableAbstract<TableImpRelation> {
     /**
      * The column <code>public.GROUPS.EP_PROPERTIES</code>.
      */
-    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", new JsonBinding());
+    public final TableField<Record, JsonValue> colProperties = createField(DSL.name("PROPERTIES"), DefaultDataType.getDefaultDataType(TYPE_JSONB), this, "", JsonBinding.instance());
 
     /**
      * The column <code>public.RELATIONS.EP_ROLE</code>.
