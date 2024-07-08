@@ -37,7 +37,7 @@ The deployment of the STAplus plugin can integrated into a working deployment of
 ### Build and deploy STAplus standalone
 Clone this directory via `git clone -b FROST-Server.v2.3.x https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
 
-Make sure you copy the `FROST-Server-2.2.3.Plugin.STAplus-1.0.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
+Make sure you copy the `FROST-Server-2.3.1.Plugin.STAplus-1.0.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
 
 ## Deployment with FROST-Server
 Use `git clone -b v2.3.x https://github.com/FraunhoferIOSB/FROST-Server.git FROST-Server.v2.3.x` to create the FROST-Server directory structure.
