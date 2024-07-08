@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Secure Dimensions GmbH, D-81377
+ * Copyright (C) 2021-2024 Secure Dimensions GmbH, D-81377
  * Munich, Germany.
  *
  * This program is free software: you can redistribute it and/or modify
