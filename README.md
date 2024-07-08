@@ -1,9 +1,9 @@
 # Sensor Things API - PLUS (STAplus)
-This repository contains an open source reference implementation of STAplus.
+This repository contains an open source reference implementation of STAplus as a plugin for [FROST-Server v2.4-SNAPSHOT](https://github.com/FraunhoferIOSB/FROST-Server/tree/v2.x).
 
 **_NOTE_:** This implementation is still work in progress. The source code is already available in this repository to give you the opportunity to follow along or actually contribute.
 
-**_INPORTANT_: Do not yet use in production!**
+**_IMPORTANT_: Do not yet use in production!**
 
 ## About the OGC STAplus Standard
 [STAplus](https://docs.ogc.org/is/22-022r1/22-022r1.html) is an OGC Implementation Standard that extends the suite of OGC SensorThings API [v1.0](https://docs.ogc.org/is/15-078r6/15-078r6.html) and [v1.1](https://docs.ogc.org/is/18-088/18-088.html) Standards.
@@ -26,25 +26,23 @@ The following UML diagrams illustrate the data model extension towards SensorThi
 ## About the Implementation
 This repository contains an open source reference implementation of STAplus as a [FROST-Server](https://github.com/FraunhoferIOSB/FROST-Server) plugin.
 
-This repository builds with the FROST-Server v2.2.0.
-
 This implementation supports the conformance classes `Core`, `Authentication` and `Business Logic`  as defined in the STAplus Standard. The `API` conformance class is already supported by the FROST-Server implementation.
 
 ### Business Logic
 This implementation enforces the concept of ownership as explained in detail below. Please see [Business Logic](/BUSINESS-LOGIC.md) for more details.
 
-## Deployment for existing FROST-Server
+## Deployment for FROST-Server
 The deployment of the STAplus plugin can integrated into a working deployment of the FROST-Server. You can follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FROST-Server/) to run your instance.
 
 ### Build and deploy STAplus standalone
-Clone this directory via `git clone https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
+Clone this directory via `git clone -b FROST-Server.v2.3.x https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
 
-Make sure you copy the `FROST-Server.Plugin.STAplus-2.2.0.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
+Make sure you copy the `FROST-Server-2.4.0-SNAPSHOT.Plugin.STAplus-1.0.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
 
 ## Deployment with FROST-Server
-Use `git clone -b v2.2.x https://github.com/FraunhoferIOSB/FROST-Server.git FROST-Server.v2.2.x` to create the FROST-Server directory structure.
+Use `git clone -b v2.3.x https://github.com/FraunhoferIOSB/FROST-Server.git FROST-Server.v2.3.x` to create the FROST-Server directory structure.
 
-Then cd `FROST-Server/Plugins` and `git clone https://github.com/securedimensions/FROST-Server-PLUS.git STAplus`.
+Then cd `FROST-Server/Plugins` and `git clone -b FROST-Server.v2.3.x https://github.com/securedimensions/FROST-Server-PLUS.git STAplus`.
 
 Add the `STAplus` plugin to the `FROST-Server/Plugins/pom.xml`.
 
