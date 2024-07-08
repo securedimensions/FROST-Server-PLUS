@@ -70,8 +70,20 @@ Then follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FR
 ## Configuration
 Different features of the STAplus plugin can be activated / deactivated using FROST-Server alike configuration variables:
 
+### Enable the Plugin
+
+As described in the [FROST-Server Plugin documentation](https://fraunhoferiosb.github.io/FROST-Server/settings/plugins.html), you need to add the plugin to the list of plugins to be loaded.
+
+* **plugins.plugins:**
+  A comma-separated list of class names, listing additional plugins to load.
+  
+  Add the class `de.securedimensions.frostserver.plugin.staplus.PluginPLUS` to have the plugin loaded
 * **plugins.staplus.enable:**  
   Set to `true` to activate the STAplus plugin. Default: `false`.
+
+
+### Configure Behavior
+
 * **plugins.staplus.idType.observation_group:**  
   The type of the primary key column of the ObservationGroups table. Defaults to the value of **plugins.coreModel.idType**.
 * **plugins.staplus.idType.license:**  
