@@ -8,7 +8,7 @@
     </parent>
     <groupId>de.securedimensions.FROST-Server</groupId>
     <artifactId>FROST-Server.Plugin.STAplus</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>FROST-Server.Plugin.STAplus</name>
