@@ -111,7 +111,7 @@ public class TableHelperParty extends TableHelper {
 
                 if ((party.isSetProperty(pluginPlus.epAuthId)) && (!userId.equalsIgnoreCase(party.getProperty((pluginPlus.epAuthId))))) {
                     // The authId is set by this plugin - it cannot be set via POSTed Party property authId
-                    throw new IllegalArgumentException("Party property authId must represent the acting user");
+                    throw new IllegalArgumentException("Party property 'authId' must represent the acting user or be omitted");
                 }
 
                 if (party.isSetProperty(pluginPlus.npDatastreamsParty)) {
