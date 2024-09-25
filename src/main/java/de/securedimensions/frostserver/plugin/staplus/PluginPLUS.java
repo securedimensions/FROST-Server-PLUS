@@ -290,7 +290,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
                     if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId)))) {
                         // The authId is set by this plugin - it cannot be different from the POSTed Party property authId
-                        throw new IllegalArgumentException("Party property 'authId' must represent the acting user or be empty string");
+                        throw new IllegalArgumentException("Party property 'authId' must represent the acting user or be omitted");
                     }
                     try {
                         // This throws exception if userId is not in UUID format
