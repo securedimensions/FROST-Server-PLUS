@@ -29,6 +29,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.methods.*;
@@ -75,6 +77,7 @@ public abstract class PartyTests extends AbstractStaPlusTestClass {
     private static final String PARTY = "{\"description\": \"\", \"displayName\": \"me\", \"role\": \"individual\"}";
     private static final String PARTY_ALICE = String.format("{\"description\": \"The young girl that fell through a rabbit hole into a fantasy world of anthropomorphic creatures\", \"displayName\": \"Alice in Wonderland\", \"role\": \"individual\", \"authId\": \"%s\"}", ALICE);
     private static final String PARTY_LJS = String.format("{\"description\": \"The opportunistic pirate by Robert Louis Stevenson\", \"displayName\": \"Long John Silver Citizen Scientist\", \"role\": \"individual\", \"authId\": \"%s\"}", LJS);
+    private static final String PARTY_JB = String.format("{\"description\": \"A character created by the British journalist and novelist Ian Fleming\", \"displayName\": \"James Bond\", \"role\": \"individual\", \"authId\": \"%s\"}", JB);
 
     private static final Map<String, String> SERVER_PROPERTIES = new LinkedHashMap<>();
 
@@ -95,6 +98,7 @@ public abstract class PartyTests extends AbstractStaPlusTestClass {
     //private static SensorThingsService service;
     private final String partyLJSUrl;
     private final String partyALICEUrl;
+    private final String partyJBUrl;
 
     public PartyTests(ServerVersion version) {
         super(version, SERVER_PROPERTIES);
@@ -102,6 +106,7 @@ public abstract class PartyTests extends AbstractStaPlusTestClass {
         // on...
         partyLJSUrl = serverSettings.getServiceUrl(version) + "/Parties('" + LJS + "')";
         partyALICEUrl = serverSettings.getServiceUrl(version) + "/Parties('" + ALICE + "')";
+        partyJBUrl = serverSettings.getServiceUrl(version) + "/Parties('" + UUID.nameUUIDFromBytes(JB.getBytes()).toString() + "')";
     }
 
     @AfterAll
@@ -200,6 +205,30 @@ public abstract class PartyTests extends AbstractStaPlusTestClass {
     }
 
     /*
+     * SAME_USER_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
+     */
+    @Test
+    public void test01SameUserCreatePartyNonUUIDUsername() throws IOException {
+        LOGGER.info("  test01SameUserCreatePartyNonUUIDUsername");
+        String request = PARTY_JB;
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
+        HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+        setAuth(httpPost, JB, "");
+
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+
+            if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
+                String location = response.getFirstHeader("Location").getValue();
+                Boolean success = (location != null) && location.contains(UUID.nameUUIDFromBytes(JB.getBytes()).toString());
+                Assertions.assertTrue(success, SAME_USER_SHOULD_BE_ABLE_TO_CREATE);
+            } else {
+                fail(response, SAME_USER_SHOULD_BE_ABLE_TO_CREATE);
+            }
+        }
+    }
+
+    /*
      * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 403 Fail: 201
      */
     @Test
@@ -210,6 +239,29 @@ public abstract class PartyTests extends AbstractStaPlusTestClass {
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
+
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+            if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
+                Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE);
+            } else if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
+                Assertions.assertFalse(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE);
+            } else {
+                fail(response, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE);
+            }
+        }
+    }
+
+    /*
+     * OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE Success: 403 Fail: 201
+     */
+    @Test
+    public void test02OtherNonUUIDUsernameUserCreateParty() throws IOException {
+        LOGGER.info("  test02OtherNonUUIDUsernameUserCreateParty");
+        String request = PARTY_LJS;
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
+        HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+        setAuth(httpPost, JB, "");
 
         try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_400) {
@@ -239,6 +291,29 @@ public abstract class PartyTests extends AbstractStaPlusTestClass {
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
                 // we need to make sure that Alice was created
                 Assertions.assertTrue(response.getFirstHeader("Location").getValue().equalsIgnoreCase(partyALICEUrl), ADMIN_SHOULD_BE_ABLE_TO_CREATE);
+            } else {
+                fail(response, ADMIN_SHOULD_BE_ABLE_TO_CREATE);
+            }
+        }
+    }
+
+    /*
+     * ADMIN_SHOULD_BE_ABLE_TO_CREATE Success: 201 Fail: n/a
+     */
+    @Test
+    public void test03AdminCreatePartyNonUUIDUsername() throws IOException {
+        LOGGER.info("  test03AdminCreatePartyNonUUIDUsername");
+        String request = PARTY_JB;
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Parties");
+        HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+        setAuth(httpPost, ADMIN, "");
+
+        try (CloseableHttpResponse response = serviceSTAplus.execute(httpPost)) {
+
+            if (response.getStatusLine().getStatusCode() == HTTP_CODE_201) {
+                // we need to make sure that Alice was created
+                Assertions.assertTrue(response.getFirstHeader("Location").getValue().equalsIgnoreCase(partyJBUrl), ADMIN_SHOULD_BE_ABLE_TO_CREATE);
             } else {
                 fail(response, ADMIN_SHOULD_BE_ABLE_TO_CREATE);
             }

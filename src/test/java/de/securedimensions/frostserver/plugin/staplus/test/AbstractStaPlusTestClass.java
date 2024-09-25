@@ -42,6 +42,7 @@ public abstract class AbstractStaPlusTestClass extends AbstractTestClass {
 
     public static final String ALICE = "505851c3-2de9-4844-9bd5-d185fe944265";
     public static final String LJS = "21232f29-7a57-35a7-8389-4a0e4a801fc3";
+    public static final String JB = "my name is Bond - James Bond";
     public static final String ADMIN = "admin";
 
     protected URL endpoint;
