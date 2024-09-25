@@ -34,7 +34,6 @@ import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
 import java.security.Principal;
 import java.util.Map;
 import java.util.UUID;
-
 import org.jooq.Field;
 
 public class TableHelperParty extends TableHelper {
