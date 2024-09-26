@@ -28,6 +28,7 @@ import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.exception.ForbiddenException;
 import de.securedimensions.frostserver.plugin.staplus.TableImpParty;
 import java.security.Principal;
+import java.util.UUID;
 
 public class TableHelperParty extends TableHelper {
 
@@ -50,6 +51,18 @@ public class TableHelperParty extends TableHelper {
                      */
                     if (phase == PRE_RELATIONS)
                         return true;
+
+                    if (entity.isSetProperty(pluginPlus.epAuthId)) {
+                        String authID = entity.getProperty(pluginPlus.epAuthId);
+                        // Make sure that the authI is in UUID format
+                        try {
+                            // This throws exception if userId is not in UUID format
+                            UUID.fromString(authID);
+                        } catch (IllegalArgumentException exception) {
+                            // In case the userId is not a UUID
+                            entity.setProperty(pluginPlus.epAuthId, UUID.nameUUIDFromBytes(authID.getBytes()).toString());
+                        }
+                    }
 
                     if (!pluginPlus.isEnforceOwnershipEnabled()) {
                         // test if the authId is set
@@ -79,9 +92,18 @@ public class TableHelperParty extends TableHelper {
                     assertPrincipal(principal);
                     String userId = principal.getName();
 
+                    // Make sure that the userId is in UUID format
+                    try {
+                        // This throws exception if userId is not in UUID format
+                        UUID.fromString(userId);
+                    } catch (IllegalArgumentException exception) {
+                        // In case the userId is not a UUID
+                        userId = UUID.nameUUIDFromBytes(userId.getBytes()).toString();
+                    }
+
                     if ((entity.isSetProperty(pluginPlus.epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty((pluginPlus.epAuthId))))) {
                         // The authId is set by this plugin - it cannot be set via POSTed Party property authId
-                        throw new IllegalArgumentException("Party property authId must represent the acting user");
+                        throw new IllegalArgumentException("Party property 'authId' must represent the acting user or be omitted");
                     }
 
                     if (entity.isSetProperty(pluginPlus.npDatastreamsParty)) {
