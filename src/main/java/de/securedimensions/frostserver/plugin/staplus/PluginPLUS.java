@@ -288,16 +288,28 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
 
                     String userId = principal.getName();
 
-                    if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId)))) {
-                        // The authId is set by this plugin - it cannot be different from the POSTed Party property authId
-                        throw new IllegalArgumentException("Party property 'authId' must represent the acting user or be empty string");
-                    }
+                    // Make sure userId is in UUID format
                     try {
                         // This throws exception if userId is not in UUID format
                         UUID.fromString(userId);
-                        entity.setProperty(epAuthId, userId);
                     } catch (IllegalArgumentException exception) {
-                        entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(userId.getBytes()).toString());
+                        userId = UUID.nameUUIDFromBytes(userId.getBytes()).toString();
+                    }
+
+                    if (entity.isSetProperty(epAuthId)) {
+                        String authId = entity.getProperty(epAuthId);
+                        // Make sure Party.authId is in UUID format
+                        try {
+                            // This throws exception if authId is not in UUID format
+                            UUID.fromString(authId);
+                        } catch (IllegalArgumentException exception) {
+                            entity.setProperty(epAuthId, UUID.nameUUIDFromBytes(authId.getBytes()).toString());
+                        }
+                    }
+
+                    if ((entity.isSetProperty(epAuthId)) && (!userId.equalsIgnoreCase(entity.getProperty(epAuthId)))) {
+                        // The authId is set by this plugin - it cannot be different from the POSTed Party property authId
+                        throw new IllegalArgumentException("Party property 'authId' must represent the acting user or be omitted");
                     }
 
                 })
