@@ -1,5 +1,5 @@
 # Sensor Things API - PLUS (STAplus)
-This repository contains an open source reference implementation of STAplus as a plugin for [FROST-Server v2.4-SNAPSHOT](https://github.com/FraunhoferIOSB/FROST-Server/tree/v2.x).
+This repository contains an open source reference implementation of STAplus as a plugin for [FROST-Server v2.4.0](https://github.com/FraunhoferIOSB/FROST-Server/tree/v2.x).
 
 **_NOTE_:** This implementation is still work in progress. The source code is already available in this repository to give you the opportunity to follow along or actually contribute.
 
@@ -35,14 +35,14 @@ This implementation enforces the concept of ownership as explained in detail bel
 The deployment of the STAplus plugin can integrated into a working deployment of the FROST-Server. You can follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FROST-Server/) to run your instance.
 
 ### Build and deploy STAplus standalone
-Clone this directory via `git clone -b FROST-Server.v2.3.x https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
+Clone this directory via `git clone -b FROST-Server.v2.4.x https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
 
-Make sure you copy the `FROST-Server-2.4.0-SNAPSHOT.Plugin.STAplus-1.0.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
+Make sure you copy the `FROST-Server-2.4.0.Plugin.STAplus-1.0.1.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
 
 ## Deployment with FROST-Server
-Use `git clone -b v2.3.x https://github.com/FraunhoferIOSB/FROST-Server.git FROST-Server.v2.3.x` to create the FROST-Server directory structure.
+Use `git clone -b v2.4.x https://github.com/FraunhoferIOSB/FROST-Server.git FROST-Server.v2.4.x` to create the FROST-Server directory structure.
 
-Then cd `FROST-Server/Plugins` and `git clone -b FROST-Server.v2.3.x https://github.com/securedimensions/FROST-Server-PLUS.git STAplus`.
+Then cd `FROST-Server/Plugins` and `git clone -b FROST-Server.v2.4.x https://github.com/securedimensions/FROST-Server-PLUS.git STAplus`.
 
 Add the `STAplus` plugin to the `FROST-Server/Plugins/pom.xml`.
 
@@ -94,9 +94,9 @@ As described in the [FROST-Server Plugin documentation](https://fraunhoferiosb.g
 **_NOTE:_** The type of the primary key column of the Party table (`plugins.staplus.idType.party`) is set to UUID by the implementation. This setting cannot be changed!
 
 ## <a name="EnforceOwnership"></a>Enforcement of Ownership
-The activation of the `Enforcement of Ownership` allows to operate the STAplus endpoint in multi-user-CRUD mode. However, it requires to enable Authentication.
+The activation of the `Enforcement of Ownership` allows to operate the STAplus endpoint in multi-user-CRUD mode. However, it requires to enable authentication using one of the existing plugins.
 
-Each acting user is identified via a unique UUID, provided by the authentication plugin. The `REMOTE_USER` value is used to identify the user. The value of `REMOTE_USER` represents the user as a `Party` object via the `authId` property. When creating a `Party` object, the value for the `authId` property must either be empty or match the value for the `REMOTE_USER`. All other values are rejected by the implementation and will result in a response with HTTP status code 400.
+Each acting user is identified via a unique UUID, based on the username (`REMOTE_USER`) provided by the authentication plugin. The `REMOTE_USER` value is used to identify the user. In case the `REMOTE_USER` value is not in UUID format, this plugin will create a UUIDv4 from the `REMOTE_USER` value! This UUID value is used for the `Party.@iot.id` and `Party.authId` property. When creating a `Party` object, the value for the `authId` property can be omitted. If you set the `authId` value in the request, it must match the UUIDv4 representation for the `REMOTE_USER`. All other values are rejected by the implementation and will result in a response with HTTP status code 400.
 
 The classes `Thing`, `MultiDatastream`, `Datastream` and `ObservationGroup` are directly associated to a Party. Objects of class `Observation` are linked to the owning Party object via the `(Multi)Datastream`. Objects of class `Relation` are linked to the Party object via the `Subject` property.
 
