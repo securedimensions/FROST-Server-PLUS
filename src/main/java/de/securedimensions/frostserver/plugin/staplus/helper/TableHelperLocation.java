@@ -97,7 +97,7 @@ public class TableHelperLocation extends TableHelper {
                 return;
 
             ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Locations(" + entityId.get(0) + ")");
-            Query query = QueryParser.parseQuery("$expand=Things", pm.getCoreSettings(), rp);
+            Query query = QueryParser.parseQuery("$expand=Things", pm.getCoreSettings().getQueryDefaults(), rp.getMainElementType().getModelRegistry(), rp);
             query.validate();
             Entity location = (Entity) pm.get(rp, query);
 
