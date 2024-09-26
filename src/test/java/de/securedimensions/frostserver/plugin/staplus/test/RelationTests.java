@@ -20,7 +20,7 @@ package de.securedimensions.frostserver.plugin.staplus.test;
 import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
 import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
-import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11Sensing;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
@@ -287,9 +287,9 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            sMdl = new SensorThingsSensingV11();
+            sMdl = new SensorThingsV11Sensing();
             pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)), sMdl, pMdl);
+            serviceSTAplus = new SensorThingsService(sMdl, pMdl).setBaseUrl(new URL(serverSettings.getServiceUrl(version))).init();
 
             try (CloseableHttpResponse r1 = createObservation(OBSERVATION_INLINE_PARTY(LJS, 1), LJS)) {
                 if (r1.getStatusLine().getStatusCode() != HTTP_CODE_201) {
