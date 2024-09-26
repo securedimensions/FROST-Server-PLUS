@@ -20,6 +20,12 @@
      You should have received a copy of the GNU Lesser General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
+    <changeSet author="am" id="2024-09-25-uuid_generate_v1mc" runOnChange="true" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+        <sql splitStatements="false">
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        </sql>
+    </changeSet>
+
     <changeSet author="am" id="2023-05-15-PLUS-PARTIES-1" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
         <preConditions onFail="MARK_RAN">
             <not>
