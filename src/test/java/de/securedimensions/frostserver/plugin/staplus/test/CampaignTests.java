@@ -21,7 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
 import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
-import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11MultiDatastream;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11Sensing;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
@@ -244,9 +245,10 @@ public abstract class CampaignTests extends AbstractStaPlusTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            sMdl = new SensorThingsSensingV11();
+            sMdl = new SensorThingsV11Sensing();
+            mMdl = new SensorThingsV11MultiDatastream();
             pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)), sMdl, pMdl);
+            serviceSTAplus = new SensorThingsService(sMdl, mMdl, pMdl).setBaseUrl(new URL(serverSettings.getServiceUrl(version))).init();
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }

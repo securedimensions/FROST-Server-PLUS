@@ -19,11 +19,11 @@ package de.securedimensions.frostserver.plugin.staplus.test.auth;
 
 import de.fraunhofer.iosb.ilt.frostserver.util.user.PrincipalExtended;
 import de.securedimensions.frostserver.plugin.staplus.test.PartyTests;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
 
-public class PrincipalRequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
+public class PrincipalRequestWrapper extends jakarta.servlet.http.HttpServletRequestWrapper {
 
     String user;
     List<String> roles = null;

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
 import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
-import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsSensingV11;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11Sensing;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
@@ -274,7 +274,6 @@ public abstract class DatastreamTests extends AbstractStaPlusTestClass {
 
     public DatastreamTests(ServerVersion version) {
         super(version, SERVER_PROPERTIES);
-        endpoint = serviceSTAplus.getEndpoint();
     }
 
     @Override
@@ -282,9 +281,9 @@ public abstract class DatastreamTests extends AbstractStaPlusTestClass {
         LOGGER.info("Setting up for version {}.", version.urlPart);
 
         try {
-            sMdl = new SensorThingsSensingV11();
+            sMdl = new SensorThingsV11Sensing();
             pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(new URL(serverSettings.getServiceUrl(version)), sMdl, pMdl);
+            serviceSTAplus = new SensorThingsService(sMdl, pMdl).setBaseUrl(new URL(serverSettings.getServiceUrl(version))).init();
         } catch (MalformedURLException ex) {
             LOGGER.error("Failed to create URL", ex);
         }
@@ -314,7 +313,7 @@ public abstract class DatastreamTests extends AbstractStaPlusTestClass {
         LOGGER.info("  test00DatastreamMustHaveAParty");
         String request = DATASTREAM;
 
-        HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
@@ -336,7 +335,7 @@ public abstract class DatastreamTests extends AbstractStaPlusTestClass {
         LOGGER.info("  test01SameUserCreateDatastream");
         String request = String.format(DATASTREAM_PARTY, LJS, LJS);
 
-        HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, LJS, "");
@@ -365,7 +364,7 @@ public abstract class DatastreamTests extends AbstractStaPlusTestClass {
         LOGGER.info("  test02OtherUserCreateDatastream");
         String request = String.format(DATASTREAM_PARTY, LJS, LJS);
 
-        HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
@@ -387,7 +386,7 @@ public abstract class DatastreamTests extends AbstractStaPlusTestClass {
         LOGGER.info("  test03AdminCreateDatastream");
         String request = String.format(DATASTREAM_PARTY, ALICE, ALICE);
 
-        HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ADMIN, "");
@@ -417,7 +416,7 @@ public abstract class DatastreamTests extends AbstractStaPlusTestClass {
         LOGGER.info("  test02AnonCreateDatastream");
         String request = String.format(DATASTREAM_PARTY, LJS, LJS);
 
-        HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
 
@@ -438,7 +437,7 @@ public abstract class DatastreamTests extends AbstractStaPlusTestClass {
      */
     private String createDatastreamForParty(String userId) throws IOException {
         String request = String.format(DATASTREAM_PARTY, userId, userId);
-        HttpPost httpPost = new HttpPost(endpoint + "/Datastreams");
+        HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/Datastreams");
         HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, userId, "");
