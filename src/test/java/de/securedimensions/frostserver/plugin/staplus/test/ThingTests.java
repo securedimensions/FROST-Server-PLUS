@@ -275,6 +275,7 @@ public abstract class ThingTests extends AbstractStaPlusTestClass {
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entityp
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
+        SERVER_PROPERTIES.put("plugins.coreModel.idType.location", "LONG");
         SERVER_PROPERTIES.put("auth.allowAnonymousRead", "true");
         SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
     }

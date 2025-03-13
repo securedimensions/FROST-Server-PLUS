@@ -91,6 +91,7 @@ public abstract class PartyTests extends AbstractStaPlusTestClass {
         // For the moment we need to use ServerAndClient until FROST-Server supports to deactivate per Entity Type
         SERVER_PROPERTIES.put("persistence.idGenerationMode", "ServerAndClientGenerated");
         SERVER_PROPERTIES.put("plugins.coreModel.idType", "LONG");
+        SERVER_PROPERTIES.put("plugins.coreModel.idType.location", "LONG");
         SERVER_PROPERTIES.put("plugins.multiDatastream.enable", "true");
     }
 
