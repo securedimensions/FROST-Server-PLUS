@@ -179,6 +179,16 @@ public class TableImpLicense extends StaTableAbstract<TableImpLicense> {
         datastreamsTable.getPropertyFieldRegistry()
                 .addEntry(pluginPLUS.npLicenseDatastream, table -> (TableField<Record, ?>) table.field(licenseDatastreamsIdIdx));
 
+        TableImpCampaign campaignsTable = tables.getTableForClass(TableImpCampaign.class);
+        final int licenseCampaignsIdIdx = campaignsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
+        campaignsTable.getPropertyFieldRegistry()
+                .addEntry(pluginPLUS.npLicenseCampaign, table -> (TableField<Record, ?>) table.field(licenseCampaignsIdIdx));
+
+        TableImpGroup groupsTable = tables.getTableForClass(TableImpGroup.class);
+        final int licenseGroupsIdIdx = groupsTable.registerField(DSL.name("LICENSE_ID"), getIdType());
+        groupsTable.getPropertyFieldRegistry()
+                .addEntry(pluginPLUS.npLicenseGroup, table -> (TableField<Record, ?>) table.field(licenseGroupsIdIdx));
+
         TableImpMultiDatastreams tableMultiDatastreams = tables.getTableForClass(TableImpMultiDatastreams.class);
         if (tableMultiDatastreams != null) {
             // We register a navigationProperty on the MultiDatastreams table.
