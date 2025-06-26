@@ -752,28 +752,30 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
         return true;
     }
 
-    public Map<String, Object> createLiqibaseParams(JooqPersistenceManager ppm, Map<String, Object> target) {
+    @Override
+    public Map<String, Object> createLiqibaseParams(PersistenceManager pm, Map<String, Object> target) {
         if (target == null) {
             target = new LinkedHashMap<>();
         }
-        pluginCoreModel.createLiqibaseParams(ppm, target);
-        if (pluginMultiDatastream == null) {
-            // Create placeholder variables, otherwise Liquibase complains.
-            ppm.generateLiquibaseVariables(target, "MultiDatastream", plusSettings.idTypeDefault);
-        } else {
-            pluginMultiDatastream.createLiqibaseParams(ppm, target);
+        if (pm instanceof JooqPersistenceManager ppm) {
+            pluginCoreModel.createLiqibaseParams(ppm, target);
+            if (pluginMultiDatastream == null) {
+                // Create placeholder variables, otherwise Liquibase complains.
+                ppm.generateLiquibaseVariables(target, "MultiDatastream", plusSettings.idTypeDefault);
+            } else {
+                pluginMultiDatastream.createLiqibaseParams(ppm, target);
+            }
+            ppm.generateLiquibaseVariables(target, "Group", plusSettings.idTypeGroup);
+            ppm.generateLiquibaseVariables(target, "License", plusSettings.idTypeLicense);
+            ppm.generateLiquibaseVariables(target, "Party", plusSettings.idTypeParty);
+            ppm.generateLiquibaseVariables(target, "Campaign", plusSettings.idTypeCampaign);
+            ppm.generateLiquibaseVariables(target, "Relation", plusSettings.idTypeRelation);
         }
-        ppm.generateLiquibaseVariables(target, "Group", plusSettings.idTypeGroup);
-        ppm.generateLiquibaseVariables(target, "License", plusSettings.idTypeLicense);
-        ppm.generateLiquibaseVariables(target, "Party", plusSettings.idTypeParty);
-        ppm.generateLiquibaseVariables(target, "Campaign", plusSettings.idTypeCampaign);
-        ppm.generateLiquibaseVariables(target, "Relation", plusSettings.idTypeRelation);
-
         return target;
     }
 
     @Override
-    public String checkForUpgrades() {
+    public String checkForUpgrades(Map<String, Object> liquibaseParams) {
         PersistenceManager pm = PersistenceManagerFactory.getInstance(settings).create();
         if (pm instanceof JooqPersistenceManager ppm) {
             return ppm.checkForUpgrades(LIQUIBASE_CHANGELOG_FILENAME, createLiqibaseParams(ppm, null));
@@ -782,7 +784,7 @@ public class PluginPLUS implements PluginRootDocument, PluginModel, LiquibaseUse
     }
 
     @Override
-    public boolean doUpgrades(Writer out) throws UpgradeFailedException, IOException {
+    public boolean doUpgrades(Writer out, Map<String, Object> liquibaseParams) throws UpgradeFailedException, IOException {
         PersistenceManager pm = PersistenceManagerFactory.getInstance(settings).create();
         if (pm instanceof JooqPersistenceManager ppm) {
             return ppm.doUpgrades(LIQUIBASE_CHANGELOG_FILENAME, createLiqibaseParams(ppm, null), out);

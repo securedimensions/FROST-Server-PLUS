@@ -17,6 +17,7 @@
  */
 package de.securedimensions.frostserver.plugin.staplus.test.auth;
 
+import de.fraunhofer.iosb.ilt.frostserver.persistence.PersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.service.InitResult;
 import de.fraunhofer.iosb.ilt.frostserver.settings.ConfigDefaults;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Map;
 
 public class PrincipalAuthProvider implements AuthProvider, ConfigDefaults {
 
@@ -46,12 +48,17 @@ public class PrincipalAuthProvider implements AuthProvider, ConfigDefaults {
     }
 
     @Override
-    public String checkForUpgrades() {
+    public Map<String, Object> createLiqibaseParams(PersistenceManager pm, Map<String, Object> target) {
+        return target;
+    }
+
+    @Override
+    public String checkForUpgrades(Map<String, Object> liquibaseParams) {
         return "";
     }
 
     @Override
-    public boolean doUpgrades(Writer out) throws UpgradeFailedException, IOException {
+    public boolean doUpgrades(Writer out, Map<String, Object> liquibaseParams) throws UpgradeFailedException, IOException {
         return true;
     }
 
@@ -77,10 +84,11 @@ public class PrincipalAuthProvider implements AuthProvider, ConfigDefaults {
     @Override
     public boolean userHasRole(String clientId, String userName, String roleName) {
 
-        if (userName.equalsIgnoreCase(PartyTests.ADMIN))
+        if (userName.equalsIgnoreCase(PartyTests.ADMIN)) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
 
     @Override
