@@ -4,7 +4,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile.HTTP
-    image: securedimensions/frost-server-v2.5.3_staplus:1.0.2
+    image: securedimensions/frost-server-v2.5.8_staplus:1.0.2
     environment:
       # For all settings see: https://fraunhoferiosb.github.io/FROST-Server/settings/settings.html
       - serviceRootUrl=http://localhost:8080/FROST-Server
