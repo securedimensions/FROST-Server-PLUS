@@ -1,5 +1,5 @@
 # Sensor Things API - PLUS (STAplus)
-This repository contains an open source reference implementation of STAplus as a plugin for [FROST-Server v2.5.3](https://github.com/FraunhoferIOSB/FROST-Server/tree/v2.5.x).
+This repository contains an open source reference implementation of STAplus as a plugin for [FROST-Server v2.5.8](https://github.com/FraunhoferIOSB/FROST-Server/tree/v2.5.x).
 
 **_NOTE_:** This implementation is still work in progress. The source code is already available in this repository to give you the opportunity to follow along or actually contribute.
 
@@ -37,7 +37,7 @@ The deployment of the STAplus plugin can be integrated into a working deployment
 ### Build and deploy STAplus standalone
 Clone this directory via `git clone -b FROST-Server.v2.5.x https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
 
-Make sure you copy the `FROST-Server-2.5.3.Plugin.STAplus-1.0.2.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
+Make sure you copy the `FROST-Server-2.5.8.Plugin.STAplus-1.0.2.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
 
 ## Deployment with FROST-Server
 Use `git clone -b v2.5.x https://github.com/FraunhoferIOSB/FROST-Server.git FROST-Server` to create the FROST-Server directory structure.
@@ -65,9 +65,9 @@ Add the `STAplus` plugin to the `FROST-Server/Plugins/pom.xml`.
 Then follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FROST-Server/deployment/architecture-packages.html) applicable to your deployment strategy.  
 
 ## Deployment via Docker
-First, build the STAplus plugin with `mvn install`. This creates the `FROST-Server-2.5.3.Plugin.STAplus-1.0.2.jar` in the `target` directory.
+First, build the STAplus plugin with `mvn install`. This creates the `FROST-Server-2.5.8.Plugin.STAplus-1.0.2.jar` in the `target` directory.
 
-Next, change directory to `docker` and execute `docker compose up`. This builds the docker image `securedimensions/frost-server-v2.5.3_staplus:1.0.2` which includes the FROST-Server v2.5.3 and the STAplus plugin. The FROST-Server with STAplus capability is available at `http://localhost:8080/FROST-Server`.
+Next, change directory to `docker` and execute `docker compose up`. This builds the docker image `securedimensions/frost-server-v2.5.8_staplus:1.0.2` which includes the FROST-Server v2.5.8 and the STAplus plugin. The FROST-Server with STAplus capability is available at `http://localhost:8080/FROST-Server`.
 
 **_NOTE_:** This docker deployment does not start the MQTT interface.
 
