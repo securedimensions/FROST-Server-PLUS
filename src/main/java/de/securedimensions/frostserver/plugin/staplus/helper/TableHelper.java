@@ -429,7 +429,7 @@ public abstract class TableHelper {
         // Ensure Datastream by reference has no Observations
         if (datastream.getPrimaryKeyValues().get(0) != null) {
             PkValue id = datastream.getPrimaryKeyValues();
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Datastreams(" + id.getUrl(datastream.getPrimaryKey()) + ")/Observations");
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.INTERNAL, "/Datastreams(" + id.getUrl(datastream.getPrimaryKey()) + ")/Observations");
             Query query = QueryParser.parseQuery("", pm.getCoreSettings().getQueryDefaults(), rp.getMainElementType().getModelRegistry(), rp);
             query.validate();
             EntitySet obs = (EntitySet) pm.get(rp, query);
@@ -454,7 +454,7 @@ public abstract class TableHelper {
         // Ensure Datastream by reference has no Observations
         if (mds.getPrimaryKeyValues().get(0) != null) {
             PkValue id = mds.getPrimaryKeyValues();
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/MultiDatastreams(" + id.getUrl(mds.getPrimaryKey()) + ")/Observations");
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.INTERNAL, "/MultiDatastreams(" + id.getUrl(mds.getPrimaryKey()) + ")/Observations");
             Query query = QueryParser.parseQuery("", pm.getCoreSettings().getQueryDefaults(), rp.getMainElementType().getModelRegistry(), rp);
             query.validate();
             EntitySet obs = (EntitySet) pm.get(rp, query);
@@ -479,7 +479,7 @@ public abstract class TableHelper {
         // Ensure Group by reference has no Observations
         if (group.getPrimaryKeyValues().get(0) != null) {
             PkValue id = group.getPrimaryKeyValues();
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Groups(" + id.getUrl(group.getPrimaryKey()) + ")/Observations");
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.INTERNAL, "/Groups(" + id.getUrl(group.getPrimaryKey()) + ")/Observations");
             Query query = QueryParser.parseQuery("", pm.getCoreSettings().getQueryDefaults(), rp.getMainElementType().getModelRegistry(), rp);
             query.validate();
             EntitySet obs = (EntitySet) pm.get(rp, query);
@@ -499,7 +499,7 @@ public abstract class TableHelper {
         // Ensure Campaign by reference has no Datastreams and no MultiDatastreams
         if (project.getPrimaryKeyValues().get(0) != null) {
             PkValue id = project.getPrimaryKeyValues();
-            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.V_1_1, "/Campaigns(" + id.getUrl(project.getPrimaryKey()) + ")");
+            ResourcePath rp = PathParser.parsePath(pm.getCoreSettings().getModelRegistry(), pm.getCoreSettings().getQueryDefaults().getServiceRootUrl(), Version.INTERNAL, "/Campaigns(" + id.getUrl(project.getPrimaryKey()) + ")");
             Query query = QueryParser.parseQuery("$expand=Datastreams($top=0;$count=true),MultiDatastreams($top=0;$count=true)", pm.getCoreSettings().getQueryDefaults(), rp.getMainElementType().getModelRegistry(), rp);
             query.validate();
             project = (Entity) pm.get(rp, query);
