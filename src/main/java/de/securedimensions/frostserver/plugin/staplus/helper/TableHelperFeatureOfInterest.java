@@ -19,14 +19,15 @@ package de.securedimensions.frostserver.plugin.staplus.helper;
 
 import static de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.factories.HookPreInsert.Phase.PRE_RELATIONS;
 
+import de.fraunhofer.iosb.ilt.frostserver.model.ModelRegistry;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.Entity;
 import de.fraunhofer.iosb.ilt.frostserver.model.core.EntitySet;
 import de.fraunhofer.iosb.ilt.frostserver.persistence.pgjooq.JooqPersistenceManager;
 import de.fraunhofer.iosb.ilt.frostserver.plugin.coremodel.TableImpFeatures;
 import de.fraunhofer.iosb.ilt.frostserver.service.ServiceRequest;
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
-import de.fraunhofer.iosb.ilt.frostserver.util.exception.IncompleteEntityException;
 import java.security.Principal;
+import java.util.Iterator;
 
 public class TableHelperFeatureOfInterest extends TableHelper {
 
@@ -48,9 +49,11 @@ public class TableHelperFeatureOfInterest extends TableHelper {
                      * Select Phase
                      */
                     if (phase == PRE_RELATIONS) {
-                        final String encodingType = (String) entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
-                        if (!encodingType.equalsIgnoreCase("application/geo+json"))
-                            throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
+                        String encodingType = (String) entity.getProperty(ModelRegistry.EP_ENCODINGTYPE);
+                        if (ServiceRequest.getLocalRequest().getContentType().equalsIgnoreCase("application/geo+json")
+                                && !encodingType.equalsIgnoreCase("application/geo+json")) {
+                            throw new IllegalArgumentException("Creating a FeatureOfInterest with HTTP content-type application/geo+json is only possible when the encodingType of the entity is also application/geo+json");
+                        }
                     }
 
                     Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
@@ -66,10 +69,6 @@ public class TableHelperFeatureOfInterest extends TableHelper {
 
         tableFoI.registerHookPreUpdate(-1,
                 (pm, entity, entityId, updateMode) -> {
-
-                    final String encodingType = (String) entity.getProperty(pluginCoreModel.etFeatureOfInterest.getProperty("encodingType"));
-                    if ((encodingType != null) && !encodingType.equalsIgnoreCase("application/geo+json"))
-                        throw new IncompleteEntityException("Property encodingType must have value application/geo+json");
 
                     Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
 
@@ -97,11 +96,12 @@ public class TableHelperFeatureOfInterest extends TableHelper {
 
     private void assertOwnershipFeatureOfInterest(JooqPersistenceManager pm, Entity location, Principal principal) throws IllegalArgumentException {
         EntitySet observations = location.getProperty(pluginCoreModel.npObservationsFeature);
-        if ((observations != null) && (observations.getCount() > 1))
-            throw new IllegalArgumentException("Cannot check ownership of FeatureOfInterest for more than one Observation");
+        Iterator<Entity> i = observations.iterator();
+        while (i.hasNext()) {
+            Entity observation = i.next();
+            if (observation.getPrimaryKeyValues().isFullySet())
+                observation = pm.get(pluginCoreModel.etObservation, i.next().getPrimaryKeyValues());
 
-        if (observations != null) {
-            Entity observation = pm.get(pluginCoreModel.etObservation, observations.iterator().next().getPrimaryKeyValues());
             assertOwnershipObservation(pm, observation, principal);
         }
     }
