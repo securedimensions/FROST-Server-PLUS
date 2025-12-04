@@ -485,7 +485,7 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
         LOGGER.info("  testCreateFeatureOfInterest");
         String request = FOI(1, "application/geo+json");
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/FeaturesOfInterest");
-        HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+        HttpEntity stringEntity = new StringEntity(request, ContentType.create("application/geo+json"));
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
@@ -504,7 +504,7 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
         LOGGER.info("  testCreateFeatureOfInterestWrongEncodingType");
         String request = FOI(2, "wkt");
         HttpPost httpPost = new HttpPost(serverSettings.getServiceUrl(version) + "/FeaturesOfInterest");
-        HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+        HttpEntity stringEntity = new StringEntity(request, ContentType.create("application/geo+json"));
         httpPost.setEntity(stringEntity);
         setAuth(httpPost, ALICE, "");
 
@@ -569,7 +569,7 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
 
         String request = FOI(101, "wkt");
         HttpPatch httpPatch = new HttpPatch(serverSettings.getServiceUrl(version) + "/FeaturesOfInterest(101)");
-        HttpEntity stringEntity = new StringEntity(request, ContentType.APPLICATION_JSON);
+        HttpEntity stringEntity = new StringEntity(request, ContentType.create("application/geo+json"));
         httpPatch.setEntity(stringEntity);
         setAuth(httpPatch, ALICE, "");
 
