@@ -24,11 +24,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
 import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11MultiDatastream;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11Sensing;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -352,27 +354,23 @@ public abstract class LicenseTests extends AbstractStaPlusTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            sMdl = new SensorThingsV11Sensing();
-            pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(sMdl, pMdl).setBaseUrl(new URL(serverSettings.getServiceUrl(version))).init();
-
-            for (String k : LICENSES.keySet()) {
-                if (!existLicense(k)) {
-                    createEntity("/Licenses", LICENSES.get(k));
+            serviceSTAplus = new SensorThingsService(
+                    new SensorThingsV11Sensing(),
+                    new SensorThingsV11MultiDatastream(),
+                    new SensorThingsPlus());
+            try {
+                serviceSTAplus.setBaseUrl(new URL(serverSettings.getServiceUrl(version)));
+                serviceSTAplus.init();
+                for (String k : LICENSES.keySet()) {
+                    if (!existLicense(k)) {
+                        createEntity("/Licenses", LICENSES.get(k));
+                    }
                 }
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
             }
-
         } catch (IOException ex) {
             LOGGER.error("Failed to execute request", ex);
-        }
-    }
-
-    @Override
-    protected void tearDownVersion() {
-        try {
-            cleanup();
-        } catch (ServiceFailureException e) {
-            throw new RuntimeException(e);
         }
     }
 

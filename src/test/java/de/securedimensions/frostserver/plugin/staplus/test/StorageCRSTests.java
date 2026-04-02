@@ -20,11 +20,13 @@ package de.securedimensions.frostserver.plugin.staplus.test;
 import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
 import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11MultiDatastream;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11Sensing;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
 import de.securedimensions.frostserver.plugin.staplus.test.auth.PrincipalAuthProvider;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -298,24 +300,21 @@ public abstract class StorageCRSTests extends AbstractStaPlusTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            sMdl = new SensorThingsV11Sensing();
-            pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(sMdl, pMdl).setBaseUrl(new URL(serverSettings.getServiceUrl(version))).init();
-
-            createEntity("/Parties", PARTY_ALICE, ALICE);
-            createEntity("/Things", THING_EXISTING_PARTY.formatted(ALICE), ALICE);
+            serviceSTAplus = new SensorThingsService(
+                    new SensorThingsV11Sensing(),
+                    new SensorThingsV11MultiDatastream(),
+                    new SensorThingsPlus());
+            try {
+                serviceSTAplus.setBaseUrl(new URL(serverSettings.getServiceUrl(version)));
+                serviceSTAplus.init();
+                createEntity("/Parties", PARTY_ALICE, ALICE);
+                createEntity("/Things", THING_EXISTING_PARTY.formatted(ALICE), ALICE);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
 
         } catch (IOException ex) {
             LOGGER.error("Failed to execute request", ex);
-        }
-    }
-
-    @Override
-    protected void tearDownVersion() {
-        try {
-            cleanup();
-        } catch (ServiceFailureException e) {
-            throw new RuntimeException(e);
         }
     }
 

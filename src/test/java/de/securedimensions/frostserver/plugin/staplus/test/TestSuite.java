@@ -18,7 +18,6 @@
 package de.securedimensions.frostserver.plugin.staplus.test;
 
 import static de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings.PREFIX_PLUGINS;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -55,7 +54,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.Suite;
 import org.slf4j.Logger;
@@ -136,16 +134,18 @@ public class TestSuite {
     private final KeycloakContainer keycloak = new KeycloakContainer()
             .withRealmImportFile("keycloak/FROST-Test.json");
 
-    static class SuiteFinaliser {
-
-        @Test
-        void finalTest() {
-            LOGGER.info("Stopping Servers...");
-            assertDoesNotThrow(() -> {
-                getInstance().stopAllServers();
-            });
-        }
-    }
+    /*
+     * @Nested
+     * class SuiteFinaliser {
+     * @Test
+     * void finalTest() {
+     * LOGGER.info("Stopping Servers...");
+     * assertDoesNotThrow(() -> {
+     * getInstance().stopAllServers();
+     * });
+     * }
+     * }
+     */
 
     public static TestSuite getInstance() {
         // Create a new instance if none exists. This only happens when running

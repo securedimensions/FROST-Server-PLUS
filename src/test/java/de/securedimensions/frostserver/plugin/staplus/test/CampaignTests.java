@@ -244,21 +244,14 @@ public abstract class CampaignTests extends AbstractStaPlusTestClass {
     @Override
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
+        serviceSTAplus = new SensorThingsService(
+                new SensorThingsV11Sensing(),
+                new SensorThingsV11MultiDatastream(),
+                new SensorThingsPlus());
         try {
-            sMdl = new SensorThingsV11Sensing();
-            mMdl = new SensorThingsV11MultiDatastream();
-            pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(sMdl, mMdl, pMdl).setBaseUrl(new URL(serverSettings.getServiceUrl(version))).init();
-        } catch (MalformedURLException ex) {
-            LOGGER.error("Failed to create URL", ex);
-        }
-    }
-
-    @Override
-    protected void tearDownVersion() {
-        try {
-            cleanup();
-        } catch (ServiceFailureException e) {
+            serviceSTAplus.setBaseUrl(new URL(serverSettings.getServiceUrl(version)));
+            serviceSTAplus.init();
+        } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }

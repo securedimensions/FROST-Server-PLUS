@@ -20,6 +20,7 @@ package de.securedimensions.frostserver.plugin.staplus.test;
 import de.fraunhofer.iosb.ilt.frostclient.SensorThingsService;
 import de.fraunhofer.iosb.ilt.frostclient.exception.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsPlus;
+import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11MultiDatastream;
 import de.fraunhofer.iosb.ilt.frostclient.models.SensorThingsV11Sensing;
 import de.fraunhofer.iosb.ilt.statests.ServerVersion;
 import de.securedimensions.frostserver.plugin.staplus.PluginPLUS;
@@ -287,10 +288,16 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     protected void setUpVersion() {
         LOGGER.info("Setting up for version {}.", version.urlPart);
         try {
-            sMdl = new SensorThingsV11Sensing();
-            pMdl = new SensorThingsPlus();
-            serviceSTAplus = new SensorThingsService(sMdl, pMdl).setBaseUrl(new URL(serverSettings.getServiceUrl(version))).init();
-
+            serviceSTAplus = new SensorThingsService(
+                    new SensorThingsV11Sensing(),
+                    new SensorThingsV11MultiDatastream(),
+                    new SensorThingsPlus());
+            try {
+                serviceSTAplus.setBaseUrl(new URL(serverSettings.getServiceUrl(version)));
+                serviceSTAplus.init();
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
             try (CloseableHttpResponse r1 = createObservation(OBSERVATION_INLINE_PARTY(LJS, 1), LJS)) {
                 if (r1.getStatusLine().getStatusCode() != HTTP_CODE_201) {
                     LOGGER.error("Failed to create Observation no. 1");
@@ -336,15 +343,6 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
             LOGGER.error("Failed to create URL", ex);
         } catch (IOException e) {
             LOGGER.error("Failed to create Entity", e);
-        }
-    }
-
-    @Override
-    protected void tearDownVersion() {
-        try {
-            cleanup();
-        } catch (ServiceFailureException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -570,6 +568,10 @@ public abstract class RelationTests extends AbstractStaPlusTestClass {
     public void test10OtherUserCreateRelationObservationGroup() throws IOException {
         LOGGER.info("  test10OtherUserCreateRelationObservationGroup");
         try (CloseableHttpResponse response = createRelation(RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 2 /* ALICE */), LJS)) {
+            LOGGER.info("ObservationGroup: {}", RELATION_EXTERNAL_OBSERVATIONS_GROUP(1, 2, 2 /* ALICE */));
+            LOGGER.info("authId: {}", LJS);
+            LOGGER.info("status code: {}", response.getStatusLine().getStatusCode());
+
             if (response.getStatusLine().getStatusCode() == HTTP_CODE_403) {
                 Assertions.assertTrue(Boolean.TRUE, OTHER_USER_SHOULD_NOT_BE_ABLE_TO_CREATE_RELATION_GROUP);
             } else {
