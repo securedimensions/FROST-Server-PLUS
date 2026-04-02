@@ -35,14 +35,14 @@ This implementation enforces the concept of ownership as explained in detail bel
 The deployment of the STAplus plugin can be integrated into a working deployment of the FROST-Server. You can follow the [FROST-Server documentation](https://fraunhoferiosb.github.io/FROST-Server/) to run your instance.
 
 ### Build and deploy STAplus standalone
-Clone this directory via `git clone -b FROST-Server.v2.7.2 https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
+Clone this directory via `git clone -b v1.0.2-FROST-Server.v2.7.2 https://github.com/securedimensions/FROST-Server-PLUS.git`. Then `cd FROST-Server-PLUS` and `mvn install`. To run the tests at the end of the `mvn install` you need to have Docker running.
 
 Make sure you copy the `FROST-Server-2.7.2.Plugin.STAplus-1.0.2.jar` file to the appropriate FROST-Server directory and apply the STAplus specific settings below. Then restart FROST-Server.
 
 ## Deployment with FROST-Server
 Use `git clone -b v2.7.2 https://github.com/FraunhoferIOSB/FROST-Server.git FROST-Server` to create the FROST-Server directory structure.
 
-Then cd `FROST-Server/Plugins` and `git clone -b FROST-Server.v2.7.2 https://github.com/securedimensions/FROST-Server-PLUS.git STAplus`.
+Then cd `FROST-Server/Plugins` and `git clone -b v1.0.2-FROST-Server.v2.7.2 https://github.com/securedimensions/FROST-Server-PLUS.git STAplus`.
 
 Add the `STAplus` plugin to the `FROST-Server/Plugins/pom.xml`.
 
