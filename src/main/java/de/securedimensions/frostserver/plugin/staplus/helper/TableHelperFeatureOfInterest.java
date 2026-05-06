@@ -96,6 +96,10 @@ public class TableHelperFeatureOfInterest extends TableHelper {
 
     private void assertOwnershipFeatureOfInterest(JooqPersistenceManager pm, Entity location, Principal principal) throws IllegalArgumentException {
         EntitySet observations = location.getProperty(pluginCoreModel.npObservationsFeature);
+        if (observations == null) {
+            return;
+        }
+
         Iterator<Entity> i = observations.iterator();
         while (i.hasNext()) {
             Entity observation = i.next();
