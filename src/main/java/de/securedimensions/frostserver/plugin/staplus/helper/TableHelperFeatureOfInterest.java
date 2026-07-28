@@ -50,19 +50,32 @@ public class TableHelperFeatureOfInterest extends TableHelper {
                      */
                     if (phase == PRE_RELATIONS) {
                         String encodingType = (String) entity.getProperty(ModelRegistry.EP_ENCODINGTYPE);
-                        if (ServiceRequest.getLocalRequest().getContentType().equalsIgnoreCase("application/geo+json")
+                        var localRequest = ServiceRequest.getLocalRequest();
+                        String contentType = null;
+
+                        // 2. Only invoke getContentType() if it didn't run via a background thread
+                        if (localRequest != null) {
+                            contentType = localRequest.getContentType();
+                        } else {
+                            // Optional fallback: log it or set a safe default format
+                            contentType = "application/json"; // Or whatever fallback string makes sense for your data parsing logic
+                        }
+                        if (contentType.equalsIgnoreCase("application/geo+json")
                                 && !encodingType.equalsIgnoreCase("application/geo+json")) {
                             throw new IllegalArgumentException("Creating a FeatureOfInterest with HTTP content-type application/geo+json is only possible when the encodingType of the entity is also application/geo+json");
                         }
                     }
 
-                    Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+                    var localRequest = ServiceRequest.getLocalRequest();
+                    if (localRequest != null) {
+                        Principal principal = localRequest.getUserPrincipal();
 
-                    if (isAdmin(principal))
-                        return true;
+                        if (isAdmin(principal))
+                            return true;
 
-                    if (!pluginPlus.isEnforceOwnershipEnabled())
-                        assertOwnershipFeatureOfInterest(pm, entity, principal);
+                        if (!pluginPlus.isEnforceOwnershipEnabled())
+                            assertOwnershipFeatureOfInterest(pm, entity, principal);
+                    }
 
                     return true;
                 });
@@ -84,10 +97,13 @@ public class TableHelperFeatureOfInterest extends TableHelper {
 
         tableFoI.registerHookPreDelete(-1, (pm, entityId) -> {
 
-            Principal principal = ServiceRequest.getLocalRequest().getUserPrincipal();
+            var localRequest = ServiceRequest.getLocalRequest();
+            if (localRequest != null) {
+                Principal principal = localRequest.getUserPrincipal();
 
-            if (isAdmin(principal))
-                return;
+                if (isAdmin(principal))
+                    return;
+            }
 
             // Unpredictable implications as we don't know all the observations were this FeatureOfInterest is associated to
             throw new IllegalArgumentException("Deleting a FeatureOfInterest is not supported");

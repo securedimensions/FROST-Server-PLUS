@@ -39,6 +39,10 @@
             <column name="DISPLAYNAME" type="TEXT"/>
             <column name="ROLE" type="TEXT"/>
         </createTable>
+
+        <createIndex tableName="PARTIES" indexName="PARTIES_AUTH_ID">
+            <column name="AUTHID" />
+        </createIndex>
     </changeSet>
 
     <changeSet author="scf" id="2021-05-11-PLUS-PARTIES-2" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
